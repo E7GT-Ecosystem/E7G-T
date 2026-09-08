@@ -4,7 +4,7 @@ Direction ID: `E7-ECO-DIR-2026-09-06.1`. Product repository: `E7GT-Ecosystem/E7G
 
 E7G-T is the authoritative conceptual and reasoning source for the ecosystem. Preserve its modelling discipline, version history and the distinction between the candidate normative core and modules explicitly labelled informative.
 
-The current supplied source is `E7G-T_Kernel_v0.11_UC5_Unified_Public_Reference_Specification.md`. [PR #19](https://github.com/E7GT-Ecosystem/E7G-T/pull/19) reconciles active UC5 pointers and two stale maturity/footer labels. The correction is editorial; it does not promote pilot modules or silently update product source hashes.
+The current experimental canonical source is `E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md`, revision CFS1. It preserves `E7G-T_Kernel_v0.11_UC5_Unified_Public_Reference_Specification.md` as its constitutional predecessor and adds the optional EEC-Q/FG3, SF/IC and CFS/CG3 executable profiles. Consumers pinned to UC5 are not silently migrated: adopting v0.12 or any executable profile requires an explicit source digest, capability declaration and compatibility check.
 
 The next substantive priority is evidence that the discipline changes a real next move: preservation/loss, source return, inquiry-relative classification, temporal limits, conflict and bounded reliance. Compare against ordinary review and existing domain methods. Keep software conformance, mathematical claims, empirical outcomes and commercial demand separate.
 

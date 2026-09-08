@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use E7G-T in research or practice, please cite it using the metadata below."
 type: software
-title: "E7G-T Unified Geometry-Thinking Kernel: Extensional–Projective–Phase Geometry of Configurations and Time"
-version: "0.11-UC4"
-date-released: 2026-08-05
+title: "E7G-T Unified Geometry-Thinking Kernel: Experimental Executable Extension and Composition"
+version: "0.12-experimental"
+date-released: 2026-09-08
 authors:
   - family-names: "Wingate"
     given-names: "Alexander Gregory"
@@ -17,16 +17,10 @@ abstract: >-
   for making construction, projection, preservation, loss,
   reconstruction, operational sameness, material boundaries,
   temporal extension, histories, transition paths, bridge mode,
-  and admissible use visible.
-  UC2 additionally provides an informative pilot module for separating
-  observational claims from interpretations and composing observer-indexed
-  observational fields while preserving disagreement, unknowns, and temporal limits.
-  UC3 additionally provides an informative temporal-orientation module that separates
-  reverse reconstruction from time-reversal symmetry and causal reversal, distinguishes
-  history-whole membership from simultaneity, and models observer-relative history relevance.
-  UC4 additionally provides an informative topological-overlay module that separates
-  operational adjacency and phase boundaries from topological notions, supports declared
-  quotient topologies, and keeps topology distinct from metric, order, orientation, and causation.
+  and admissible use visible. Version 0.12 preserves the v0.11-UC5
+  constitutional kernel and adds optional executable profiles for exact
+  formal combinations, symbolic families and explicit family-state composition,
+  together with bounded Python reference models and internal validation records.
 keywords:
   - "geometry-first modelling"
   - "projection"
@@ -42,16 +36,20 @@ keywords:
   - "topological overlay"
   - "quotient topology"
   - "topology and orientation"
+  - "formal combinations"
+  - "symbolic families"
+  - "constrained realisation"
+  - "family-state composition"
   - "reasoning"
   - "E7G-T"
 preferred-citation:
   type: generic
-  title: "E7G-T Unified Geometry-Thinking Kernel: Extensional–Projective–Phase Geometry of Configurations and Time"
+  title: "E7G-T Unified Geometry-Thinking Kernel: Experimental Executable Extension and Composition"
   authors:
     - family-names: "Wingate"
       given-names: "Alexander Gregory"
     - family-names: "Razinkov"
       given-names: "Oleksandr"
   year: 2026
-  version: "0.11-UC4"
+  version: "0.12-experimental"
   url: "https://github.com/wingate-ag/E7G-T"

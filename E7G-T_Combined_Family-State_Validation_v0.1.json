@@ -1,0 +1,310 @@
+{
+  "checks": [
+    "outer family retains two symbolic inner terms",
+    "left endpoint instantiates exact EEC state",
+    "right endpoint instantiates exact EEC state",
+    "interior instantiation uses rational coefficients",
+    "unresolved family is ambiguous",
+    "observable realisation is unique",
+    "observable selects the winning inner state",
+    "observable records exact optimum",
+    "opposite observable selects other endpoint",
+    "pushforward collects equal configuration images",
+    "symbolic coefficients combine before instantiation",
+    "constant mapped state realises without objectives",
+    "pointwise pushforward law",
+    "pointwise symbolic cancellation produces zero family",
+    "zero state family has singleton image",
+    "restriction preserves exact pointwise state",
+    "restriction result is mixed inner state",
+    "empty outer restriction remains distinct from zero inner state",
+    "degenerate open interval normalises to empty outer family",
+    "open optimum is unattained",
+    "constant inner state over infinite outer domain is unique",
+    "fixed extension acts pointwise",
+    "shared composition uses one outer parameter",
+    "shared composition right endpoint",
+    "shared composition equals pointwise EEC extension",
+    "shared coefficients multiply as polynomials",
+    "family addition is pointwise",
+    "symbolic scaling is pointwise",
+    "canonical interchange round trip",
+    "canonical fingerprint round trip",
+    "family quote retains whole combined object",
+    "lexicographic objectives are supported",
+    "first objective fixes its winner before second",
+    "partial rule is rejected over active family",
+    "inactive finite-domain term is removed",
+    "removed inactive term causes no false domain error",
+    "shared composition rejects different outer domains",
+    "assignment outside domain is rejected",
+    "non-rational symbolic coefficient is rejected",
+    "malformed interchange record is rejected"
+  ],
+  "demonstration": {
+    "pushforward": {
+      "context": "CG3/0.1",
+      "domain": {
+        "hi": "1/1",
+        "kind": "interval",
+        "left_closed": true,
+        "lo": "0/1",
+        "right_closed": true
+      },
+      "kernel": "0.12-experimental",
+      "model": "CG3/0.1",
+      "profile": "CFS/0.1",
+      "terms": [
+        {
+          "coefficient": [
+            "1/1"
+          ],
+          "config": {
+            "edges": [
+              "AB"
+            ],
+            "tag": null
+          }
+        }
+      ]
+    },
+    "realisation": {
+      "reason": "one inner state in the residual image",
+      "residual": {
+        "context": "CG3/0.1",
+        "domain": {
+          "kind": "points",
+          "values": [
+            "1/1"
+          ]
+        },
+        "kernel": "0.12-experimental",
+        "model": "CG3/0.1",
+        "profile": "CFS/0.1",
+        "terms": [
+          {
+            "coefficient": [
+              "0/1",
+              "1/1"
+            ],
+            "config": {
+              "edges": [],
+              "tag": null
+            }
+          }
+        ]
+      },
+      "scores": [
+        {
+          "attained": true,
+          "bound": "1/1",
+          "direction": "max",
+          "name": "coefficient:('graph', (), False, '')"
+        }
+      ],
+      "source_id": "1bc6ca4ba84aa8ab799065596f6ae113d946cfe0228391ae32be945a688ba63a",
+      "state": [
+        {
+          "coefficient": "1/1",
+          "config": {
+            "edges": [],
+            "tag": null
+          }
+        }
+      ],
+      "status": "UNIQUE",
+      "witnesses": [
+        {
+          "state": [
+            {
+              "coefficient": "1/1",
+              "config": {
+                "edges": [],
+                "tag": null
+              }
+            }
+          ],
+          "t": "1/1"
+        }
+      ]
+    },
+    "shared_at_half": [
+      {
+        "coefficient": "1/4",
+        "config": {
+          "edges": [
+            "AB",
+            "AC"
+          ],
+          "tag": null
+        }
+      },
+      {
+        "coefficient": "1/4",
+        "config": {
+          "edges": [
+            "AB",
+            "BC"
+          ],
+          "tag": null
+        }
+      },
+      {
+        "coefficient": "1/4",
+        "config": {
+          "edges": [
+            "AC"
+          ],
+          "tag": null
+        }
+      },
+      {
+        "coefficient": "1/4",
+        "config": {
+          "edges": [
+            "BC"
+          ],
+          "tag": null
+        }
+      }
+    ],
+    "shared_composition": {
+      "context": "CG3/0.1",
+      "domain": {
+        "hi": "1/1",
+        "kind": "interval",
+        "left_closed": true,
+        "lo": "0/1",
+        "right_closed": true
+      },
+      "kernel": "0.12-experimental",
+      "model": "CG3/0.1",
+      "profile": "CFS/0.1",
+      "terms": [
+        {
+          "coefficient": [
+            "0/1",
+            "1/1",
+            "-1/1"
+          ],
+          "config": {
+            "edges": [
+              "AB",
+              "AC"
+            ],
+            "tag": null
+          }
+        },
+        {
+          "coefficient": [
+            "1/1",
+            "-2/1",
+            "1/1"
+          ],
+          "config": {
+            "edges": [
+              "AB",
+              "BC"
+            ],
+            "tag": null
+          }
+        },
+        {
+          "coefficient": [
+            "0/1",
+            "0/1",
+            "1/1"
+          ],
+          "config": {
+            "edges": [
+              "AC"
+            ],
+            "tag": null
+          }
+        },
+        {
+          "coefficient": [
+            "0/1",
+            "1/1",
+            "-1/1"
+          ],
+          "config": {
+            "edges": [
+              "BC"
+            ],
+            "tag": null
+          }
+        }
+      ]
+    },
+    "source": {
+      "context": "CG3/0.1",
+      "domain": {
+        "hi": "1/1",
+        "kind": "interval",
+        "left_closed": true,
+        "lo": "0/1",
+        "right_closed": true
+      },
+      "kernel": "0.12-experimental",
+      "model": "CG3/0.1",
+      "profile": "CFS/0.1",
+      "terms": [
+        {
+          "coefficient": [
+            "0/1",
+            "1/1"
+          ],
+          "config": {
+            "edges": [],
+            "tag": null
+          }
+        },
+        {
+          "coefficient": [
+            "1/1",
+            "-1/1"
+          ],
+          "config": {
+            "edges": [
+              "AB"
+            ],
+            "tag": null
+          }
+        }
+      ]
+    },
+    "source_at_half": [
+      {
+        "coefficient": "1/2",
+        "config": {
+          "edges": [],
+          "tag": null
+        }
+      },
+      {
+        "coefficient": "1/2",
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        }
+      }
+    ]
+  },
+  "elapsed_seconds": 0.003546,
+  "failed": 0,
+  "implementation": "E7G-T_Combined_Family_State_v0.1.py",
+  "implementation_sha256": "ed6ba76f6638c859e65d9908ecd4ef2539cd1348df8249471ca706a51b94d542",
+  "kernel": "0.12-experimental",
+  "model": "CG3/0.1",
+  "passed": 40,
+  "profile": "CFS/0.1",
+  "profile_document": "E7G-T_Combined_Family-State_Profile_v0.1.md",
+  "profile_document_sha256": "a3e5b9096c7243066ab3367df214e3724a3de2063044f2806e49d0ec7bfe42d5",
+  "python": "3.12.13",
+  "run_date": "2026-09-08",
+  "schema": "E7G-T-CFS-validation/0.1",
+  "scope": "Bounded internal conformance run; not a general proof, performance benchmark, quantum execution, or independent reproduction."
+}

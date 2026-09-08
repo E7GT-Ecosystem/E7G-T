@@ -15,10 +15,20 @@ A static public landing page is available in `site/index.html` for Vercel or any
 
 ---
 
-## What changed in v0.11
+## Current experimental canonical: v0.12
 
-**Version:** v0.11-UC4  
-**Status:** unified use-candidate with restored first-class temporal geometry and informative observational-claim, temporal-orientation, and topological-overlay pilot modules.
+**Version:** v0.12-experimental, revision CFS1
+**Status:** experimental canonical reference with explicit executable profiles and bounded reference models.
+
+v0.12 preserves the v0.11-UC5 constitutional kernel and adds three opt-in executable layers:
+
+- **EEC-Q/0.1 with FG3/0.1:** exact rational formal combinations, typed extension, pushforward, restriction, cancellation, quotation and a bounded labelled-graph model;
+- **SF/0.1 with IC/0.1:** finite symbolic descriptions of potentially infinite configuration families, restriction and explicit lexicographic realisation;
+- **CFS/0.1 with CG3/0.1:** SF-outside/EEC-inside family-state semantics, so a whole formal configuration state can vary, transform and be realised without conflating family membership with coefficient arithmetic.
+
+These profiles are experimental and independently selectable. Their passing internal checks establish bounded implementation behaviour, not production readiness, general mathematical proof, empirical validity, quantum execution or market demand.
+
+## Inherited v0.11 foundation
 
 The kernel now treats time through the same constitutional disciplines as configurations:
 
@@ -74,9 +84,11 @@ E7G-T is not redefined as a topological theory. The overlay remains optional and
 
 ## Start here
 
-Read the current v0.11-UC4 unified public reference specification:
+Read the current v0.12 experimental canonical reference:
 
-`E7G-T_Kernel_v0.11_UC4_Unified_Public_Reference_Specification.md`
+[`E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md`](E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md)
+
+Reproduce the bounded companion runs and verify release hashes through the [`v0.12 experimental release manifest`](E7G-T_v0.12_Experimental_Release_Manifest.md).
 
 ## Route selection
 
@@ -116,11 +128,11 @@ Its proper role is to frame, inspect, compare, classify, navigate, document, tea
 
 ## Repository status
 
-The v0.11-UC3, v0.11-UC2, v0.11-UC1, and v0.10 public specifications are retained as predecessor material. The previous v0.9 RC1 materials remain under [`release_0.9RC1/`](release_0.9RC1/) and are no longer the active specification. See [Legacy Materials](legacy/README.md).
+The v0.11-UC5 through v0.11-UC1 and v0.10 public specifications are retained as predecessor material. The previous v0.9 RC1 materials remain under [`release_0.9RC1/`](release_0.9RC1/) and are no longer the active specification. See [Legacy Materials](legacy/README.md).
 
 ## Current validation priority
 
-Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move.
+Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The v0.12 reference models currently provide 127 named internal checks across FG3, IC and CG3; these are bounded conformance evidence rather than independent validation.
 
 Recommended cases:
 

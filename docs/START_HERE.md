@@ -1,4 +1,4 @@
-# Start Here — E7G-T v0.11-UC1
+# Start Here — E7G-T v0.12 Experimental
 
 E7G-T now treats two questions as parts of one modelling problem:
 
@@ -62,6 +62,10 @@ Use for consequential decisions, disputed classifications, reusable methods, cro
 | Can this view support a readiness classification? | Combined |
 | Does one operation work for every member of the phase? | Operational phase with representative check |
 
+## Optional executable profiles
+
+Use **EEC-Q/0.1** when exact finite formal combinations and typed transformations are material. Use **SF/0.1** when a finite symbolic description must retain a potentially infinite family of possibilities and an explicit realisation rule. Use **CFS/0.1** when each member of that outer family must be a complete formal state. Ordinary E7G-T analysis does not require these profiles.
+
 ## First exercise
 
 Take an AI-generated answer that recommends an action.
@@ -74,7 +78,7 @@ Take an AI-generated answer that recommends an action.
 
 ## Read next
 
-- [Unified Kernel](../E7G-T_Kernel_v0.11_UC1_Unified_Public_Reference_Specification.md)
+- [v0.12 Experimental Canonical Kernel](../E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md)
 - [Architecture Overview](ARCHITECTURE.md)
 - [Migration Guide](MIGRATION_FROM_v0.9.md)
 - [Combined Worksheet](worksheets/WS-001_Representation_to_Phase_Review.md)
