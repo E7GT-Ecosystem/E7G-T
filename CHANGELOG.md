@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.12-experimental (CFS1) — 2026-09-08
+
+### Added
+
+- EEC operation contract and the exact rational-coefficient EEC-Q/0.1 profile;
+- FG3/0.1 bounded labelled-graph reference model and 39 named internal checks;
+- optional SF/0.1 symbolic-family and realisation profile;
+- IC/0.1 exact interval-and-circle reference model and 48 named internal checks;
+- optional CFS/0.1 combined family-state profile with SF outside and EEC inside;
+- CG3/0.1 combined reference model and 40 named internal checks;
+- canonical interchange, explicit resource limits, validation boundaries and companion provenance hashes.
+
+### Changed
+
+- designated `E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md` as the current experimental canonical source;
+- preserved v0.11-UC5 as the constitutional predecessor and retained earlier specifications for migration and provenance;
+- updated active repository, citation, start-page and public-site pointers to v0.12;
+- retained executable profiles as opt-in capabilities rather than requirements for ordinary E7G-T analysis.
+
+### Boundaries
+
+- the reference models remain bounded prototypes, not production tools or proofs of the general calculus;
+- the formal coefficients are not probabilities, evidence weights, physical amplitudes or quantum states;
+- no claim of computational advantage, empirical validation, independent reproduction or commercial demand is made.
+
 ## v0.10-UC1 — 2026-07-18
 
 ### Added

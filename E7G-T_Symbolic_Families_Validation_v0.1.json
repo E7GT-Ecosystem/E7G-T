@@ -1,0 +1,478 @@
+{
+  "profile": "SF/0.1",
+  "model": "IC/0.1",
+  "python": "3.12.13",
+  "checks_passed": 48,
+  "checks": [
+    "circle extension and realisation",
+    "exact scores",
+    "source family retained",
+    "infinite source stays symbolic",
+    "unique entity despite duplicate chart witnesses",
+    "ties remain explicit",
+    "tie has two distinct entity witnesses",
+    "tie rule determines the selected entity",
+    "lexicographic order matters",
+    "shared parameters preserve dependencies",
+    "explicit branch restriction",
+    "circle and lift identity witnesses",
+    "interior quadratic optimum",
+    "interior bound is exact",
+    "unattained supremum is not a result",
+    "unattained infimum",
+    "open domain can have attained interior optimum",
+    "closed endpoint wins when open endpoint ties",
+    "empty restriction",
+    "empty sign restriction",
+    "degenerate open interval is empty",
+    "interval intersection respects open endpoints",
+    "infinitely many assignments can denote one entity",
+    "unresolved continuum has multiple entities",
+    "projection changes entity uniqueness",
+    "view preserves source alternatives",
+    "packing retains the whole family",
+    "quote has no implicit realisation coercion",
+    "non-rational coordinates remain exact",
+    "unsupported continuous objective is explicit",
+    "finite-domain higher-degree objective",
+    "radical objective is not silently approximated",
+    "resource limit is not an empty or successful answer",
+    "floating-point input rejected",
+    "coordinate overwrite rejected",
+    "unregistered expression rejected",
+    "outside assignment rejected",
+    "invalid circle domain rejected",
+    "unknown objective rejected",
+    "invalid sign restriction rejected",
+    "negative candidate limit rejected",
+    "exact interchange round trip",
+    "import rejects executable strings",
+    "noncanonical rational import rejected",
+    "normalised description identity",
+    "realised entity seeds a new family",
+    "family transformation changes exact geometry",
+    "new domain dependency is explicit"
+  ],
+  "demo": {
+    "circle": {
+      "kernel": "0.12-experimental",
+      "profile": "SF/0.1",
+      "model": "IC/0.1",
+      "kind": "geometric_entity",
+      "context": "E7G-T symbolic geometry",
+      "domain": {
+        "kind": "interval",
+        "lo": "-1/1",
+        "hi": "1/1",
+        "left_closed": true,
+        "right_closed": true
+      },
+      "signs": [
+        -1,
+        1
+      ],
+      "coordinates": [
+        {
+          "name": "x",
+          "expression": {
+            "kind": "polynomial",
+            "coefficients": [
+              "0/1",
+              "1/1"
+            ]
+          }
+        },
+        {
+          "name": "y",
+          "expression": {
+            "kind": "circle_y"
+          }
+        }
+      ]
+    },
+    "extended_family": {
+      "kernel": "0.12-experimental",
+      "profile": "SF/0.1",
+      "model": "IC/0.1",
+      "kind": "geometric_entity",
+      "context": "E7G-T symbolic geometry",
+      "domain": {
+        "kind": "interval",
+        "lo": "-1/1",
+        "hi": "1/1",
+        "left_closed": true,
+        "right_closed": true
+      },
+      "signs": [
+        -1,
+        1
+      ],
+      "coordinates": [
+        {
+          "name": "x",
+          "expression": {
+            "kind": "polynomial",
+            "coefficients": [
+              "0/1",
+              "1/1"
+            ]
+          }
+        },
+        {
+          "name": "y",
+          "expression": {
+            "kind": "circle_y"
+          }
+        },
+        {
+          "name": "z",
+          "expression": {
+            "kind": "polynomial",
+            "coefficients": [
+              "-1/1",
+              "0/1",
+              "2/1"
+            ]
+          }
+        }
+      ]
+    },
+    "realisation": {
+      "status": "UNIQUE",
+      "source_id": "993258d60dec6fc9228c94c0fa96a37cf9c2d17932564251be44c711be295c32",
+      "residual": {
+        "kernel": "0.12-experimental",
+        "profile": "SF/0.1",
+        "model": "IC/0.1",
+        "kind": "geometric_entity",
+        "context": "E7G-T symbolic geometry",
+        "domain": {
+          "kind": "points",
+          "values": [
+            "1/1"
+          ]
+        },
+        "signs": [
+          -1,
+          1
+        ],
+        "coordinates": [
+          {
+            "name": "x",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "0/1",
+                "1/1"
+              ]
+            }
+          },
+          {
+            "name": "y",
+            "expression": {
+              "kind": "circle_y"
+            }
+          },
+          {
+            "name": "z",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "-1/1",
+                "0/1",
+                "2/1"
+              ]
+            }
+          }
+        ]
+      },
+      "entity": {
+        "kind": "geometric_entity",
+        "coordinates": {
+          "x": {
+            "rational": "1/1"
+          },
+          "y": {
+            "rational": "0/1"
+          },
+          "z": {
+            "rational": "1/1"
+          }
+        }
+      },
+      "reason": "one entity in the residual image",
+      "scores": [
+        {
+          "field": "z",
+          "direction": "max",
+          "bound": "1/1",
+          "attained": true
+        },
+        {
+          "field": "x",
+          "direction": "max",
+          "bound": "1/1",
+          "attained": true
+        }
+      ],
+      "witnesses": [
+        {
+          "entity": {
+            "kind": "geometric_entity",
+            "coordinates": {
+              "x": {
+                "rational": "1/1"
+              },
+              "y": {
+                "rational": "0/1"
+              },
+              "z": {
+                "rational": "1/1"
+              }
+            }
+          },
+          "t": "1/1",
+          "sign": -1
+        }
+      ]
+    },
+    "tied_result": {
+      "status": "AMBIGUOUS",
+      "source_id": "993258d60dec6fc9228c94c0fa96a37cf9c2d17932564251be44c711be295c32",
+      "residual": {
+        "kernel": "0.12-experimental",
+        "profile": "SF/0.1",
+        "model": "IC/0.1",
+        "kind": "geometric_entity",
+        "context": "E7G-T symbolic geometry",
+        "domain": {
+          "kind": "points",
+          "values": [
+            "-1/1",
+            "1/1"
+          ]
+        },
+        "signs": [
+          -1,
+          1
+        ],
+        "coordinates": [
+          {
+            "name": "x",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "0/1",
+                "1/1"
+              ]
+            }
+          },
+          {
+            "name": "y",
+            "expression": {
+              "kind": "circle_y"
+            }
+          },
+          {
+            "name": "z",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "-1/1",
+                "0/1",
+                "2/1"
+              ]
+            }
+          }
+        ]
+      },
+      "entity": null,
+      "reason": "at least two distinct residual entities",
+      "scores": [
+        {
+          "field": "z",
+          "direction": "max",
+          "bound": "1/1",
+          "attained": true
+        }
+      ],
+      "witnesses": [
+        {
+          "entity": {
+            "kind": "geometric_entity",
+            "coordinates": {
+              "x": {
+                "rational": "-1/1"
+              },
+              "y": {
+                "rational": "0/1"
+              },
+              "z": {
+                "rational": "1/1"
+              }
+            }
+          },
+          "t": "-1/1",
+          "sign": -1
+        },
+        {
+          "entity": {
+            "kind": "geometric_entity",
+            "coordinates": {
+              "x": {
+                "rational": "1/1"
+              },
+              "y": {
+                "rational": "0/1"
+              },
+              "z": {
+                "rational": "1/1"
+              }
+            }
+          },
+          "t": "1/1",
+          "sign": -1
+        }
+      ]
+    },
+    "unattained_result": {
+      "status": "UNATTAINED",
+      "source_id": "155d72261f4b9de20c739149ecf7efc24de79709bcf5e61f53c068d63f9267ae",
+      "residual": {
+        "kernel": "0.12-experimental",
+        "profile": "SF/0.1",
+        "model": "IC/0.1",
+        "kind": "geometric_entity",
+        "context": "E7G-T symbolic geometry",
+        "domain": {
+          "kind": "points",
+          "values": []
+        },
+        "signs": [
+          -1,
+          1
+        ],
+        "coordinates": [
+          {
+            "name": "x",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "0/1",
+                "1/1"
+              ]
+            }
+          }
+        ]
+      },
+      "entity": null,
+      "reason": "exact bound exists but no admitted assignment attains it",
+      "scores": [
+        {
+          "field": "x",
+          "direction": "max",
+          "bound": "1/1",
+          "attained": false
+        }
+      ],
+      "witnesses": []
+    },
+    "subsequent_realisation": {
+      "status": "UNIQUE",
+      "source_id": "ec6f810403ab71365dcb023869344e0e383a72556573ea42d4b3d5ff947bb99c",
+      "residual": {
+        "kernel": "0.12-experimental",
+        "profile": "SF/0.1",
+        "model": "IC/0.1",
+        "kind": "geometric_entity",
+        "context": "E7G-T symbolic geometry",
+        "domain": {
+          "kind": "points",
+          "values": [
+            "1/1"
+          ]
+        },
+        "signs": [
+          -1,
+          1
+        ],
+        "coordinates": [
+          {
+            "name": "x",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "1/1",
+                "1/1"
+              ]
+            }
+          },
+          {
+            "name": "y",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "0/1"
+              ]
+            }
+          },
+          {
+            "name": "z",
+            "expression": {
+              "kind": "polynomial",
+              "coefficients": [
+                "1/1"
+              ]
+            }
+          }
+        ]
+      },
+      "entity": {
+        "kind": "geometric_entity",
+        "coordinates": {
+          "x": {
+            "rational": "2/1"
+          },
+          "y": {
+            "rational": "0/1"
+          },
+          "z": {
+            "rational": "1/1"
+          }
+        }
+      },
+      "reason": "one entity in the residual image",
+      "scores": [
+        {
+          "field": "x",
+          "direction": "max",
+          "bound": "2/1",
+          "attained": true
+        }
+      ],
+      "witnesses": [
+        {
+          "entity": {
+            "kind": "geometric_entity",
+            "coordinates": {
+              "x": {
+                "rational": "2/1"
+              },
+              "y": {
+                "rational": "0/1"
+              },
+              "z": {
+                "rational": "1/1"
+              }
+            }
+          },
+          "t": "1/1",
+          "sign": -1
+        }
+      ]
+    }
+  },
+  "scope": "Internal tests of exact bounded symbolic rules; no full SF implementation, amplitude semantics, quantum mechanism or performance advantage established.",
+  "run_date": "2026-09-08",
+  "source_sha256": "0a827d55cc95c4840ba5427e8585378b23ee6a3b00296856f192176cb4a2dca8"
+}
