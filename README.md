@@ -28,6 +28,16 @@ v0.12 preserves the v0.11-UC5 constitutional kernel and adds three opt-in execut
 
 These profiles are experimental and independently selectable. Their passing internal checks establish bounded implementation behaviour, not production readiness, general mathematical proof, empirical validity, quantum execution or market demand.
 
+### Informative relational non-separability clarification
+
+The companion
+[`E7G-T_Relational_Non-Separability_Clarification_v0.1.md`](E7G-T_Relational_Non-Separability_Clarification_v0.1.md)
+defines an inquiry-relative way to ask whether material whole-properties can
+be recovered from isolated component views without silently inventing hidden
+relations. It is not a canonical kernel revision or executable profile and
+does not infer quantum entanglement, causation, topology, metaphysical unity or
+the claim that everything is connected.
+
 ## Inherited v0.11 foundation
 
 The kernel now treats time through the same constitutional disciplines as configurations:
