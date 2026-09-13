@@ -5,6 +5,10 @@ Role: constitutional source
 Inspected main: `eb0ed8f18d8baf18c56ee7ba9d12003abe535207`  
 Decision status: `RETAIN`
 
+## Record precedence
+
+This snapshot is supplemental to the kernel's existing canonical, alignment, and release records. It does not duplicate or replace their authority and does not itself establish a consumer Gate 1A pass.
+
 ## Governing sources
 
 - E7G-T v0.12-experimental, revision CFS1, source commit `b7a30b2d56375a5a0646e0c1cab4f621b4de99ca`.
