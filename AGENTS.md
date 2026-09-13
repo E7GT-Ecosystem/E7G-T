@@ -10,11 +10,11 @@ This section supersedes an older ecosystem direction ID below where they conflic
 
 # Agent instructions — ecosystem coordination
 
-Direction ID: `E7-ECO-DIR-2026-09-08.1`.
+Direction ID: `E7-ECO-DIR-2026-09-13.1`.
 
 Read `docs/ECOSYSTEM_DIRECTION.md` before starting a new work package, after a context reset, and when the coordinator announces a direction change. The current [ecosystem direction](https://github.com/E7GT-Ecosystem/E7-Ecosystem/blob/main/DIRECTION.md) is maintained in the central repository. If you lack access to that private repository, use the self-contained local brief and continue routine authorised work; disclose the visibility limit before redefining a shared boundary.
 
-E7G-T v0.12 experimental canonical revision CFS1 at commit `b7a30b2d56375a5a0646e0c1cab4f621b4de99ca` is the constitutional source for new work. EEC-Q/0.1, SF/0.1 and CFS/0.1 remain opt-in profiles. Require consumers to declare profile/model editions, domain/algebra, scope, limits, preservation/loss and migration effects; never infer general mathematical, physical or product validity from bounded reference checks. Apply source/representation separation, criterion-bound equivalence, temporal limits and evidence-bounded claims. The supplied Ecosystem Operating Kernel governs portfolio direction where available. Neither a model nor a passing test is evidence of production readiness, market demand or broader scientific truth.
+E7G-T v0.12.1 experimental canonical revision RGP2 at commit `fc4cdf95c6434e653efbe017587aab60b4b2a86c` is the constitutional source for new work. EEC-Q/0.1, SF/0.1, CFS/0.1 and RGP/0.1 remain opt-in profiles. Require consumers to declare profile/model editions, domain/algebra, scope, limits, preservation/loss and migration effects; never infer general mathematical, physical or product validity from bounded reference checks. Apply source/representation separation, criterion-bound equivalence, temporal limits and evidence-bounded claims. The supplied Ecosystem Operating Kernel governs portfolio direction where available. Neither a model nor a passing test is evidence of production readiness, market demand or broader scientific truth.
 
 Coordination board: [ECOORD #2](https://github.com/E7GT-Ecosystem/E7-Ecosystem/issues/2).
 
