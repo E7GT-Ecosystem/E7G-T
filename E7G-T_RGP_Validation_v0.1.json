@@ -1,0 +1,39 @@
+{
+  "kernel": "0.12.1-experimental",
+  "profile": "RGP/0.1",
+  "model": "RGP-B1/0.1",
+  "status": "bounded_reference_validation",
+  "date": "2026-09-13",
+  "command": "python3 -m unittest -v test_e7gt_rgp_v0_1.py",
+  "result": {
+    "executed": 12,
+    "passed": 12,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "covered_obligations": [
+    "hosting_is_not_generation",
+    "generation_does_not_imply_hosting",
+    "shared_parameter_retention",
+    "projection_source_and_loss_account",
+    "lossy_view_preserves_underlying_sr4_portion",
+    "sr4_exact_round_trip",
+    "bounded_sr4_injectivity",
+    "digest_only_rejected_as_sr4",
+    "damaged_portion_rejects_prior_witness",
+    "decoder_edition_binding",
+    "rank_regime_independence",
+    "composition_preserves_component_identity",
+    "external_instantiation_not_inferred"
+  ],
+  "source_sha256": "6fa76bb0d5f80a5767d85b2510f7f97c5b677f85699644c7dd90bbdc65eaa4cd",
+  "test_sha256": "87c9da4cf3e3ac303b414aaa51588fa19d51a247e72ce370a4f05a90cbe3c978",
+  "limitations": [
+    "No canonical interchange schema is supplied.",
+    "No general recursion, limit object, authorization engine or distributed runtime is implemented.",
+    "SR3 and all-portions SR4 are not implemented.",
+    "The tests are first-party bounded fixtures, not independent reproduction.",
+    "Passing results do not establish external-system instantiation, production readiness or product value."
+  ]
+}
