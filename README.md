@@ -15,9 +15,19 @@ A static public landing page is available in `site/index.html` for Vercel or any
 
 ---
 
-## Current experimental canonical: v0.12
+## v0.13 experimental release candidate
 
-**Version:** v0.12-experimental, revision CFS1
+The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.
+
+The versioned [WPC/0.2 companion package](packages/wpc-0.2/) contains the standalone profile, dependency-free reference model, standard-library tests, validation record and obligation-level conformance matrix. See the [v0.13 release manifest](E7G-T_v0.13_Experimental_Release_Manifest.md) for exact hashes and scope.
+
+This is a review candidate, not yet a replacement for the published v0.12.1 experimental canonical source. Its 34 internal checks and four external first-party tests validate only the bounded allocation example.
+
+---
+
+## Current published experimental canonical: v0.12.1
+
+**Version:** v0.12.1-experimental, revision RGP2  
 **Status:** experimental canonical reference with explicit executable profiles and bounded reference models.
 
 v0.12 preserves the v0.11-UC5 constitutional kernel and adds three opt-in executable layers:
@@ -84,9 +94,9 @@ E7G-T is not redefined as a topological theory. The overlay remains optional and
 
 ## Start here
 
-Read the current v0.12 experimental canonical reference:
+Read the current published v0.12.1 experimental canonical reference:
 
-[`E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md`](E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md)
+[`E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`](E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md)
 
 Reproduce the bounded companion runs and verify release hashes through the [`v0.12 experimental release manifest`](E7G-T_v0.12_Experimental_Release_Manifest.md).
 
@@ -132,7 +142,7 @@ The v0.11-UC5 through v0.11-UC1 and v0.10 public specifications are retained as 
 
 ## Current validation priority
 
-Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The v0.12 reference models currently provide 127 named internal checks across FG3, IC and CG3; these are bounded conformance evidence rather than independent validation.
+Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The retained and candidate reference models provide 173 named internal checks across FG3, IC, CG3, RGP-B1 and the bounded WPC allocation model; these are first-party bounded conformance evidence rather than independent validation.
 
 Recommended cases:
 
