@@ -1,19 +1,19 @@
 # E7G-T kernel development direction
 
-Direction ID: `E7-ECO-DIR-2026-09-08.1`. Product repository: `E7GT-Ecosystem/E7G-T`.
+Direction ID: `E7-ECO-DIR-2026-09-14.1`. Product repository: `E7GT-Ecosystem/E7G-T`.
 
-E7G-T is the authoritative conceptual and reasoning source for the ecosystem. Preserve its modelling discipline, version history and the distinction between the candidate normative core and modules explicitly labelled informative.
+E7G-T is the authoritative conceptual and reasoning source for the ecosystem. Preserve its modelling discipline, version history and the distinction between published canonical material, candidate normative revisions and informative modules.
 
-The current experimental canonical source is `E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md`, revision CFS1. It preserves `E7G-T_Kernel_v0.11_UC5_Unified_Public_Reference_Specification.md` as its constitutional predecessor and adds the optional EEC-Q/FG3, SF/IC and CFS/CG3 executable profiles. Consumers pinned to UC5 are not silently migrated: adopting v0.12 or any executable profile requires an explicit source digest, capability declaration and compatibility check.
+The published experimental canonical source remains `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`, revision RGP2. The standalone `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md`, revision RWP1, is a candidate successor. It adds proposed reciprocal whole–part constitution without silently migrating v0.12.1 consumers or replacing legacy WPC/0.1.
 
-The next substantive priority is evidence that the discipline changes a real next move: preservation/loss, source return, inquiry-relative classification, temporal limits, conflict and bounded reliance. Compare against ordinary review and existing domain methods. Keep software conformance, mathematical claims, empirical outcomes and commercial demand separate.
+The v0.13 candidate separates constitutive presentation, semantic whole and materialised assembly. It distinguishes participation from representation, requires extraction and constitution before reconstructive agreement, makes closure domain- and normalisation-bound, and separates static core, evolution and distributed capability claims. Every consumer must declare its capability vector and strongest demonstrated retention tier.
 
-Coordinate source or terminology changes with affected products. A new source digest or version requires an explicit migration record. Preserve each contributor's attribution and the actual licence; do not treat product use as proof of the entire kernel.
+The next substantive priority is evidence that the discipline changes a real next move. Compare WPC/0.2 against ordinary state machines, event logs and domain methods. Keep software conformance, mathematical claims, empirical outcomes, external instantiation and commercial demand separate.
 
-Kernel development need not wait for all applications, and application releases need not wait for speculative extensions. E7FS/OS and other research can investigate the extension/projection logic using declared semantics and falsifiable examples, without turning those proposals into established ontology or mandatory product dependencies.
+Coordinate source or terminology changes with affected products. A new source digest or version requires an explicit migration record. Preserve contributor attribution and licence. Kernel development need not wait for all applications, and applications need not adopt speculative extensions.
 
-At a milestone, identify the source revision, change category (editorial, informative proposal or candidate normative revision), affected consumers and relevant acceptance/pilot evidence. Record a check-in and preserve unrelated branches.
+At a milestone, identify the source revision, change category, affected consumers, retained/adapted/replaced/retired components and acceptance evidence. Record exact commands, results, skipped checks and unsupported capabilities.
 
 ## Ecosystem adoption rule
 
-Product-local adapters precede any shared Family-State Runtime. Promotion to a common dependency requires two independent consumers using the same released contracts and compatibility vectors without semantic distortion. Consumers record each profile as `adopted`, `experimental`, `deferred` or `not_applicable`; non-adoption is valid. The kernel repository remains the source and conformance owner, not the owner of product-specific quantum, evidence, security or storage semantics.
+Product-local adapters precede any shared runtime. Promotion to a common dependency requires two independent consumers using the same released contracts and compatibility vectors without semantic distortion. Consumers record each profile as `adopted`, `experimental`, `deferred` or `not_applicable`; non-adoption is valid. The kernel repository remains the source and conformance owner, not the owner of product-specific quantum, evidence, security, storage or distributed-consensus semantics.

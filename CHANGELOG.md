@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.13-experimental draft (RWP1) — 2026-09-14
+
+### Added
+
+- standalone self-contained v0.13 kernel draft;
+- proposed WPC-Core/0.2 reciprocal whole–part constitution profile;
+- optional WPC-Evolution/0.1 and WPC-Distributed/0.1 capability declarations;
+- versioned WPC/0.2 package with bounded reference model, standard-library tests, validation JSON and obligation-level conformance matrix;
+- release manifest binding all candidate artifacts by SHA-256.
+
+### Retained and adapted
+
+- retained EEC-Q, SF, CFS, RGP/0.2 and legacy WPC/0.1 material;
+- preserved the inherited UC5 body unchanged from the v0.12.2 predecessor;
+- kept v0.12.1 as the published experimental canonical version pending review and deliberate promotion.
+
+### Validation and boundaries
+
+- reproduced 34 named internal checks, ten finite initial wholes and 30 exact portion round trips;
+- passed four external first-party standard-library tests;
+- the implementation is a partial finite allocation model, not full WPC conformance, independent reproduction, a distributed runtime, production readiness or a general mathematical proof.
+
 ## v0.12-experimental (CFS1) — 2026-09-08
 
 ### Added
