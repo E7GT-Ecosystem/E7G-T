@@ -1,0 +1,90 @@
+{
+  "kernel": "0.13-experimental-draft",
+  "release_revision": "RWP1",
+  "profile": "WPC/0.2-proposed",
+  "model": "allocation-example/0.1",
+  "model_profile": "E7G-T-v0.13-draft:WPC/0.2-proposed:allocation-example/0.1",
+  "date": "2026-09-14",
+  "python": "3.12.14",
+  "status": "first-party bounded validation; not independent reproduction or full-profile conformance",
+  "commands": [
+    "python3 packages/wpc-0.2/E7G-T_WPC_v0.2_Reference_Model.py",
+    "python3 -m unittest discover -s packages/wpc-0.2 -p 'test_*.py' -v"
+  ],
+  "results": {
+    "internal_checks_passed": 34,
+    "unittest_cases_passed": 4,
+    "finite_initial_wholes": 10,
+    "portion_round_trips": 30
+  },
+  "internal_checks": [
+    "semantic constitution needs no encoding",
+    "bottom-up joint contribution",
+    "all accepted contributions retained",
+    "original remains immutable",
+    "disjoint batch order does not alter result",
+    "duplicate event within batch is idempotent",
+    "event equivocation",
+    "competing writes",
+    "unauthorised local write",
+    "stale base",
+    "committed replay cannot apply twice",
+    "every pair fits",
+    "pairwise admission is not global admission",
+    "semantic round trip",
+    "assembly round trip",
+    "equal payloads distinct occurrences",
+    "all portions exact current source",
+    "missing member",
+    "duplicate occurrence",
+    "stale source remains exact historically",
+    "mixed sources not current coherent",
+    "unencoded semantic local change",
+    "admitted withdrawal gets new manifest",
+    "withdrawal re-encodes exact new whole",
+    "retired occurrence ID cannot be reused",
+    "join initialises and revalidates",
+    "unauthorised membership",
+    "no vacuous all-portions success",
+    "same values distinct histories",
+    "epoch alone is not identity",
+    "finite initial carrier contains ten wholes",
+    "exact encoder injective on finite carrier",
+    "both closure laws on finite carrier",
+    "thirty bounded portion round trips"
+  ],
+  "files": {
+    "E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md": {
+      "sha256": "e1ebd7d3b1945f816fa21aee5d1c4802486d0b7cc2e097a99c96ec1c60d1cd3c"
+    },
+    "E7G-T_WPC_v0.2_Reference_Model.py": {
+      "sha256": "5fe2e8d5f913f92ad8fbd0575607f569cbd211b13970174d537a9af14a493ea3"
+    },
+    "test_e7gt_wpc_v0_2.py": {
+      "sha256": "9af439dfeb6502a80a72112838a6a3476b0b008625f6c6975872c7258b5e4e43"
+    }
+  },
+  "implemented_scope": [
+    "nonempty finite membership over A, B and C",
+    "integer allocations from zero through two",
+    "global budget two",
+    "canonical JSON redundant whole encoding",
+    "exact semantic and canonical assembly round trips",
+    "common-base local proposals with distinct writes",
+    "event replay and equivocation checks",
+    "basic join and leave membership transitions",
+    "finite retained event tuples"
+  ],
+  "not_implemented": [
+    "general constitutive presentation and extraction API",
+    "ambiguous constitution",
+    "relative SR3 reconstruction",
+    "contextual-expression operations",
+    "split and merge membership",
+    "general causal DAGs",
+    "rule evolution",
+    "distributed commitment or recovery",
+    "arbitrary scopes, solvers or relation signatures",
+    "complete WPC/0.2 conformance programme"
+  ]
+}
