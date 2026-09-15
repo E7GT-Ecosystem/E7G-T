@@ -1,0 +1,83 @@
+{
+  "schema_version": "rec-eval-run-v1",
+  "data_class": "synthetic",
+  "run_id": "synthetic-scorer-exercise-01",
+  "case_set_sha256": "synthetic-case-set-not-an-empirical-digest",
+  "source_universe_sha256": "synthetic-source-universe-not-an-empirical-digest",
+  "model_contract_sha256": "synthetic-model-contract-not-an-empirical-digest",
+  "adjudication_blinded": false,
+  "observations": [
+    {
+      "case_id": "SYN-CONFLICT", "replicate_id": "r1", "arm": "ordinary", "primary_stratum": "independent_conflict", "execution_status": "completed", "adjudication_id": "blind-001",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "gold_units": 2, "asserted_units": 2, "correct_units": 1, "unsupported_units": 1,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 1,
+      "conflict_applicable": true, "conflict_retained": false,
+      "expected_action": "abstain", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 100, "input_tokens": 20, "output_tokens": 20, "cost_usd": 0.001
+    },
+    {
+      "case_id": "SYN-CONFLICT", "replicate_id": "r1", "arm": "checklist", "primary_stratum": "independent_conflict", "execution_status": "completed", "adjudication_id": "blind-002",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000002",
+      "gold_units": 2, "asserted_units": 2, "correct_units": 1, "unsupported_units": 1,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": true, "conflict_retained": true,
+      "expected_action": "abstain", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 110, "input_tokens": 30, "output_tokens": 22, "cost_usd": 0.0012
+    },
+    {
+      "case_id": "SYN-CONFLICT", "replicate_id": "r1", "arm": "retrieval", "primary_stratum": "independent_conflict", "execution_status": "completed", "adjudication_id": "blind-003",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000003",
+      "gold_units": 2, "asserted_units": 2, "correct_units": 1, "unsupported_units": 1,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": true, "conflict_retained": false,
+      "expected_action": "abstain", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 150, "input_tokens": 60, "output_tokens": 24, "cost_usd": 0.002
+    },
+    {
+      "case_id": "SYN-CONFLICT", "replicate_id": "r1", "arm": "retrieval_rec", "primary_stratum": "independent_conflict", "execution_status": "completed", "adjudication_id": "blind-004",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000004",
+      "gold_units": 2, "asserted_units": 1, "correct_units": 1, "unsupported_units": 0,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": true, "conflict_retained": true,
+      "expected_action": "abstain", "actual_action": "abstain", "rec_trace_valid": true,
+      "latency_ms": 210, "input_tokens": 100, "output_tokens": 30, "cost_usd": 0.003
+    },
+    {
+      "case_id": "SYN-SCOPE", "replicate_id": "r1", "arm": "ordinary", "primary_stratum": "semantic_scope", "execution_status": "completed", "adjudication_id": "blind-005",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000005",
+      "gold_units": 2, "asserted_units": 3, "correct_units": 2, "unsupported_units": 1,
+      "scope_errors": 1, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": false, "conflict_retained": null,
+      "expected_action": "assert", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 120, "input_tokens": 20, "output_tokens": 25, "cost_usd": 0.0011
+    },
+    {
+      "case_id": "SYN-SCOPE", "replicate_id": "r1", "arm": "checklist", "primary_stratum": "semantic_scope", "execution_status": "completed", "adjudication_id": "blind-006",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000006",
+      "gold_units": 2, "asserted_units": 2, "correct_units": 2, "unsupported_units": 0,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": false, "conflict_retained": null,
+      "expected_action": "assert", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 130, "input_tokens": 30, "output_tokens": 22, "cost_usd": 0.0013
+    },
+    {
+      "case_id": "SYN-SCOPE", "replicate_id": "r1", "arm": "retrieval", "primary_stratum": "semantic_scope", "execution_status": "completed", "adjudication_id": "blind-007",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000007",
+      "gold_units": 2, "asserted_units": 3, "correct_units": 2, "unsupported_units": 1,
+      "scope_errors": 1, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": false, "conflict_retained": null,
+      "expected_action": "assert", "actual_action": "assert", "rec_trace_valid": null,
+      "latency_ms": 170, "input_tokens": 65, "output_tokens": 26, "cost_usd": 0.0022
+    },
+    {
+      "case_id": "SYN-SCOPE", "replicate_id": "r1", "arm": "retrieval_rec", "primary_stratum": "semantic_scope", "execution_status": "completed", "adjudication_id": "blind-008",
+      "output_sha256": "0000000000000000000000000000000000000000000000000000000000000008",
+      "gold_units": 2, "asserted_units": 2, "correct_units": 2, "unsupported_units": 0,
+      "scope_errors": 0, "temporal_errors": 0, "modality_errors": 0,
+      "conflict_applicable": false, "conflict_retained": null,
+      "expected_action": "assert", "actual_action": "assert", "rec_trace_valid": true,
+      "latency_ms": 230, "input_tokens": 105, "output_tokens": 32, "cost_usd": 0.0032
+    }
+  ]
+}

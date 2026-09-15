@@ -1,0 +1,8 @@
+{
+  "schema_version": "rec-eval-case-set-v1",
+  "case_set_id": "REPLACE-ME",
+  "source_universe_sha256": "REPLACE-ME",
+  "frozen_before_execution": true,
+  "cases": []
+}
+

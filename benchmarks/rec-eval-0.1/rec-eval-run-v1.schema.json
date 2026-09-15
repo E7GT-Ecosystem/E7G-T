@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://e7gt.org/schemas/rec-eval-run-v1.schema.json",
+  "title": "E7G-T REC-EVAL/0.1 adjudicated run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "data_class",
+    "run_id",
+    "case_set_sha256",
+    "source_universe_sha256",
+    "model_contract_sha256",
+    "adjudication_blinded",
+    "observations"
+  ],
+  "properties": {
+    "schema_version": {"const": "rec-eval-run-v1"},
+    "data_class": {"enum": ["synthetic", "pilot", "promotion"]},
+    "run_id": {"type": "string", "minLength": 1},
+    "case_set_sha256": {"type": "string", "minLength": 1},
+    "source_universe_sha256": {"type": "string", "minLength": 1},
+    "model_contract_sha256": {"type": "string", "minLength": 1},
+    "adjudication_blinded": {"type": "boolean"},
+    "observations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/observation"}
+    }
+  },
+  "$defs": {
+    "nonNegativeInteger": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id", "replicate_id", "arm", "primary_stratum", "execution_status",
+        "output_sha256", "adjudication_id", "gold_units",
+        "asserted_units", "correct_units", "unsupported_units", "scope_errors",
+        "temporal_errors", "modality_errors", "conflict_applicable",
+        "conflict_retained", "expected_action", "actual_action",
+        "rec_trace_valid", "latency_ms", "input_tokens", "output_tokens",
+        "cost_usd"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "replicate_id": {"type": "string", "minLength": 1},
+        "arm": {"enum": ["ordinary", "checklist", "retrieval", "retrieval_rec"]},
+        "primary_stratum": {"enum": ["stale_source", "dependent_evidence", "independent_conflict", "semantic_scope", "temporal_scope", "modality_shift"]},
+        "execution_status": {"enum": ["completed", "timeout", "tool_error", "model_error"]},
+        "output_sha256": {"$ref": "#/$defs/sha256"},
+        "adjudication_id": {"type": "string", "minLength": 1},
+        "gold_units": {"$ref": "#/$defs/nonNegativeInteger"},
+        "asserted_units": {"$ref": "#/$defs/nonNegativeInteger"},
+        "correct_units": {"$ref": "#/$defs/nonNegativeInteger"},
+        "unsupported_units": {"$ref": "#/$defs/nonNegativeInteger"},
+        "scope_errors": {"$ref": "#/$defs/nonNegativeInteger"},
+        "temporal_errors": {"$ref": "#/$defs/nonNegativeInteger"},
+        "modality_errors": {"$ref": "#/$defs/nonNegativeInteger"},
+        "conflict_applicable": {"type": "boolean"},
+        "conflict_retained": {"type": ["boolean", "null"]},
+        "expected_action": {"enum": ["assert", "abstain"]},
+        "actual_action": {"enum": ["assert", "abstain"]},
+        "rec_trace_valid": {"type": ["boolean", "null"]},
+        "latency_ms": {"$ref": "#/$defs/nonNegativeInteger"},
+        "input_tokens": {"$ref": "#/$defs/nonNegativeInteger"},
+        "output_tokens": {"$ref": "#/$defs/nonNegativeInteger"},
+        "cost_usd": {"type": "number", "minimum": 0}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"conflict_applicable": {"const": false}}},
+          "then": {"properties": {"conflict_retained": {"type": "null"}}},
+          "else": {"properties": {"conflict_retained": {"type": "boolean"}}}
+        },
+        {
+          "if": {"properties": {"arm": {"const": "retrieval_rec"}}},
+          "then": {"properties": {"rec_trace_valid": {"type": "boolean"}}},
+          "else": {"properties": {"rec_trace_valid": {"type": "null"}}}
+        }
+      ]
+    }
+  }
+}

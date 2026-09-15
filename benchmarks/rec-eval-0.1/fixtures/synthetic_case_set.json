@@ -1,0 +1,45 @@
+{
+  "schema_version": "rec-eval-case-set-v1",
+  "case_set_id": "synthetic-cases",
+  "source_universe_sha256": "synthetic-source-universe-not-an-empirical-digest",
+  "frozen_before_execution": true,
+  "cases": [
+    {
+      "case_id": "SYN-CONFLICT",
+      "prompt": "Synthetic conflict",
+      "primary_stratum": "independent_conflict",
+      "secondary_strata": [],
+      "available_source_refs": ["s1", "s2"],
+      "gold": {
+        "units": [
+          {"unit_id": "u1", "description": "one", "accepted_source_refs": ["s1"]},
+          {"unit_id": "u2", "description": "two", "accepted_source_refs": ["s2"]}
+        ],
+        "expected_action": "abstain",
+        "conflict_applicable": true,
+        "scope_ceiling": "case",
+        "temporal_ceiling": "edition",
+        "accepted_modalities": ["assertoric"]
+      }
+    },
+    {
+      "case_id": "SYN-SCOPE",
+      "prompt": "Synthetic scope",
+      "primary_stratum": "semantic_scope",
+      "secondary_strata": [],
+      "available_source_refs": ["s1"],
+      "gold": {
+        "units": [
+          {"unit_id": "u1", "description": "one", "accepted_source_refs": ["s1"]},
+          {"unit_id": "u2", "description": "two", "accepted_source_refs": ["s1"]}
+        ],
+        "expected_action": "assert",
+        "conflict_applicable": false,
+        "scope_ceiling": "case",
+        "temporal_ceiling": "edition",
+        "accepted_modalities": ["assertoric"]
+      }
+    }
+  ]
+}
+

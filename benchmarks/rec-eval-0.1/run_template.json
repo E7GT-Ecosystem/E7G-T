@@ -1,0 +1,10 @@
+{
+  "schema_version": "rec-eval-run-v1",
+  "data_class": "pilot",
+  "run_id": "REPLACE-ME",
+  "case_set_sha256": "REPLACE-ME",
+  "source_universe_sha256": "REPLACE-ME",
+  "model_contract_sha256": "REPLACE-ME",
+  "adjudication_blinded": false,
+  "observations": []
+}
