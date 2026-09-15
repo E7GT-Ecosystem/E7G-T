@@ -1,19 +1,17 @@
 # E7G-T kernel development direction
 
-Direction ID: `E7-ECO-DIR-2026-09-14.1`. Product repository: `E7GT-Ecosystem/E7G-T`.
+Direction ID: `E7-ECO-DIR-2026-09-15.1`. Product repository: `E7GT-Ecosystem/E7G-T`.
 
-E7G-T is the authoritative conceptual and reasoning source for the ecosystem. Preserve its modelling discipline, version history and the distinction between published canonical material, candidate normative revisions and informative modules.
+E7G-T remains the authoritative conceptual and reasoning source for the ecosystem. Preserve its version history and the distinction between published canonical material, candidate normative revisions, informative modules, executable conformance and empirical performance.
 
-The published experimental canonical source remains `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`, revision RGP2. The standalone `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md`, revision RWP1, is a candidate successor. It adds proposed reciprocal whole–part constitution without silently migrating v0.12.1 consumers or replacing legacy WPC/0.1.
+The published experimental canonical source remains v0.12.1/RGP2. The v0.14/REC1 candidate retains the v0.13 reciprocal whole–part work and adds optional REC/0.1. REC is a bounded reasoning-audit profile: it checks declared information flow and produces a replayable witness. It is not a truth oracle or evidence that an AI reasons better.
 
-The v0.13 candidate separates constitutive presentation, semantic whole and materialised assembly. It distinguishes participation from representation, requires extraction and constitution before reconstructive agreement, makes closure domain- and normalisation-bound, and separates static core, evolution and distributed capability claims. Every consumer must declare its capability vector and strongest demonstrated retention tier.
+REC consumers must keep claim content, evidence polarity, information status, source truth and action authority distinct. They must pin source editions, temporal and semantic scope, modalities, dependence groups, rules and decision policy. EEC-Q coefficients must not be reused as evidence weights.
 
-The next substantive priority is evidence that the discipline changes a real next move. Compare WPC/0.2 against ordinary state machines, event logs and domain methods. Keep software conformance, mathematical claims, empirical outcomes, external instantiation and commercial demand separate.
+The next substantive priority is comparative evidence. Use the same underlying model and sources to compare ordinary prompting, checklist prompting, retrieval alone and REC-enforced retrieval. A useful result must improve a real next move without unacceptable cost or excessive abstention.
 
-Coordinate source or terminology changes with affected products. A new source digest or version requires an explicit migration record. Preserve contributor attribution and licence. Kernel development need not wait for all applications, and applications need not adopt speculative extensions.
-
-At a milestone, identify the source revision, change category, affected consumers, retained/adapted/replaced/retired components and acceptance evidence. Record exact commands, results, skipped checks and unsupported capabilities.
+Coordinate changes with affected products. Product-local adapters precede shared runtimes. Preserve contributor attribution, licence, existing APIs and native product meanings. At each milestone report exact commands, results, unsupported capabilities, skipped checks and migration effects.
 
 ## Ecosystem adoption rule
 
-Product-local adapters precede any shared runtime. Promotion to a common dependency requires two independent consumers using the same released contracts and compatibility vectors without semantic distortion. Consumers record each profile as `adopted`, `experimental`, `deferred` or `not_applicable`; non-adoption is valid. The kernel repository remains the source and conformance owner, not the owner of product-specific quantum, evidence, security, storage or distributed-consensus semantics.
+Promotion to a common dependency requires two independent consumers using the same released contracts without semantic distortion, plus independent reproduction of the claimed capability. Consumers record each profile as `adopted`, `experimental`, `deferred` or `not_applicable`; non-adoption is valid. The kernel repository remains the source and conformance owner, not the owner of product-specific legal, medical, quantum, evidence, security, storage or consensus semantics.
