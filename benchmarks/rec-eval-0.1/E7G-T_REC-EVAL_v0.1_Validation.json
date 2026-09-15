@@ -1,0 +1,35 @@
+{
+  "profile": "REC-EVAL/0.1",
+  "status": "first-party package validation; not empirical performance evidence",
+  "baseline_commit": "81ad69a29b5b962955a54febed9b90452591b8d7",
+  "python": "3.12.14",
+  "checks": {
+    "unit_tests": {"passed": 15, "failed": 0},
+    "synthetic_fixture_validated": true,
+    "golden_score_match": true,
+    "json_documents_parsed": true,
+    "empty_template_requires_explicit_allow_empty": true,
+    "promotion_label_enforces_minimum_cases_replicates_strata_and_blinding": true
+  },
+  "sha256": {
+    "README.md": "88669c06685b39119ba77a1e2b0775e092a10678cee2c39f5561236dcb8651db",
+    "E7G-T_REC-EVAL_v0.1_Protocol.md": "2a0eae5668daca550c97a1656c4fd1a475b3615802c7e1ae4038c37ac44be1b9",
+    "rec-eval-run-v1.schema.json": "33bc275eede96813148c5cefc10bdeecc5b5af9d3a3e8f034dd04e86ea46367d",
+    "rec-eval-case-set-v1.schema.json": "ca0d4ca001d00aad091609b06283fe029f3ef9b98c9c568064e2e0949127bbb8",
+    "score_rec_eval.py": "71ae05f22497407246e7d9c31c4e506312b9030e51da725b0755a7078e81934a",
+    "run_template.json": "5c2629e21ff5f3d96617878ea0b8780cdff4a9c586136cb8d78f3c3c89dad26b",
+    "case_set_template.json": "ab13e581d73f2a982e7b0b0960982a61e122bf3d6bfb6f4f45918885a92a001d",
+    "fixtures/synthetic_case_set.json": "28cbf8d76a38ac54ee1e22aeada44770c7b145f7d6d19081fbe2d458d3b48f0a",
+    "fixtures/synthetic_scoring_fixture.json": "733a5339fa8927d1185f16ba6188c9438d8a286bd7bdd9dbef5c157b5b2c31e1",
+    "fixtures/synthetic_expected_scores.json": "7da140e5af577182ecf77d739d49f4d6b25f3bc43d3c69195ae6f0dec84d70fc",
+    "test_score_rec_eval.py": "f46adce34c9fdf40a26b92a7fb093ea15809c11ef4f89920f33d4ad9a61ba2ba"
+  },
+  "unsupported_claims": [
+    "REC improves AI accuracy",
+    "REC reduces unsupported claims in real model outputs",
+    "the synthetic fixture is an empirical benchmark",
+    "the scorer establishes statistical significance",
+    "REC-EVAL establishes source truth or domain authority",
+    "v0.14 is promoted to the published canonical kernel"
+  ]
+}

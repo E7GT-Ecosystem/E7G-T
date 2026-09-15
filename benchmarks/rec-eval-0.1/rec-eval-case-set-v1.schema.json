@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://e7gt.org/schemas/rec-eval-case-set-v1.schema.json",
+  "title": "E7G-T REC-EVAL/0.1 frozen case set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "case_set_id", "source_universe_sha256", "frozen_before_execution", "cases"],
+  "properties": {
+    "schema_version": {"const": "rec-eval-case-set-v1"},
+    "case_set_id": {"type": "string", "minLength": 1},
+    "source_universe_sha256": {"type": "string", "minLength": 1},
+    "frozen_before_execution": {"const": true},
+    "cases": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "stratum": {"enum": ["stale_source", "dependent_evidence", "independent_conflict", "semantic_scope", "temporal_scope", "modality_shift"]},
+    "goldUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit_id", "description", "accepted_source_refs"],
+      "properties": {
+        "unit_id": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "accepted_source_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "prompt", "primary_stratum", "secondary_strata", "available_source_refs", "gold"],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "prompt": {"type": "string", "minLength": 1},
+        "primary_stratum": {"$ref": "#/$defs/stratum"},
+        "secondary_strata": {"type": "array", "items": {"$ref": "#/$defs/stratum"}, "uniqueItems": true},
+        "available_source_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "gold": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["units", "expected_action", "conflict_applicable", "scope_ceiling", "temporal_ceiling", "accepted_modalities"],
+          "properties": {
+            "units": {"type": "array", "items": {"$ref": "#/$defs/goldUnit"}, "minItems": 1},
+            "expected_action": {"enum": ["assert", "abstain"]},
+            "conflict_applicable": {"type": "boolean"},
+            "scope_ceiling": {"type": "string", "minLength": 1},
+            "temporal_ceiling": {"type": "string", "minLength": 1},
+            "accepted_modalities": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+          }
+        }
+      }
+    }
+  }
+}
+

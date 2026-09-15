@@ -1,5 +1,21 @@
 # Changelog
 
+## REC-EVAL/0.1 preregistered evaluation package — 2026-09-15
+
+### Added
+
+- controlled four-arm protocol for ordinary prompting, checklist prompting, retrieval and retrieval plus REC;
+- frozen case-set and adjudicated-run schemas;
+- dependency-free validator and deterministic paired scorer;
+- synthetic case/run fixtures, golden scores and 15 standard-library tests;
+- explicit sample, blinding, independence, uncertainty, quality and cost gates for any later promotion claim.
+
+### Boundaries
+
+- this package is an evaluation contract, not v0.15 of the kernel;
+- synthetic scores are scorer fixtures and provide no empirical evidence that REC improves an AI system;
+- the scorer reports descriptive and paired metrics but neither computes significance nor declares promotion.
+
 ## v0.14-experimental draft (REC1) — 2026-09-15
 
 ### Added

@@ -1,0 +1,100 @@
+{
+  "arms": {
+    "checklist": {
+      "abstention_rate": 0.0,
+      "asserted_precision": 0.75,
+      "conflict_retention": 1.0,
+      "decision_accuracy": 0.5,
+      "execution_failure_rate": 0.0,
+      "factual_recall": 0.75,
+      "mean_cost_usd": 0.00125,
+      "mean_input_tokens": 30.0,
+      "mean_latency_ms": 120.0,
+      "mean_output_tokens": 22.0,
+      "modality_error_rate": 0.0,
+      "observations": 2,
+      "scope_error_rate": 0.0,
+      "temporal_error_rate": 0.0,
+      "unsupported_rate": 0.25,
+      "valid_trace_rate": null
+    },
+    "ordinary": {
+      "abstention_rate": 0.0,
+      "asserted_precision": 0.6,
+      "conflict_retention": 0.0,
+      "decision_accuracy": 0.5,
+      "execution_failure_rate": 0.0,
+      "factual_recall": 0.75,
+      "mean_cost_usd": 0.00105,
+      "mean_input_tokens": 20.0,
+      "mean_latency_ms": 110.0,
+      "mean_output_tokens": 22.5,
+      "modality_error_rate": 0.2,
+      "observations": 2,
+      "scope_error_rate": 0.2,
+      "temporal_error_rate": 0.0,
+      "unsupported_rate": 0.4,
+      "valid_trace_rate": null
+    },
+    "retrieval": {
+      "abstention_rate": 0.0,
+      "asserted_precision": 0.6,
+      "conflict_retention": 0.0,
+      "decision_accuracy": 0.5,
+      "execution_failure_rate": 0.0,
+      "factual_recall": 0.75,
+      "mean_cost_usd": 0.0021,
+      "mean_input_tokens": 62.5,
+      "mean_latency_ms": 160.0,
+      "mean_output_tokens": 25.0,
+      "modality_error_rate": 0.0,
+      "observations": 2,
+      "scope_error_rate": 0.2,
+      "temporal_error_rate": 0.0,
+      "unsupported_rate": 0.4,
+      "valid_trace_rate": null
+    },
+    "retrieval_rec": {
+      "abstention_rate": 0.5,
+      "asserted_precision": 1.0,
+      "conflict_retention": 1.0,
+      "decision_accuracy": 1.0,
+      "execution_failure_rate": 0.0,
+      "factual_recall": 0.75,
+      "mean_cost_usd": 0.0031,
+      "mean_input_tokens": 102.5,
+      "mean_latency_ms": 220.0,
+      "mean_output_tokens": 31.0,
+      "modality_error_rate": 0.0,
+      "observations": 2,
+      "scope_error_rate": 0.0,
+      "temporal_error_rate": 0.0,
+      "unsupported_rate": 0.0,
+      "valid_trace_rate": 1.0
+    }
+  },
+  "data_class": "synthetic",
+  "interpretation_boundary": "Deterministic descriptive scores only; no uncertainty interval or promotion decision is computed.",
+  "primary_paired_delta_retrieval_rec_minus_retrieval": {
+    "abstention": {
+      "mean": 0.5,
+      "paired_cells": 2
+    },
+    "decision_accuracy": {
+      "mean": 0.5,
+      "paired_cells": 2
+    },
+    "factual_recall": {
+      "mean": 0.0,
+      "paired_cells": 2
+    },
+    "unsupported_rate": {
+      "mean": -0.416667,
+      "paired_cells": 2
+    }
+  },
+  "promotion_evidence": false,
+  "run_id": "synthetic-scorer-exercise-01",
+  "schema_version": "rec-eval-score-v1",
+  "source_run_sha256": "8029a962586be00d4785041ee8ce6cfc4ca802c1790a053bc4d0ccd51a336598"
+}

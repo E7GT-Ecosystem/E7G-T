@@ -25,6 +25,14 @@ The first-party package passes 34 internal checks and 24 external unit tests. Th
 
 ---
 
+## REC-EVAL/0.1 preregistered evidence gate
+
+The [REC-EVAL/0.1 benchmark package](benchmarks/rec-eval-0.1/) fixes the controlled comparison required before claiming that REC improves AI-assisted reasoning. It defines four matched arms—ordinary prompting, checklist prompting, retrieval, and retrieval plus REC—together with frozen case-set and run schemas, blinded adjudication rules, a dependency-free deterministic scorer, explicit promotion thresholds, and synthetic scorer tests.
+
+The synthetic fixture and 15 passing unit tests validate only the evaluation machinery. They are not empirical evidence for REC. No v0.15 kernel or performance claim is created by this package; promotion requires real, independently operated runs under the preregistered protocol.
+
+---
+
 ## v0.13 experimental release candidate
 
 The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.
