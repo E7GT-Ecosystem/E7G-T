@@ -55,8 +55,9 @@ Please review the package for fidelity and formal correctness. In particular:
    coherent family of bounded wholes?
 4. Does the parity-cycle fixture correctly demonstrate your RE4 claim that
    pairwise compatibility need not produce global closure?
-5. Is the access quotient sufficiently precise for partial observations? What
-   additional condition would you require for stochastic observations?
+5. Is the fixed MSC-B1 partial-observation policy `co_undefined_equal`
+   sufficiently precise? What additional condition would you require for
+   stochastic observations in a later profile?
 6. Is separating SR0–SR4 from access and authority faithful to the proposal?
 7. Did narrowing the core and moving history, regime, lift and fixed-point
    material into extensions remove anything logically necessary for MSC-Core?

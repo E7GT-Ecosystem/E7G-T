@@ -277,6 +277,13 @@ fibres, exact map-commutation tests and cross-scope invariant checks. Requiring
 total coherence maps is the bounded implementation policy; the abstract
 profile retains the partial-domain semantics above.
 
+For every deterministic partial observation in MSC-B1, the fixed missingness
+policy is `co_undefined_equal`: two states are equivalent for that observation
+when both results are undefined; an undefined result is never equivalent to a
+defined result. The evaluator reports this policy in each access-quotient
+result. Alternative or stochastic missingness policies require another
+versioned profile and are unsupported by MSC-B1/0.1.
+
 It does not implement general category-theoretic limits, sheaf cohomology,
 symbolic infinity, probabilistic observations, temporal histories, proposal
 lifts, fixed-point solvers, theorem proving or distributed execution.

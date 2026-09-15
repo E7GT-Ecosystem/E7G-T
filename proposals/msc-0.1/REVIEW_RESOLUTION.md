@@ -22,8 +22,12 @@ maps those findings to the revised package.
 | Vacuous invariant wording | Empty global closure now reports `not_applicable_incompatible`; it never reports preservation. | `test_invariant_on_incompatible_family_is_not_applicable` |
 | Partial invariant semantics | Extractors must be defined on every selected state in every compatible family; undefined unreachable states are permitted. | two partial-invariant tests |
 | Undefined coordinate projection | `MSC.8` defines coordinate projection, scope-state fibre and observation fibre separately; evaluator supports both query kinds. | `test_scope_state_and_observation_fibres_are_distinct` |
-| “Pairwise” ambiguous | Normative term is now `link-wise satisfiability`, explicitly limited to independent declared links. | obstruction fixture and `test_pairwise_compatible_global_obstruction` |
+| “Pairwise” ambiguous | Normative term is now `link-wise satisfiability`, explicitly limited to independent declared links. | obstruction fixture and `test_linkwise_satisfiable_global_obstruction` |
 | Empty observation family | Defined as universal indistinguishability and one quotient class. | `test_empty_observation_family_is_universal_quotient` |
+| Reconstruction-query membership type errors | `kind` and `observation_map` are admitted as non-empty strings before set/dictionary membership. Malformed array/object values produce `MSCError` and CLI exit 2 without traceback. | direct and CLI reconstruction-query type regressions |
+| Partial-observation missingness | MSC-B1 fixes `co_undefined_equal`: co-undefined results are equivalent, while defined/undefined results are distinct. Each quotient reports the policy. | proposal MSC.12, conformance matrix and access-quotient regression |
+| Schema validation absent from CI | CI installs a Draft 2020-12 validator, checks the schema and validates both fixtures. | `MSC proposal validation` workflow |
+| Stale test count | Root README, changelog and validation record now report 25 tests. | bounded test run |
 | `C_e` terminology | `C_e` is the lower-scope comparison map; bridge means the whole span. Schema field is `comparison_map`. | schema and both fixtures |
 | Non-native boundary vocabulary | Replaced with model-independent truth, external system existence and externally instantiated scope hierarchy. | textual review |
 
@@ -49,4 +53,3 @@ replacement where further change is required. Conclude with one verdict:
 - `ready_to_merge_as_research_proposal`;
 - `minor_corrections_before_merge`; or
 - `material_revision_still_required`.
-

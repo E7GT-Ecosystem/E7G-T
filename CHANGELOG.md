@@ -6,9 +6,9 @@
 
 - optional Multi-Scope Coherence proposal without creating a new kernel version;
 - typed finite scope diagrams, common-codomain coherence maps and compatible-family closure;
-- executable pairwise-compatible/global-obstruction counterexample;
+- executable link-wise-satisfiable/global-obstruction counterexample;
 - access quotients, exact commutation checks and cross-scope invariant checks;
-- bounded schema, reference model, 11 tests, conformance matrix, validation record and author-review request.
+- bounded schema, reference model, 25 tests, conformance matrix, validation record and author-review request.
 
 ### Boundaries
 

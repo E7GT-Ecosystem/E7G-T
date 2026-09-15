@@ -154,14 +154,15 @@ def validate_diagram(doc: Any) -> dict[str, Any]:
         _shape(query, f"reconstruction query {query_id}", {"query_id", "scope", "kind", "value"}, {"observation_map"})
         query_scope = _string(query["scope"], f"reconstruction query {query_id} scope invalid")
         _require(query_scope in scopes, f"reconstruction query {query_id} has unknown scope")
-        _require(query["kind"] in {"scope_state", "observation"}, f"reconstruction query {query_id} kind invalid")
+        kind = _string(query["kind"], f"reconstruction query {query_id} kind invalid")
+        _require(kind in {"scope_state", "observation"}, f"reconstruction query {query_id} kind invalid")
         _require(isinstance(query["value"], str), f"reconstruction query {query_id} value invalid")
         source = scopes[query_scope]["state_carrier"]
-        if query["kind"] == "scope_state":
+        if kind == "scope_state":
             _require("observation_map" not in query, f"scope-state query {query_id} must not name observation map")
             _require(query["value"] in carriers[source]["values"], f"scope-state query {query_id} value outside carrier")
         else:
-            map_id = query.get("observation_map")
+            map_id = _string(query.get("observation_map"), f"observation query {query_id} observation map invalid")
             _require(map_id in maps, f"observation query {query_id} has unknown map")
             mapping = maps[map_id]
             _require(mapping["source_carrier"] == source, f"observation query {query_id} source mismatch")
@@ -205,6 +206,7 @@ def _access_quotients(model: dict[str, Any]) -> list[dict[str, Any]]:
             "profile_id": profile_id, "scope": scope_id, "context": profile["context"],
             "classes": sorted((sorted(group) for group in classes.values()), key=lambda x: x[0]),
             "empty_observation_family": not observations,
+            "missingness_rule": "co_undefined_equal",
         })
     return results
 

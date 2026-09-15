@@ -23,7 +23,7 @@ product migration obligation.
 - `msc-diagram-v1.schema.json` — interchange schema;
 - `e7gt_msc_v0_1.py` — bounded dependency-free reference model;
 - `test_e7gt_msc_v0_1.py` — external standard-library tests;
-- `fixtures/` — unique closure and pairwise-compatible global obstruction;
+- `fixtures/` — unique closure and link-wise-satisfiable global obstruction;
 - `AUTHOR_REVIEW_REQUEST.md` — a return-to-author review prompt;
 - `REVIEW_RESOLUTION.md` — disposition of originating-author and ecosystem review findings;
 - `E7G-T_MSC_v0.1_Validation.json` — first-party validation and boundaries.
@@ -38,6 +38,9 @@ python3 proposals/msc-0.1/e7gt_msc_v0_1.py \
 python3 -m unittest discover -s proposals/msc-0.1 -p 'test_*.py' -v
 python3 -m json.tool proposals/msc-0.1/msc-diagram-v1.schema.json
 ```
+
+GitHub Actions additionally checks the schema itself and validates both fixture
+instances against it with a Draft 2020-12 JSON Schema validator.
 
 Passing tests establish only the behaviour of this finite first-party model.
 They do not establish an infinite hierarchy, an externally instantiated scope

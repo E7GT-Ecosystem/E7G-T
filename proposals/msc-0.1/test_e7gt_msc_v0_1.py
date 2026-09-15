@@ -34,7 +34,7 @@ class MSCReferenceTests(unittest.TestCase):
         invariant = MSC.evaluate(self.unique)["invariant_tests"][0]
         self.assertEqual(invariant, {"test_id": "shared-k", "outcome": "preserved"})
 
-    def test_pairwise_compatible_global_obstruction(self):
+    def test_linkwise_satisfiable_global_obstruction(self):
         result = MSC.evaluate(self.obstruction)
         self.assertEqual(result["outcome"], "incompatible")
         self.assertTrue(result["all_links_individually_satisfiable"])
@@ -65,6 +65,36 @@ class MSCReferenceTests(unittest.TestCase):
                 completed = subprocess.run([sys.executable, str(ROOT / "e7gt_msc_v0_1.py"), handle.name], capture_output=True, text=True, check=False)
                 self.assertEqual(completed.returncode, 2)
                 self.assertIn("document must be an object", completed.stderr)
+                self.assertNotIn("Traceback", completed.stderr)
+
+    def test_reconstruction_query_membership_values_are_type_checked(self):
+        for field, value, message in (
+            ("kind", [], "kind invalid"),
+            ("kind", {}, "kind invalid"),
+            ("observation_map", [], "observation map invalid"),
+            ("observation_map", {}, "observation map invalid"),
+        ):
+            with self.subTest(field=field, value=value):
+                doc = copy.deepcopy(self.unique)
+                doc["reconstruction_queries"][1][field] = value
+                with self.assertRaisesRegex(MSC.MSCError, message):
+                    MSC.evaluate(doc)
+
+    def test_cli_reconstruction_query_type_errors_exit_two_without_traceback(self):
+        for field, value, message in (
+            ("kind", [], "kind invalid"),
+            ("kind", {}, "kind invalid"),
+            ("observation_map", [], "observation map invalid"),
+            ("observation_map", {}, "observation map invalid"),
+        ):
+            with self.subTest(field=field, value=value), tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8") as handle:
+                doc = copy.deepcopy(self.unique)
+                doc["reconstruction_queries"][1][field] = value
+                json.dump(doc, handle)
+                handle.flush()
+                completed = subprocess.run([sys.executable, str(ROOT / "e7gt_msc_v0_1.py"), handle.name], capture_output=True, text=True, check=False)
+                self.assertEqual(completed.returncode, 2)
+                self.assertIn(message, completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
 
     def test_invalid_access_reference_not_hidden_by_resource_limit(self):
@@ -114,6 +144,7 @@ class MSCReferenceTests(unittest.TestCase):
         quotient = MSC.evaluate(doc)["access_quotients"][1]
         self.assertTrue(quotient["empty_observation_family"])
         self.assertEqual(quotient["classes"], [["L0", "L1"]])
+        self.assertEqual(quotient["missingness_rule"], "co_undefined_equal")
 
     def test_scope_state_and_observation_fibres_are_distinct(self):
         doc = copy.deepcopy(self.unique)

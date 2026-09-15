@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install schema validator
+        run: python3 -m pip install 'jsonschema>=4.23,<5'
       - name: Run MSC tests
         run: python3 -m unittest discover -s proposals/msc-0.1 -p 'test_*.py' -v
       - name: Exercise canonical fixtures
@@ -31,3 +33,5 @@ jobs:
           python3 proposals/msc-0.1/e7gt_msc_v0_1.py proposals/msc-0.1/fixtures/global_obstruction.json
       - name: Parse JSON artifacts
         run: find proposals/msc-0.1 -type f -name '*.json' -print0 | xargs -0 -n1 python3 -m json.tool
+      - name: Validate fixtures against interchange schema
+        run: python3 -c 'import json, pathlib; from jsonschema import Draft202012Validator; root=pathlib.Path("proposals/msc-0.1"); schema=json.loads((root/"msc-diagram-v1.schema.json").read_text()); validator=Draft202012Validator(schema); fixtures=sorted((root/"fixtures").glob("*.json")); [validator.validate(json.loads(path.read_text())) for path in fixtures]; print(f"validated {len(fixtures)} fixtures")'

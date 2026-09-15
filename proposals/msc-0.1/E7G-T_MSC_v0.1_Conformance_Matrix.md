@@ -18,7 +18,7 @@
 | MS11 distinct closure outcomes | partial | unique, ambiguous, incompatible, unsupported and resource limit; general undetermined not generated |
 | MS12 model-relative boundary | declared and tested in output metadata | no external-existence field or inference |
 | Map commutation | implemented for exact finite maps | criterion-relative commutation deferred |
-| Access quotient | implemented for exact deterministic observations | stochastic observations deferred |
+| Access quotient | implemented for exact deterministic observations | fixed MSC-B1 missingness policy `co_undefined_equal`; alternative and stochastic policies deferred |
 | Cross-scope invariant | implemented for exact finite maps | definedness required on compatible families, not unreachable states |
 
 Passing this matrix does not constitute full MSC conformance or independent
