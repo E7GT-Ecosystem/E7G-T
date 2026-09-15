@@ -33,11 +33,16 @@ artifacts:
       - path: E7G-T_v0.13_Experimental_Release_Manifest.md
         blob_sha: c5cccccb235b4650950ab5bf0b24e1635ed3aa22
     components:
-      - WPC/0.2
-      - WPC-Evolution/0.1
-      - WPC-Distributed/0.1
+      - identity: WPC-Core/0.2
+        register_entry: GPR-001
+      - identity: WPC-Evolution/0.1
+        register_entry: GPR-011
+      - identity: WPC-Distributed/0.1
+        register_entry: GPR-012
     register_entries:
       - GPR-001
+      - GPR-011
+      - GPR-012
   - id: successor-wpc-package
     identity: WPC/0.2
     status: experimental_candidate_package_not_canonical
@@ -125,7 +130,7 @@ artifacts:
       - path: benchmarks/rec-eval-0.1/E7G-T_REC-EVAL_v0.1_Validation.json
         blob_sha: a81d7e2c86b8dfa0cea105ebfce4bfaaa1cd97e3
     register_entries:
-      - GPR-002
+      - GPR-010
   - id: successor-relational-nonseparability
     identity: relational-non-separability/0.1
     status: open_informative_proposal_not_core
