@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.14-experimental draft (REC1) — 2026-09-15
+
+### Added
+
+- standalone self-contained v0.14 kernel draft retaining the v0.13 profile family;
+- optional REC/0.1 Reasoning–Evidence Calculus;
+- four non-collapsing information statuses over independent support/refutation bits;
+- bounded schema, evaluator, command-line runner and separately implemented trace checker;
+- translation-clause envelope/witness fixture, conformance matrix, validation record and release manifest.
+
+### Validation and boundaries
+
+- passed 34 named internal checks and 24 external standard-library tests;
+- replayed the canonical fixture with a separate first-party checker and rejected re-signed forged traces;
+- preserved the inherited UC5 body and predecessor profiles unchanged;
+- does not claim source truth, natural-language extraction validity, domain-rule soundness, general theorem proving, independent reproduction or improved AI performance.
+
 ## v0.13-experimental draft (RWP1) — 2026-09-14
 
 ### Added
