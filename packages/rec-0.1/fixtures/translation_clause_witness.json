@@ -1,0 +1,42 @@
+{
+  "kernel": "0.14-experimental-draft",
+  "profile": "REC/0.1-proposed",
+  "model": "REC-B1/0.1",
+  "reasoning_id": "translation-clause-demo",
+  "edition": "1",
+  "as_of": "2026-09-15T00:00:00Z",
+  "envelope_sha256": "846056486df44112c80d509d8d9db6df48eee5632944c80dbf5fc0fc7f208f7f",
+  "statuses": {
+    "source-prohibits": "supported",
+    "target-preserves": "refuted"
+  },
+  "query": {
+    "claim_id": "target-preserves",
+    "status": "refuted",
+    "policy": "rely_if_supported_only",
+    "next_action": "do_not_rely"
+  },
+  "admitted_evidence": [
+    "source-clause-7",
+    "target-clause-7"
+  ],
+  "stale_evidence": [],
+  "evidence_by_claim": {
+    "source-prohibits": ["source-clause-7"],
+    "target-preserves": ["target-clause-7"]
+  },
+  "provenance_groups_by_claim": {
+    "source-prohibits": ["contract-pair-1"],
+    "target-preserves": ["contract-pair-1"]
+  },
+  "rule_applications": [],
+  "conflicts": [],
+  "unsupported_steps": [],
+  "scope": {
+    "document": "target-1",
+    "jurisdiction": "declared"
+  },
+  "temporal_scope": "contract-term",
+  "modality": "fact",
+  "witness_sha256": "e719943bb8cf1a144c4fd1f90c356fc864b79f83d7838d9c9aa95cbbce2e967e"
+}

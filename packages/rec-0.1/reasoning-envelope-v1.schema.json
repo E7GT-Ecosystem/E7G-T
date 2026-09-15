@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://e7-g-t.example/schema/rec-0.1/reasoning-envelope-v1.schema.json",
+  "title": "E7G-T REC/0.1 bounded reasoning envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kernel", "profile", "model", "reasoning_id", "edition", "as_of", "claims", "evidence", "rules", "query"],
+  "properties": {
+    "kernel": {"const": "0.14-experimental-draft"},
+    "profile": {"const": "REC/0.1-proposed"},
+    "model": {"const": "REC-B1/0.1"},
+    "reasoning_id": {"type": "string", "minLength": 1},
+    "edition": {"type": "string", "minLength": 1},
+    "as_of": {"type": "string", "format": "date-time"},
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/claim"}
+    },
+    "evidence": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evidence"}
+    },
+    "rules": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/rule"}
+    },
+    "query": {"$ref": "#/$defs/query"}
+  },
+  "$defs": {
+    "scope": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "proposition", "modality", "scope", "temporal_scope"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "proposition": {"type": "string", "minLength": 1},
+        "modality": {
+          "enum": ["fact", "obligation", "permission", "prohibition", "possibility", "prediction", "recommendation"]
+        },
+        "scope": {"$ref": "#/$defs/scope"},
+        "temporal_scope": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim_id", "polarity", "source_id", "source_edition", "provenance_group", "scope"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "claim_id": {"type": "string", "minLength": 1},
+        "polarity": {"enum": ["support", "refute"]},
+        "source_id": {"type": "string", "minLength": 1},
+        "source_edition": {"type": "string", "minLength": 1},
+        "provenance_group": {"type": "string", "minLength": 1},
+        "scope": {"$ref": "#/$defs/scope"},
+        "valid_from": {"type": "string", "format": "date-time"},
+        "valid_to": {"type": "string", "format": "date-time"}
+      }
+    },
+    "premise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "requires"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "requires": {"enum": ["supported", "refuted"]}
+      }
+    },
+    "conclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "polarity"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "polarity": {"enum": ["support", "refute"]}
+      }
+    },
+    "modality_bridge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "authority"],
+      "properties": {
+        "from": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "to": {"type": "string", "minLength": 1},
+        "authority": {"type": "string", "minLength": 1}
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "premises", "conclusion"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "premises": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/premise"}
+        },
+        "conclusion": {"$ref": "#/$defs/conclusion"},
+        "modality_bridge": {"$ref": "#/$defs/modality_bridge"}
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "policy"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "policy": {"enum": ["report", "rely_if_supported_only"]}
+      }
+    }
+  }
+}

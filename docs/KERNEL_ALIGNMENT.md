@@ -1,36 +1,30 @@
 # E7G-T source-repository alignment
 
-Direction: `E7-ECO-DIR-2026-09-14.1`  
-Baseline reviewed: main `8e3d8d97c59c6fafd6d621779a45f15bb1dc0555`  
-Candidate branch: `codex/v013-rwp1-package`  
-Status: `CANDIDATE_ALIGNED_IN_DESIGN`; independent reproduction and product adoption remain unestablished.
+Direction: `E7-ECO-DIR-2026-09-15.1`  
+Baseline reviewed: main `8504d3124ef1e64f008087c46e09ca8acf6d7479`  
+Candidate branch: `codex/v014-rec-01`  
+Status: `CANDIDATE_ALIGNED_IN_DESIGN`; empirical improvement and independent reproduction remain unestablished.
 
 ## Source and profile status
 
-The published experimental canonical source remains `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`, revision RGP2. `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md`, revision RWP1, is a self-contained candidate successor and does not silently migrate consumers.
+The published experimental canonical source remains `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`, revision RGP2. The v0.13/RWP1 draft is the retained self-contained predecessor candidate. `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md`, revision REC1, is the new candidate successor and does not silently migrate consumers.
 
 | Profile or component | Disposition |
 |---|---|
-| EEC-Q/0.1, SF/0.1 and CFS/0.1 | retain |
-| RGP/0.2 kernel material | adapt to reciprocal whole–part terminology while preserving separate profile identity |
-| WPC/0.1 | retain as legacy compatibility material |
-| WPC-Core/0.2 | add as proposed; bounded implementation partial |
-| WPC-Evolution/0.1 | add as optional proposed capability; bounded implementation partial |
-| WPC-Distributed/0.1 | add as optional proposed capability; implementation unsupported |
-| FG3, IC, CG3 and RGP-B1 models | retain unchanged |
-| Preserved UC5 body | retain unchanged from the v0.12.2 predecessor |
-| Existing IDs, APIs and historical specifications | retain |
+| EEC-Q, SF, CFS, RGP and WPC families | retain without semantic replacement |
+| REC/0.1 | add as optional proposed reasoning-audit profile |
+| REC-B1/0.1 | add as partial bounded implementation |
+| Existing models, IDs, APIs and historical specifications | retain |
+| Preserved UC5 body | retain unchanged from the v0.13 predecessor |
 
-No replacement or retirement is authorized by this record.
+No replacement or retirement is authorised by this record.
 
-## WPC implementation boundary
+## REC implementation boundary
 
-The WPC allocation model demonstrates finite constitution, canonical whole encodings, exact bounded closure, distinct occurrence identity, bottom-up disjoint proposals, global-constraint rejection, basic join/leave transitions, event replay/equivocation checks and historical stale-payload distinction. It passes 34 internal checks and four external first-party tests.
+REC-B1 demonstrates finite typed claim/evidence admission, four support/refutation information statuses, stale-evidence handling, dependence-group retention, deterministic monotone rules, bounded scope/temporal/modality safety, two decision policies and canonical witnesses. Its separately implemented checker replays the trace and rejects hash tampering and re-signed forged status, conflict and stale-evidence fields. The first-party package passes 34 internal checks and 24 external unit tests.
 
-It omits the general constitutive-presentation and extraction API, ambiguous constitution, relative reconstruction, contextual expression, split/merge, general causal DAGs, rule evolution, distributed commitment and arbitrary solvers. Passing results do not establish full profile conformance, independent reproduction, external instantiation, production readiness or product value.
+Proposition text remains opaque. The model does not validate source truth, natural-language extraction, domain-rule soundness, authority legitimacy, general logic, calibrated uncertainty, minimal-change belief revision, empirical AI improvement or independent reproduction.
 
-## Repository responsibility and next gate
+## Next gate
 
-Preserve immutable published editions, exact manifests, conformance cases and attribution. Consumers must pin source/profile/model editions and state scope, limits, preservation/loss and migration effects.
-
-Promotion requires formal review, a normative interchange schema, implementations and negative tests for every claimed capability, independent reproduction and one end-to-end comparison against a simpler state-machine or event-log baseline. Shared cross-product contracts still require two concrete consumer mappings without semantic distortion.
+Run a controlled comparison using the same model and sources under ordinary prompting, checklist prompting, retrieval alone and retrieval plus REC. Measure accuracy, unsupported claims, scope and modality errors, conflict retention, appropriate abstention, latency and cost. Promotion also requires schema/semantic review, expert-reviewed domain rules and an external implementation.

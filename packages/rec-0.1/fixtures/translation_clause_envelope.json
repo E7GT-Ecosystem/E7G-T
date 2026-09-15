@@ -1,0 +1,48 @@
+{
+  "kernel": "0.14-experimental-draft",
+  "profile": "REC/0.1-proposed",
+  "model": "REC-B1/0.1",
+  "reasoning_id": "translation-clause-demo",
+  "edition": "1",
+  "as_of": "2026-09-15T00:00:00Z",
+  "claims": [
+    {
+      "id": "source-prohibits",
+      "proposition": "supplier disclose data without consent",
+      "modality": "prohibition",
+      "scope": {"document": "source-1", "jurisdiction": "declared"},
+      "temporal_scope": "contract-term"
+    },
+    {
+      "id": "target-preserves",
+      "proposition": "target preserves source modality",
+      "modality": "fact",
+      "scope": {"document": "target-1", "jurisdiction": "declared"},
+      "temporal_scope": "contract-term"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "source-clause-7",
+      "claim_id": "source-prohibits",
+      "polarity": "support",
+      "source_id": "source-contract",
+      "source_edition": "1",
+      "provenance_group": "contract-pair-1",
+      "scope": {"document": "source-1", "jurisdiction": "declared"},
+      "valid_from": "2026-01-01T00:00:00Z"
+    },
+    {
+      "id": "target-clause-7",
+      "claim_id": "target-preserves",
+      "polarity": "refute",
+      "source_id": "target-contract",
+      "source_edition": "1",
+      "provenance_group": "contract-pair-1",
+      "scope": {"document": "target-1", "jurisdiction": "declared"},
+      "valid_from": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "rules": [],
+  "query": {"claim_id": "target-preserves", "policy": "rely_if_supported_only"}
+}

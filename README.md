@@ -15,6 +15,16 @@ A static public landing page is available in `site/index.html` for Vercel or any
 
 ---
 
+## v0.14 checkable-reasoning release candidate
+
+The standalone [v0.14 experimental kernel draft](E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md) adds the optional REC/0.1 Reasoning–Evidence Calculus. REC evaluates finite typed claim–evidence envelopes, retains support and refutation independently, rejects hidden scope, temporal and modality expansion, separates information status from action policy, and emits a replayable witness.
+
+The [REC/0.1 companion package](packages/rec-0.1/) contains the standalone profile, interchange schema, dependency-free evaluator, command-line runner, separately implemented trace checker, translation-clause fixture, tests, validation record and conformance matrix. See the [v0.14 release manifest](E7G-T_v0.14_Experimental_Release_Manifest.md) for hashes and exact boundaries.
+
+The first-party package passes 34 internal checks and 24 external unit tests. This demonstrates bounded information-flow behaviour, not source truth, domain-rule correctness, complete logical inference or improved AI performance. Comparative evaluation and independent reproduction remain promotion gates.
+
+---
+
 ## v0.13 experimental release candidate
 
 The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.
@@ -142,7 +152,7 @@ The v0.11-UC5 through v0.11-UC1 and v0.10 public specifications are retained as 
 
 ## Current validation priority
 
-Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The retained and candidate reference models provide 173 named internal checks across FG3, IC, CG3, RGP-B1 and the bounded WPC allocation model; these are first-party bounded conformance evidence rather than independent validation.
+Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The retained and candidate reference models provide 207 named internal checks across FG3, IC, CG3, RGP-B1, the bounded WPC allocation model and REC-B1; these are first-party bounded conformance evidence rather than independent validation.
 
 Recommended cases:
 
