@@ -11,6 +11,49 @@ canonical_baseline:
   blob_sha: a84da2c4de2ada23577cde4512a10c3369aba2b5
   sha256: 4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1
   register_entries: [GPR-013]
+pull_request_ledger:
+  interval: {first: 1, last: 33}
+  exactly_once: true
+  statuses:
+    - absorbed_into_canonical_baseline
+    - baseline_provenance
+    - successor_input
+    - open_proposal
+    - explicit_exclusion
+  entries:
+    - {pull_request: 1, status: explicit_exclusion, reason: static-site deployment only}
+    - {pull_request: 2, status: explicit_exclusion, reason: duplicate static-site deployment only}
+    - {pull_request: 3, status: explicit_exclusion, reason: duplicate static-site deployment only}
+    - {pull_request: 4, status: explicit_exclusion, reason: duplicate static-site deployment only}
+    - {pull_request: 5, status: explicit_exclusion, reason: open pre-v0.12.1 release metadata with no successor mathematics}
+    - {pull_request: 6, status: explicit_exclusion, reason: open pre-v0.12.1 reference draft with no successor mathematics}
+    - {pull_request: 7, status: baseline_provenance, reason: merged v0.10 unified phase-kernel history}
+    - {pull_request: 8, status: baseline_provenance, reason: merged v0.10 canonical-publication and licence history}
+    - {pull_request: 9, status: baseline_provenance, reason: merged v0.10 publication and site history}
+    - {pull_request: 10, status: baseline_provenance, reason: merged authorship-governance history}
+    - {pull_request: 11, status: baseline_provenance, reason: merged repository-wide authorship-governance history}
+    - {pull_request: 12, status: explicit_exclusion, reason: open zero-diff superseded v0.10 publication branch}
+    - {pull_request: 13, status: baseline_provenance, reason: merged publication-authorship artifact history}
+    - {pull_request: 14, status: baseline_provenance, reason: merged v0.11-UC2 observation-module predecessor history}
+    - {pull_request: 15, status: baseline_provenance, reason: merged v0.11-UC3 temporal-orientation predecessor history}
+    - {pull_request: 16, status: explicit_exclusion, reason: merged site-pointer correction with no mathematical content}
+    - {pull_request: 17, status: baseline_provenance, reason: merged temporal-extension clarification inherited by later baselines}
+    - {pull_request: 18, status: baseline_provenance, reason: merged UC4 topological-overlay predecessor history}
+    - {pull_request: 19, status: explicit_exclusion, reason: open stale UC5 pointer and maturity-label edit}
+    - {pull_request: 20, status: absorbed_into_canonical_baseline, reason: merged v0.12 experimental canonical kernel}
+    - {pull_request: 21, status: baseline_provenance, reason: merged v0.12 ecosystem-adoption governance}
+    - {pull_request: 22, status: explicit_exclusion, reason: no pull request exists at this number; issue 22 is separately mapped through GPR-004}
+    - {pull_request: 23, status: open_proposal, reason: relational non-separability proposal mapped to GPR-004}
+    - {pull_request: 24, status: baseline_provenance, reason: merged v0.12 local alignment gate}
+    - {pull_request: 25, status: baseline_provenance, reason: merged v0.12 source-owner refoundation decision}
+    - {pull_request: 26, status: baseline_provenance, reason: merged v0.12 refoundation-record precedence}
+    - {pull_request: 27, status: absorbed_into_canonical_baseline, reason: merged v0.12.1 experimental RGP2 publication}
+    - {pull_request: 28, status: baseline_provenance, reason: merged bounded RGP model and adoption record}
+    - {pull_request: 29, status: successor_input, reason: merged v0.13 and WPC successor candidate}
+    - {pull_request: 30, status: successor_input, reason: merged v0.14 and REC successor candidate}
+    - {pull_request: 31, status: open_proposal, reason: REC-EVAL empirical proposal mapped to GPR-010}
+    - {pull_request: 32, status: successor_input, reason: merged MSC research proposal mapped to GPR-003}
+    - {pull_request: 33, status: baseline_provenance, reason: merged E7C foundation mandate and WP0 authority boundary}
 artifacts:
   - id: successor-v013
     status: merged_experimental_candidate_not_canonical
