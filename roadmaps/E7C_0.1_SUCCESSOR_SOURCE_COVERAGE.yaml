@@ -1,0 +1,165 @@
+schema: e7c-successor-source-coverage/v0alpha1
+status: non_canonical_wp0_seed
+as_of_utc: "2026-09-15T18:45:00Z"
+repository: E7GT-Ecosystem/E7G-T
+canonical_baseline:
+  identity: E7G-T-v0.12.1-experimental-RGP2
+  disposition: published_experimental_canonical_baseline
+coverage_rule:
+  lower_bound: "all non-canonical additions associated with v0.13 or later, plus any unpromoted proposal after v0.12.1 regardless of its label or creation date"
+  upper_bound: "the exact WP0 source-freeze commit and timestamp, to be recorded at WP0 review"
+  include:
+    - draft_kernel
+    - candidate_profile
+    - standalone_package
+    - merged_proposal
+    - open_proposal
+    - empirical_companion
+    - issue_or_pr_semantic_suggestion
+    - review_correction
+    - counterexample
+    - product_discovered_gap
+    - rejected_or_superseded_variant
+  exclusion_requires: "a reviewed register entry with destination defer or reject; absence is not an exclusion"
+artifacts:
+  - id: successor-v013
+    identity: E7G-T-v0.13-WPC
+    status: experimental_candidate_not_canonical
+    source_pr: 29
+    source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
+    paths:
+      - path: E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md
+        blob_sha: e11da3e39e6334c42f838f69fe462451f0d7c61e
+      - path: E7G-T_v0.13_Experimental_Release_Manifest.md
+        blob_sha: c5cccccb235b4650950ab5bf0b24e1635ed3aa22
+    components:
+      - WPC/0.2
+      - WPC-Evolution/0.1
+      - WPC-Distributed/0.1
+    register_entries:
+      - GPR-001
+  - id: successor-wpc-package
+    identity: WPC/0.2
+    status: experimental_candidate_package_not_canonical
+    source_pr: 29
+    source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
+    root: packages/wpc-0.2/
+    anchor_blobs:
+      - path: packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md
+        blob_sha: 52a9606dc8eda798b66c12b07424aff929d0f502
+      - path: packages/wpc-0.2/E7G-T_WPC_v0.2_Conformance_Matrix.md
+        blob_sha: 9df047f2e3239067138620ba19f1c6b853ecbfea
+      - path: packages/wpc-0.2/E7G-T_WPC_v0.2_Reference_Model.py
+        blob_sha: 8fbd237471a4d5ab9157afa299f065df3aa42486
+      - path: packages/wpc-0.2/E7G-T_WPC_v0.2_Validation.json
+        blob_sha: 08e9391c722cea864ea59f6dec996f8d353d32ed
+    register_entries:
+      - GPR-001
+  - id: successor-v014
+    identity: E7G-T-v0.14-REC
+    status: experimental_candidate_not_canonical
+    source_pr: 30
+    source_pr_head: 461dbe3b43836394f07d7fe88944ec2451a5395a
+    paths:
+      - path: E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md
+        blob_sha: 5caf01e5e1ab4aacd878a4889aa9eeaea6127756
+      - path: E7G-T_v0.14_Experimental_Release_Manifest.md
+        blob_sha: 9e5f95fcc9d94995a50ea07e912c5eb28a506cac
+    components:
+      - REC/0.1
+    register_entries:
+      - GPR-002
+  - id: successor-rec-package
+    identity: REC/0.1
+    status: experimental_candidate_package_not_canonical
+    source_pr: 30
+    source_pr_head: 461dbe3b43836394f07d7fe88944ec2451a5395a
+    root: packages/rec-0.1/
+    anchor_blobs:
+      - path: packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md
+        blob_sha: b57a798c168917787766ddd17dcf847a852e689b
+      - path: packages/rec-0.1/E7G-T_REC_v0.1_Conformance_Matrix.md
+        blob_sha: c321802b535c5f67e3afe43091ea756012eeacb0
+      - path: packages/rec-0.1/reasoning-envelope-v1.schema.json
+        blob_sha: 53312a1b61f7fbeefeb5a3fa69fd0bbe6349e71c
+      - path: packages/rec-0.1/e7gt_rec_v0_1.py
+        blob_sha: f76e9a30f38657817a244af2cf7fcbbb9a3fc697
+      - path: packages/rec-0.1/E7G-T_REC_v0.1_Validation.json
+        blob_sha: ccee68b1e2f1fd3f7992b6d14edbf70e102a75ec
+    register_entries:
+      - GPR-002
+  - id: successor-msc
+    identity: MSC/0.1
+    status: merged_research_proposal_not_canonical
+    source_pr: 32
+    source_pr_head: b5ed1d96ad29fde52daf672e21632bd58eaa5be9
+    root: proposals/msc-0.1/
+    anchor_blobs:
+      - path: proposals/msc-0.1/E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md
+        blob_sha: 2f400ed9f3179337ea6ac74a5a1d98f0be2d9737
+      - path: proposals/msc-0.1/E7G-T_MSC_v0.1_Conformance_Matrix.md
+        blob_sha: ae4cfbdfec9d7c610bbcf9d0e1c76fabbd3e4e9f
+      - path: proposals/msc-0.1/msc-diagram-v1.schema.json
+        blob_sha: 4ad8be95fe7fc0921fefbb2bc8e1f0db229722da
+      - path: proposals/msc-0.1/e7gt_msc_v0_1.py
+        blob_sha: f3dba29f862fe7791d3db864ae013fa228c32a49
+      - path: proposals/msc-0.1/E7G-T_MSC_v0.1_Validation.json
+        blob_sha: 2600556f8b43ec31c49b1ab7b17351cfbd6e2e9b
+    register_entries:
+      - GPR-003
+  - id: successor-rec-eval
+    identity: REC-EVAL/0.1
+    status: open_empirical_proposal_not_policy
+    source_pr: 31
+    source_pr_head: 90ee0258ef41517892b832daea8ddd503038dfb7
+    root: benchmarks/rec-eval-0.1/
+    anchor_blobs:
+      - path: benchmarks/rec-eval-0.1/E7G-T_REC-EVAL_v0.1_Protocol.md
+        blob_sha: d5b55a80e28b83f5c3c21db27b2c07216dec52e5
+      - path: benchmarks/rec-eval-0.1/rec-eval-case-set-v1.schema.json
+        blob_sha: b5190a48bc088717c20bd8d91322503a40029ad9
+      - path: benchmarks/rec-eval-0.1/rec-eval-run-v1.schema.json
+        blob_sha: bd4836469a7c48d5359f788f3e18f4c57caf3fc1
+      - path: benchmarks/rec-eval-0.1/score_rec_eval.py
+        blob_sha: 54c88246ba6b9b62f2211cb23ca85e91a08ccf9f
+      - path: benchmarks/rec-eval-0.1/E7G-T_REC-EVAL_v0.1_Validation.json
+        blob_sha: a81d7e2c86b8dfa0cea105ebfce4bfaaa1cd97e3
+    register_entries:
+      - GPR-002
+  - id: successor-relational-nonseparability
+    identity: relational-non-separability/0.1
+    status: open_informative_proposal_not_core
+    source_pr: 23
+    source_pr_head: 67eed6765bb3eff93976a9da94af2fe8b9741e81
+    paths:
+      - path: E7G-T_Relational_Non-Separability_Clarification_v0.1.md
+        blob_sha: 6fecd5d890b0831843ce41620bbc19438e411723
+    register_entries:
+      - GPR-004
+  - id: successor-e7c
+    identity: E7C/0.1
+    status: open_foundation_mandate_not_implemented
+    source_pr: 33
+    source_pr_head_at_manifest_creation: c5e172098e132d9767362d724b3cd76b507c3e31
+    paths:
+      - roadmaps/E7C_0.1_FOUNDATION_BUILD_MANDATE.md
+      - roadmaps/E7C_0.1_IMPLEMENTER_HANDOFF.md
+      - roadmaps/E7C_0.1_POST_V0121_GAP_AND_PROPOSAL_REGISTER.md
+    register_entries:
+      - GPR-005
+      - GPR-006
+      - GPR-007
+      - GPR-008
+closure:
+  current_verdict: incomplete_seed_inventory
+  required_checks:
+    - enumerate all repository PRs and issues through the WP0 source-freeze timestamp
+    - enumerate successor draft, package, proposal and benchmark paths at the pinned repository tree
+    - map every included artifact to one or more gap-register entries
+    - record explicit reviewed exclusions
+    - record missing or inaccessible sources
+    - obtain originating-author coverage review
+    - obtain foundation-semantics review
+  accepted_verdicts:
+    - complete_for_initial_foundation_slice
+    - complete_with_named_deferrals
