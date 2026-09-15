@@ -5,6 +5,10 @@ repository: E7GT-Ecosystem/E7G-T
 canonical_baseline:
   identity: E7G-T-v0.12.1-experimental-RGP2
   disposition: published_experimental_canonical_baseline
+  profile_identity: RGP/0.1
+  revision_label: RGP2
+  register_entries:
+    - GPR-013
 coverage_rule:
   lower_bound: "all non-canonical additions associated with v0.13 or later, plus any unpromoted proposal after v0.12.1 regardless of its label or creation date"
   upper_bound: "the exact WP0 source-freeze commit and timestamp, to be recorded at WP0 review"
@@ -33,20 +37,36 @@ artifacts:
       - path: E7G-T_v0.13_Experimental_Release_Manifest.md
         blob_sha: c5cccccb235b4650950ab5bf0b24e1635ed3aa22
     components:
+      - identity: EEC-Q/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-015
+      - identity: SF/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-016
+      - identity: CFS/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-017
       - identity: RGP/0.2
-        source_status: canonical_baseline_component_adapted_in_successor
-        register_entry: GPR-013
+        source_status: successor_adaptation_from_canonical_RGP_0_1
+        predecessor_identity: RGP/0.1
+        register_entry: GPR-018
       - identity: WPC/0.1
-        source_status: canonical_baseline_component_retained_in_successor
+        source_status: successor_addition_not_canonical_baseline
         register_entry: GPR-014
       - identity: WPC-Core/0.2
+        source_status: successor_extension
         register_entry: GPR-001
       - identity: WPC-Evolution/0.1
+        source_status: optional_partial
         register_entry: GPR-011
       - identity: WPC-Distributed/0.1
+        source_status: optional_unsupported
         register_entry: GPR-012
     register_entries:
-      - GPR-013
+      - GPR-015
+      - GPR-016
+      - GPR-017
+      - GPR-018
       - GPR-014
       - GPR-001
       - GPR-011
@@ -88,8 +108,43 @@ artifacts:
       - path: E7G-T_v0.14_Experimental_Release_Manifest.md
         blob_sha: 9e5f95fcc9d94995a50ea07e912c5eb28a506cac
     components:
-      - REC/0.1
+      - identity: EEC-Q/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-015
+      - identity: SF/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-016
+      - identity: CFS/0.1
+        source_status: inherited_requires_preservation_differential
+        register_entry: GPR-017
+      - identity: RGP/0.2
+        source_status: inherited_candidate_requires_preservation_differential
+        predecessor_identity: RGP/0.1
+        register_entry: GPR-018
+      - identity: WPC/0.1
+        source_status: inherited_successor_component
+        register_entry: GPR-014
+      - identity: WPC-Core/0.2
+        source_status: inherited_candidate_requires_preservation_differential
+        register_entry: GPR-001
+      - identity: WPC-Evolution/0.1
+        source_status: inherited_optional_partial
+        register_entry: GPR-011
+      - identity: WPC-Distributed/0.1
+        source_status: inherited_optional_unsupported
+        register_entry: GPR-012
+      - identity: REC/0.1
+        source_status: new_optional_candidate
+        register_entry: GPR-002
     register_entries:
+      - GPR-015
+      - GPR-016
+      - GPR-017
+      - GPR-018
+      - GPR-014
+      - GPR-001
+      - GPR-011
+      - GPR-012
       - GPR-002
   - id: successor-rec-package
     identity: REC/0.1
@@ -172,6 +227,7 @@ artifacts:
       - GPR-006
       - GPR-007
       - GPR-008
+      - GPR-009
 closure:
   current_verdict: incomplete_seed_inventory
   required_checks:
