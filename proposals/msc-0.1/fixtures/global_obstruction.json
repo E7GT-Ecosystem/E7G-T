@@ -1,0 +1,30 @@
+{
+  "schema_version": "msc-diagram-v1",
+  "diagram_id": "MSC-OBSTRUCTION-01",
+  "max_combinations": 20,
+  "carriers": [
+    {"carrier_id": "R", "values": ["0", "1"]},
+    {"carrier_id": "S", "values": ["0", "1"]},
+    {"carrier_id": "T", "values": ["0", "1"]},
+    {"carrier_id": "V", "values": ["0", "1"]}
+  ],
+  "scopes": [
+    {"scope_id": "r", "edition": "1", "state_carrier": "R"},
+    {"scope_id": "s", "edition": "1", "state_carrier": "S"},
+    {"scope_id": "t", "edition": "1", "state_carrier": "T"}
+  ],
+  "maps": [
+    {"map_id": "p-rs", "source_carrier": "S", "target_carrier": "V", "table": {"0": "0", "1": "1"}},
+    {"map_id": "c-rs", "source_carrier": "R", "target_carrier": "V", "table": {"0": "0", "1": "1"}},
+    {"map_id": "p-st", "source_carrier": "T", "target_carrier": "V", "table": {"0": "0", "1": "1"}},
+    {"map_id": "c-st", "source_carrier": "S", "target_carrier": "V", "table": {"0": "0", "1": "1"}},
+    {"map_id": "p-rt-flip", "source_carrier": "T", "target_carrier": "V", "table": {"0": "1", "1": "0"}},
+    {"map_id": "c-rt", "source_carrier": "R", "target_carrier": "V", "table": {"0": "0", "1": "1"}}
+  ],
+  "links": [
+    {"link_id": "r-s", "lower_scope": "r", "upper_scope": "s", "projection_map": "p-rs", "bridge_map": "c-rs", "criterion": "exact"},
+    {"link_id": "s-t", "lower_scope": "s", "upper_scope": "t", "projection_map": "p-st", "bridge_map": "c-st", "criterion": "exact"},
+    {"link_id": "r-t", "lower_scope": "r", "upper_scope": "t", "projection_map": "p-rt-flip", "bridge_map": "c-rt", "criterion": "exact"}
+  ]
+}
+

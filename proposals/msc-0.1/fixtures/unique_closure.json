@@ -1,0 +1,33 @@
+{
+  "schema_version": "msc-diagram-v1",
+  "diagram_id": "MSC-UNIQUE-01",
+  "max_combinations": 20,
+  "carriers": [
+    {"carrier_id": "local-states", "values": ["L0", "L1"]},
+    {"carrier_id": "global-states", "values": ["G0"]},
+    {"carrier_id": "comparison", "values": ["0", "1"]},
+    {"carrier_id": "visible", "values": ["same"]},
+    {"carrier_id": "invariant", "values": ["k0", "k1"]}
+  ],
+  "scopes": [
+    {"scope_id": "local", "edition": "1", "state_carrier": "local-states"},
+    {"scope_id": "global", "edition": "1", "state_carrier": "global-states"}
+  ],
+  "maps": [
+    {"map_id": "project-global", "source_carrier": "global-states", "target_carrier": "comparison", "table": {"G0": "0"}},
+    {"map_id": "bridge-local", "source_carrier": "local-states", "target_carrier": "comparison", "table": {"L0": "0", "L1": "1"}},
+    {"map_id": "observe-local", "source_carrier": "local-states", "target_carrier": "visible", "table": {"L0": "same", "L1": "same"}},
+    {"map_id": "invariant-local", "source_carrier": "local-states", "target_carrier": "invariant", "table": {"L0": "k0", "L1": "k1"}},
+    {"map_id": "invariant-global", "source_carrier": "global-states", "target_carrier": "invariant", "table": {"G0": "k0"}}
+  ],
+  "links": [
+    {"link_id": "local-below-global", "lower_scope": "local", "upper_scope": "global", "projection_map": "project-global", "bridge_map": "bridge-local", "criterion": "exact"}
+  ],
+  "access_profiles": [
+    {"profile_id": "bounded-observer", "scope": "local", "context": "display", "observation_maps": ["observe-local"]}
+  ],
+  "invariant_tests": [
+    {"test_id": "shared-k", "maps_by_scope": {"local": "invariant-local", "global": "invariant-global"}}
+  ]
+}
+

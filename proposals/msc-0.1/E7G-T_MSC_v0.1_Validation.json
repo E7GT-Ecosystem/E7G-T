@@ -1,0 +1,41 @@
+{
+  "profile": "MSC/0.1",
+  "implementation": "MSC-B1/0.1",
+  "status": "first-party bounded research validation; not empirical or ontological evidence",
+  "baseline_commit": "81ad69a29b5b962955a54febed9b90452591b8d7",
+  "python": "3.12.14",
+  "checks": {
+    "external_unit_tests": {"passed": 11, "failed": 0},
+    "unique_closure_fixture": "unique",
+    "pairwise_compatible_global_obstruction_fixture": "incompatible",
+    "access_quotient_nontrivial": true,
+    "shared_invariant_preserved": true,
+    "ambiguous_closure_tested": true,
+    "partial_required_map_reports_unsupported": true,
+    "resource_limit_distinct": true,
+    "scope_cycle_rejected": true,
+    "common_comparison_carrier_enforced": true,
+    "commuting_and_non_commuting_maps_tested": true,
+    "json_documents_parsed": true
+  },
+  "sha256": {
+    "README.md": "7a87cb07fbf4b36a8005058df6ced7ca9b572ac0ab157bb41a71294347a6cd4c",
+    "E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md": "b27fce4edbb4b385b70119bad3b864e7383ff227853391a67084f01a620c24a7",
+    "E7G-T_MSC_v0.1_Conformance_Matrix.md": "bbaef5d557b9d9807d2dc6bf2240033d3b1e0a1269f1ad8fd7250cbdc76068b2",
+    "msc-diagram-v1.schema.json": "ef63adc7091606ac12eb9aa3fbfadf023d6b34917326a883cb899dd7bfdbb644",
+    "e7gt_msc_v0_1.py": "966443e0bd75ef69fdfdaba4da24f68cc8c34f2fe262fa07618ef00c9770ac70",
+    "test_e7gt_msc_v0_1.py": "3a0d93046607f516770b34583785dffc1c2e80b6e76ad293e6ffd9b8d7762713",
+    "fixtures/unique_closure.json": "2bf92c1d45b570e74f9d112bc6953a1c047ebfb0624022c15031e8f56259f533",
+    "fixtures/global_obstruction.json": "de38a6088d51412fec5563b4f8f1fab4e10b76e07d28c67b42055741c98470c3",
+    "AUTHOR_REVIEW_REQUEST.md": "47d3e6dc3e47e8b9b058484c62ae5c4978598610fc713bba3b4d8b617d05fae9"
+  },
+  "unsupported_claims": [
+    "MSC establishes that physical parallel realities exist",
+    "MSC establishes an actually completed infinite hierarchy",
+    "pairwise or global model compatibility proves external truth",
+    "a higher scope has automatic causal or decision authority",
+    "MSC-B1 is a general theorem prover or distributed runtime",
+    "passing first-party tests constitutes independent reproduction",
+    "MSC/0.1 changes the published canonical kernel or mandates product migration"
+  ]
+}

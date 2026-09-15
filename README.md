@@ -25,6 +25,14 @@ The first-party package passes 34 internal checks and 24 external unit tests. Th
 
 ---
 
+## MSC/0.1 multi-scope coherence research proposal
+
+The standalone [MSC/0.1 proposal](proposals/msc-0.1/) investigates whether independently constituted wholes at different declared scopes form a unique compatible family, several compatible families, or a global obstruction. It adds typed common-codomain bridges, access-induced quotients, pairwise-versus-global closure, map commutation and cross-scope invariant checks.
+
+MSC is optional speculative formal research. It is not v0.15, does not replace REC/0.1 or WPC/0.2, creates no product migration obligation, and makes no claim that physical parallel realities or an actually infinite hierarchy exist. The bounded first-party model passes 11 tests; external formal review and an independent implementation remain promotion gates.
+
+---
+
 ## v0.13 experimental release candidate
 
 The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.

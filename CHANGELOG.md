@@ -1,5 +1,22 @@
 # Changelog
 
+## MSC/0.1 research proposal — 2026-09-15
+
+### Added
+
+- optional Multi-Scope Coherence proposal without creating a new kernel version;
+- typed finite scope diagrams, common-codomain coherence maps and compatible-family closure;
+- executable pairwise-compatible/global-obstruction counterexample;
+- access quotients, exact commutation checks and cross-scope invariant checks;
+- bounded schema, reference model, 11 tests, conformance matrix, validation record and author-review request.
+
+### Boundaries
+
+- v0.12.1/RGP2 remains the published canonical kernel;
+- WPC/0.2 and REC/0.1 retain their identifiers and meanings;
+- MSC makes no external-existence, physical-reality, completed-infinity, causation, authority or product-value claim;
+- history, proposal-lift, regime, fixed-point and recursive-family material remains in proposed extensions.
+
 ## v0.14-experimental draft (REC1) — 2026-09-15
 
 ### Added

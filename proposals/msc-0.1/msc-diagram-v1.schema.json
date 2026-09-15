@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://e7gt.org/schemas/msc-diagram-v1.schema.json",
+  "title": "E7G-T MSC-B1/0.1 finite scope diagram",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "diagram_id", "carriers", "scopes", "maps", "links"],
+  "properties": {
+    "schema_version": {"const": "msc-diagram-v1"},
+    "diagram_id": {"type": "string", "minLength": 1},
+    "max_combinations": {"type": "integer", "minimum": 1},
+    "carriers": {"type": "array", "items": {"$ref": "#/$defs/carrier"}, "minItems": 1},
+    "scopes": {"type": "array", "items": {"$ref": "#/$defs/scope"}, "minItems": 1},
+    "maps": {"type": "array", "items": {"$ref": "#/$defs/map"}},
+    "links": {"type": "array", "items": {"$ref": "#/$defs/link"}},
+    "access_profiles": {"type": "array", "items": {"$ref": "#/$defs/access"}},
+    "commutation_tests": {"type": "array", "items": {"$ref": "#/$defs/commutation"}},
+    "invariant_tests": {"type": "array", "items": {"$ref": "#/$defs/invariant"}}
+  },
+  "$defs": {
+    "carrier": {
+      "type": "object", "additionalProperties": false,
+      "required": ["carrier_id", "values"],
+      "properties": {
+        "carrier_id": {"type": "string", "minLength": 1},
+        "values": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope_id", "edition", "state_carrier"],
+      "properties": {
+        "scope_id": {"type": "string", "minLength": 1},
+        "edition": {"type": "string", "minLength": 1},
+        "state_carrier": {"type": "string", "minLength": 1}
+      }
+    },
+    "map": {
+      "type": "object", "additionalProperties": false,
+      "required": ["map_id", "source_carrier", "target_carrier", "table"],
+      "properties": {
+        "map_id": {"type": "string", "minLength": 1},
+        "source_carrier": {"type": "string", "minLength": 1},
+        "target_carrier": {"type": "string", "minLength": 1},
+        "table": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "link": {
+      "type": "object", "additionalProperties": false,
+      "required": ["link_id", "lower_scope", "upper_scope", "projection_map", "bridge_map", "criterion"],
+      "properties": {
+        "link_id": {"type": "string", "minLength": 1},
+        "lower_scope": {"type": "string", "minLength": 1},
+        "upper_scope": {"type": "string", "minLength": 1},
+        "projection_map": {"type": "string", "minLength": 1},
+        "bridge_map": {"type": "string", "minLength": 1},
+        "criterion": {"const": "exact"}
+      }
+    },
+    "access": {
+      "type": "object", "additionalProperties": false,
+      "required": ["profile_id", "scope", "context", "observation_maps"],
+      "properties": {
+        "profile_id": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "context": {"type": "string", "minLength": 1},
+        "observation_maps": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "commutation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["test_id", "direct_map", "path"],
+      "properties": {
+        "test_id": {"type": "string", "minLength": 1},
+        "direct_map": {"type": "string", "minLength": 1},
+        "path": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}
+      }
+    },
+    "invariant": {
+      "type": "object", "additionalProperties": false,
+      "required": ["test_id", "maps_by_scope"],
+      "properties": {
+        "test_id": {"type": "string", "minLength": 1},
+        "maps_by_scope": {"type": "object", "minProperties": 2, "additionalProperties": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}
+
