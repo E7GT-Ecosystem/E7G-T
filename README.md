@@ -33,6 +33,12 @@ MSC is optional speculative formal research. It is not v0.15, does not replace R
 
 ---
 
+## E7C/0.1 foundation research programme
+
+The proposed [E7C/0.1 Foundation Build Mandate](roadmaps/E7C_0.1_FOUNDATION_BUILD_MANDATE.md) defines a gated programme for constructing a shared typed calculus, semantics, effect system, proof obligations, witness format and intermediate representation beneath the existing E7G-T profiles. It begins as research under `research/e7c-0.1/`; it is not a new kernel version and does not change the v0.12.1 canonical baseline.
+
+---
+
 ## v0.13 experimental release candidate
 
 The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.
