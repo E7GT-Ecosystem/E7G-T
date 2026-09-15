@@ -40,6 +40,22 @@ class SuccessorSourceCoverageTests(unittest.TestCase):
                     "predecessor differential must be in package register coverage",
                 )
 
+    def test_wpc_successor_package_declares_wpc_0_1_differential(self):
+        artifacts = {
+            artifact["id"]: artifact for artifact in self.coverage["artifacts"]
+        }
+        contract = artifacts["successor-wpc-package"].get("predecessor_contract")
+
+        self.assertEqual(
+            contract,
+            {
+                "identity": "WPC/0.1",
+                "relation": "explicit_successor_extension",
+                "register_entry": "GPR-014",
+            },
+            "WPC/0.2 must not lose its package-level WPC/0.1 differential",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
