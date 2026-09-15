@@ -25,6 +25,7 @@ product migration obligation.
 - `test_e7gt_msc_v0_1.py` — external standard-library tests;
 - `fixtures/` — unique closure and pairwise-compatible global obstruction;
 - `AUTHOR_REVIEW_REQUEST.md` — a return-to-author review prompt;
+- `REVIEW_RESOLUTION.md` — disposition of originating-author and ecosystem review findings;
 - `E7G-T_MSC_v0.1_Validation.json` — first-party validation and boundaries.
 
 ## Reproduce
@@ -39,6 +40,6 @@ python3 -m json.tool proposals/msc-0.1/msc-diagram-v1.schema.json
 ```
 
 Passing tests establish only the behaviour of this finite first-party model.
-They do not establish an infinite hierarchy, physical parallel realities,
-metaphysical truth, external existence, general decidability, or product value.
-
+They do not establish an infinite hierarchy, an externally instantiated scope
+hierarchy, model-independent truth, external existence, general decidability,
+or product value.

@@ -15,19 +15,22 @@
   ],
   "maps": [
     {"map_id": "project-global", "source_carrier": "global-states", "target_carrier": "comparison", "table": {"G0": "0"}},
-    {"map_id": "bridge-local", "source_carrier": "local-states", "target_carrier": "comparison", "table": {"L0": "0", "L1": "1"}},
+    {"map_id": "compare-local", "source_carrier": "local-states", "target_carrier": "comparison", "table": {"L0": "0", "L1": "1"}},
     {"map_id": "observe-local", "source_carrier": "local-states", "target_carrier": "visible", "table": {"L0": "same", "L1": "same"}},
     {"map_id": "invariant-local", "source_carrier": "local-states", "target_carrier": "invariant", "table": {"L0": "k0", "L1": "k1"}},
     {"map_id": "invariant-global", "source_carrier": "global-states", "target_carrier": "invariant", "table": {"G0": "k0"}}
   ],
   "links": [
-    {"link_id": "local-below-global", "lower_scope": "local", "upper_scope": "global", "projection_map": "project-global", "bridge_map": "bridge-local", "criterion": "exact"}
+    {"link_id": "local-below-global", "lower_scope": "local", "upper_scope": "global", "projection_map": "project-global", "comparison_map": "compare-local", "criterion": "exact"}
   ],
   "access_profiles": [
     {"profile_id": "bounded-observer", "scope": "local", "context": "display", "observation_maps": ["observe-local"]}
   ],
   "invariant_tests": [
     {"test_id": "shared-k", "maps_by_scope": {"local": "invariant-local", "global": "invariant-global"}}
+  ],
+  "reconstruction_queries": [
+    {"query_id": "local-state-L0", "scope": "local", "kind": "scope_state", "value": "L0"},
+    {"query_id": "local-observation-same", "scope": "local", "kind": "observation", "value": "same", "observation_map": "observe-local"}
   ]
 }
-

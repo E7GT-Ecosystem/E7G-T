@@ -14,7 +14,7 @@
 
 - v0.12.1/RGP2 remains the published canonical kernel;
 - WPC/0.2 and REC/0.1 retain their identifiers and meanings;
-- MSC makes no external-existence, physical-reality, completed-infinity, causation, authority or product-value claim;
+- MSC makes no external-existence, externally-instantiated-scope, completed-infinity, causation, authority or product-value claim;
 - history, proposal-lift, regime, fixed-point and recursive-family material remains in proposed extensions.
 
 ## v0.14-experimental draft (REC1) — 2026-09-15

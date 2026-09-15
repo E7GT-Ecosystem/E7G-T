@@ -49,7 +49,7 @@ Please review the package for fidelity and formal correctness. In particular:
 
 1. Does `MSC/0.1 — Multi-Scope Coherence` preserve the mathematical purpose of
    your proposal despite removing the word “recursive” from the core name?
-2. Are the common-codomain types for `P_e` and `C_e` correct, or did your bridge
+2. Are the common-codomain types for `P_e` and `C_e` correct, or did your span
    intend a different relationship?
 3. Is the definition of `Omega_D` faithful to your intended notion of a
    coherent family of bounded wholes?
@@ -60,8 +60,8 @@ Please review the package for fidelity and formal correctness. In particular:
 6. Is separating SR0–SR4 from access and authority faithful to the proposal?
 7. Did narrowing the core and moving history, regime, lift and fixed-point
    material into extensions remove anything logically necessary for MSC-Core?
-8. Should `C_e` be called a bridge, comparison map, local presentation, or
-   something else?
+8. Is “lower-scope comparison map” correct for `C_e`, with “bridge” reserved
+   for the complete common-codomain span?
 9. Do the twelve MS laws preserve the intent of your proposed fifteen RE laws?
 10. Identify any statement that overclaims existence, infinity, causation,
     authority, or empirical reality.
@@ -80,8 +80,8 @@ Please also give one overall verdict:
 - `proposal_intent_not_preserved`.
 
 The executable checks are first-party bounded conformance only. Please do not
-treat their passing as evidence of physical parallel realities, an actually
-infinite hierarchy, metaphysical truth, or external product value.
+treat their passing as evidence of an externally instantiated scope hierarchy,
+an actually infinite hierarchy, model-independent truth, or external product
+value.
 
 ---
-

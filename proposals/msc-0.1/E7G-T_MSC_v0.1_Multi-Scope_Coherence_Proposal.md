@@ -24,13 +24,17 @@ A finite MSC diagram is
 \mathfrak D=\langle S,\preceq,\{B_s\},\{V_a\},\mathcal M,\mathcal L,Q,M\rangle,
 ```
 
-where (S) is a finite set of scopes, (B_s) is the state carrier of the
-whole at scope (s), (V_a) are declared comparison carriers,
-(\mathcal M) is a family of typed partial maps, (\mathcal L) is a family of
-scope links, (Q) contains comparison criteria, and (M) records editions,
+where $S$ is a finite set of scopes, $B_s$ is the state carrier of the
+whole at scope $s$, $V_a$ are declared comparison carriers,
+$\mathcal M$ is a family of typed partial maps, $\mathcal L$ is a family of
+scope links, $Q$ contains comparison criteria, and $M$ records editions,
 domains and provenance.
 
-For every link (e:s\preceq t), MSC requires maps with a common codomain:
+$\mathcal L$ is a finite acyclic scope-extension graph. The scope order
+$\preceq$ is its reflexive-transitive closure; it is not an additional
+unvalidated relation. Links need not be supplied for every comparable pair.
+
+For every link $e:s\preceq t$, MSC requires maps with a common codomain:
 
 ```math
 P_e:B_t\rightharpoonup V_e,
@@ -38,23 +42,44 @@ P_e:B_t\rightharpoonup V_e,
 C_e:B_s\rightharpoonup V_e.
 ```
 
-`P_e` projects the higher-scope whole into a comparison view. `C_e` translates
-the independently constituted lower-scope whole into that same view. The names
+`P_e` projects the higher-scope whole into a comparison view. `C_e` is the
+**lower-scope comparison map** translating the independently constituted
+lower-scope whole into that same view. The bridge is the complete span:
+
+```math
+B_s\xrightarrow{C_e}V_e\xleftarrow{P_e}B_t.
+```
+
+The names
 `projection`, `participation`, `containment`, `scope extension` and `encoding`
 remain separately typed. Neither map is assumed invertible.
 
 ## MSC.2 Link coherence
 
-A pair ((w_s,w_t)) is coherent at link (e) when both maps are defined and
+A pair $(w_s,w_t)$ is coherent at link $e$ when both maps are defined and
 
 ```math
 P_e(w_t)\approx_{Q_e}C_e(w_s).
 ```
 
-This does not assert (P_e(w_t)=w_s). Literal equality is available only when
+This does not assert $P_e(w_t)=w_s$. Literal equality is available only when
 the carriers and declared criterion license it.
 
 ## MSC.3 Compatible scope family
+
+For partial abstract maps, first define the jointly evaluable assignments:
+
+```math
+A_{\mathfrak D}
+=
+\left\{(w_s)_{s\in S}\in\prod_{s\in S}B_s
+\;\middle|\;
+w_t\in\operatorname{dom}(P_e)
+\land
+w_s\in\operatorname{dom}(C_e)
+\text{ for every }e:s\preceq t
+\right\}.
+```
 
 The compatible-family set is
 
@@ -62,7 +87,7 @@ The compatible-family set is
 \Omega_{\mathfrak D}
 =
 \left\{
-(w_s)_{s\in S}\in\prod_{s\in S}B_s
+(w_s)_{s\in S}\in A_{\mathfrak D}
 \;\middle|\;
 P_e(w_t)\approx_{Q_e}C_e(w_s)
 \text{ for every }e:s\preceq t
@@ -83,12 +108,18 @@ The closure classifier is:
 \end{cases}
 ```
 
-Here (O) is an obstruction record, not a proof that the represented worlds
-cannot exist under another model.
+Here $O$ is an obstruction record; it establishes incompatibility only within
+the pinned carriers, maps, criteria and boundaries. If
+$A_{\mathfrak D}=\varnothing$, evaluation is `unsupported`, not
+`incompatible`.
 
-## MSC.4 Pairwise versus global closure
+## MSC.4 Link-wise versus global closure
 
-Pairwise satisfiability does not imply a globally compatible family:
+MSC uses **link-wise satisfiability**: every individual declared link admits at
+least one coherent endpoint pair when considered independently. This does not
+claim every mathematical notion of pairwise consistency among overlapping
+constraint projections. Link-wise satisfiability does not imply a globally
+compatible family:
 
 ```math
 \bigl(\forall e\in\mathcal L:\Omega_e\ne\varnothing\bigr)
@@ -101,7 +132,7 @@ reason to treat multi-scope closure as more than independent link checking.
 
 ## MSC.5 Projection composition
 
-For typed maps (f_1,…,f_n), MSC may compare a direct map (d) with their
+For typed maps $f_1,\ldots,f_n$, MSC may compare a direct map $d$ with their
 composition when source and target carriers match:
 
 ```math
@@ -114,8 +145,8 @@ need not preserve the same information.
 
 ## MSC.6 Access-induced quotient
 
-For occurrence (i), context (\xi), and a declared observation family
-(\mathcal O_{i,\xi}):
+For occurrence $i$, context $\xi$, and a declared observation family
+$\mathcal O_{i,\xi}$:
 
 ```math
 w\sim_{i,\xi}w'
@@ -123,11 +154,14 @@ w\sim_{i,\xi}w'
 \forall o\in\mathcal O_{i,\xi},\;o(w)=o(w').
 ```
 
-The equivalence class ([w]_{i,\xi}) is the locally distinguishable state.
+The equivalence class $[w]_{i,\xi}$ is the locally distinguishable state.
 For partial observations, equivalence requires both applications to be defined
 and equal, or both to be undefined under the same declared missingness rule.
 Stochastic observations require a separately declared distributional
 criterion; raw-value equality is not silently applied.
+
+When $\mathcal O_{i,\xi}=\varnothing$, the induced relation is universal and
+the quotient has one class. This represents no distinguishing access.
 
 MSC therefore separates:
 
@@ -141,14 +175,18 @@ the retained content.
 
 ## MSC.7 Cross-scope invariants and retention strength
 
-For a common invariant carrier (K), typed extractors
+For a common invariant carrier $K$, typed extractors
 
 ```math
 \kappa_s:B_s\rightharpoonup K
 ```
 
-preserve an invariant on a compatible family (\omega) when every defined
-(\kappa_s(w_s)) agrees. The strongest established statement must be named:
+preserve an invariant on the compatible-family set when, for every
+$\omega\in\Omega_{\mathfrak D}$, every selected $\kappa_s(w_s)$ is defined and
+all selected values agree. Undefined extraction on a member of
+$\Omega_{\mathfrak D}$ reports `unsupported`; undefined extraction outside
+$\Omega_{\mathfrak D}$ does not defeat preservation. The strongest established
+statement must be named:
 
 - SR0: lineage only;
 - SR1: shared invariant;
@@ -161,22 +199,39 @@ lineage must be explicit as an input or a deterministic derivation.
 
 ## MSC.8 Reconstruction fibres
 
-For a local observation (v) at scope (s):
+Define the scope coordinate projection by
 
 ```math
-\operatorname{Rec}_s(v)
-=
-\{\omega\in\Omega_{\mathfrak D}\mid\pi_s(\omega)=v\}.
+\pi_s((w_u)_{u\in S})=w_s.
 ```
 
-A local view therefore determines a fibre, not automatically a unique
-enclosing family.
+For a scope state $b\in B_s$, its scope-state reconstruction fibre is
+
+```math
+\operatorname{Rec}_s(b)
+=
+\{\omega\in\Omega_{\mathfrak D}\mid\pi_s(\omega)=b\}.
+```
+
+For an observation map $o:B_s\rightharpoonup V$ and observed value $v$, the
+observation fibre is
+
+```math
+\operatorname{ObsRec}_{s,o}(v)
+=
+\{\omega\in\Omega_{\mathfrak D}\mid
+\pi_s(\omega)\in\operatorname{dom}(o)
+\land o(\pi_s(\omega))=v\}.
+```
+
+A scope state and a local observation therefore determine different fibres;
+neither automatically identifies a unique enclosing family.
 
 ## MSC.9 Symbolically unbounded families
 
 MSC-Core/0.1 is finite. A potentially unbounded hierarchy may be described by
-SF/0.1 and examined through declared finite windows (\mathfrak D_{\le N}).
-Success at every tested (N) does not establish a completed infinite hierarchy
+SF/0.1 and examined through declared finite windows $\mathfrak D_{\le N}$.
+Success at every tested $N$ does not establish a completed infinite hierarchy
 unless a separate theorem licenses that inference.
 
 ## MSC.10 Laws
@@ -187,7 +242,7 @@ unless a separate theorem licenses that inference.
 | MS2 | Scope extension, participation, projection, encoding and authority remain separately typed. |
 | MS3 | Every coherence comparison uses maps into a declared common carrier and a pinned criterion. |
 | MS4 | A local whole is not identified with a higher-scope projection without an explicit identity bridge. |
-| MS5 | Pairwise coherence does not establish global closure. |
+| MS5 | Link-wise coherence does not establish global closure. |
 | MS6 | A local view determines a reconstruction fibre, not automatically a unique enclosing family. |
 | MS7 | Retention, accessibility, expression and authority are independent coordinates. |
 | MS8 | Cross-scope commonality reports its strongest established SR tier. |
@@ -214,10 +269,13 @@ internal consistency only, not causal self-creation.
 
 ## MSC.12 Bounded reference profile
 
-`MSC-B1/0.1` supports finite string-valued carriers, finite total or partial
-maps, exact-equality link criteria, exhaustive compatible-family enumeration up
-to a caller-supplied combination limit, pairwise-link satisfiability, access
-quotients, exact map-commutation tests and cross-scope invariant checks.
+`MSC-B1/0.1` supports finite string-valued carriers, partial generic maps,
+**total-on-admitted-carrier coherence maps**, exact-equality link criteria,
+exhaustive compatible-family enumeration up to a caller-supplied combination
+limit, link-wise satisfiability, access quotients, scope-state and observation
+fibres, exact map-commutation tests and cross-scope invariant checks. Requiring
+total coherence maps is the bounded implementation policy; the abstract
+profile retains the partial-domain semantics above.
 
 It does not implement general category-theoretic limits, sheaf cohomology,
 symbolic infinity, probabilistic observations, temporal histories, proposal
@@ -233,4 +291,3 @@ Promotion beyond research proposal requires:
 4. at least one concrete end-to-end consumer where MSC changes a real next move;
 5. explicit compatibility with the corrected WPC lineage contract; and
 6. preservation of the distinction between model coherence and empirical truth.
-

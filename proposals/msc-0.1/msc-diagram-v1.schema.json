@@ -15,7 +15,8 @@
     "links": {"type": "array", "items": {"$ref": "#/$defs/link"}},
     "access_profiles": {"type": "array", "items": {"$ref": "#/$defs/access"}},
     "commutation_tests": {"type": "array", "items": {"$ref": "#/$defs/commutation"}},
-    "invariant_tests": {"type": "array", "items": {"$ref": "#/$defs/invariant"}}
+    "invariant_tests": {"type": "array", "items": {"$ref": "#/$defs/invariant"}},
+    "reconstruction_queries": {"type": "array", "items": {"$ref": "#/$defs/reconstruction"}}
   },
   "$defs": {
     "carrier": {
@@ -47,13 +48,13 @@
     },
     "link": {
       "type": "object", "additionalProperties": false,
-      "required": ["link_id", "lower_scope", "upper_scope", "projection_map", "bridge_map", "criterion"],
+      "required": ["link_id", "lower_scope", "upper_scope", "projection_map", "comparison_map", "criterion"],
       "properties": {
         "link_id": {"type": "string", "minLength": 1},
         "lower_scope": {"type": "string", "minLength": 1},
         "upper_scope": {"type": "string", "minLength": 1},
         "projection_map": {"type": "string", "minLength": 1},
-        "bridge_map": {"type": "string", "minLength": 1},
+        "comparison_map": {"type": "string", "minLength": 1},
         "criterion": {"const": "exact"}
       }
     },
@@ -83,7 +84,25 @@
         "test_id": {"type": "string", "minLength": 1},
         "maps_by_scope": {"type": "object", "minProperties": 2, "additionalProperties": {"type": "string", "minLength": 1}}
       }
+    },
+    "reconstruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["query_id", "scope", "kind", "value"],
+      "properties": {
+        "query_id": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["scope_state", "observation"]},
+        "value": {"type": "string"},
+        "observation_map": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "observation"}}},
+          "then": {"required": ["observation_map"]},
+          "else": {"not": {"required": ["observation_map"]}}
+        }
+      ]
     }
   }
 }
-

@@ -22,9 +22,8 @@
     {"map_id": "c-rt", "source_carrier": "R", "target_carrier": "V", "table": {"0": "0", "1": "1"}}
   ],
   "links": [
-    {"link_id": "r-s", "lower_scope": "r", "upper_scope": "s", "projection_map": "p-rs", "bridge_map": "c-rs", "criterion": "exact"},
-    {"link_id": "s-t", "lower_scope": "s", "upper_scope": "t", "projection_map": "p-st", "bridge_map": "c-st", "criterion": "exact"},
-    {"link_id": "r-t", "lower_scope": "r", "upper_scope": "t", "projection_map": "p-rt-flip", "bridge_map": "c-rt", "criterion": "exact"}
+    {"link_id": "r-s", "lower_scope": "r", "upper_scope": "s", "projection_map": "p-rs", "comparison_map": "c-rs", "criterion": "exact"},
+    {"link_id": "s-t", "lower_scope": "s", "upper_scope": "t", "projection_map": "p-st", "comparison_map": "c-st", "criterion": "exact"},
+    {"link_id": "r-t", "lower_scope": "r", "upper_scope": "t", "projection_map": "p-rt-flip", "comparison_map": "c-rt", "criterion": "exact"}
   ]
 }
-

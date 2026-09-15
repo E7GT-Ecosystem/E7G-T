@@ -8,9 +8,9 @@
 | MS1 finite boundary | implemented | finite carriers and configurable product bound |
 | MS2 relation separation | partial | scope links and typed maps; participation/authority are declarations only |
 | MS3 common comparison carrier | implemented | link validation requires matching map targets |
-| MS4 no silent identity | implemented | comparison uses projection and bridge maps |
-| MS5 pairwise/global distinction | implemented | parity-cycle obstruction fixture |
-| MS6 reconstruction fibre | not implemented | profile definition only |
+| MS4 no silent identity | implemented | comparison uses projection and lower-scope comparison maps |
+| MS5 link-wise/global distinction | implemented | parity-cycle obstruction fixture; no broader pairwise-consistency claim |
+| MS6 reconstruction fibres | implemented | distinct scope-state and observation queries |
 | MS7 retention/access/expression/authority separation | partial | access quotient implemented; authority engine absent |
 | MS8 SR strength | partial | invariant checks implemented; SR2–SR4 supplied by other profiles |
 | MS9 no automatic higher-scope authority | declared | no authority inference exists in the model |
@@ -19,8 +19,7 @@
 | MS12 model-relative boundary | declared and tested in output metadata | no external-existence field or inference |
 | Map commutation | implemented for exact finite maps | criterion-relative commutation deferred |
 | Access quotient | implemented for exact deterministic observations | stochastic observations deferred |
-| Cross-scope invariant | implemented for exact finite maps | partial maps report unsupported |
+| Cross-scope invariant | implemented for exact finite maps | definedness required on compatible families, not unreachable states |
 
 Passing this matrix does not constitute full MSC conformance or independent
 validation.
-
