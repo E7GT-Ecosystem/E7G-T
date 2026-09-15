@@ -74,6 +74,10 @@ artifacts:
   - id: successor-wpc-package
     identity: WPC/0.2
     status: experimental_candidate_package_not_canonical
+    predecessor_contract:
+      identity: WPC/0.1
+      relation: explicit_successor_extension
+      register_entry: GPR-014
     source_pr: 29
     source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
     root: packages/wpc-0.2/
@@ -87,6 +91,9 @@ artifacts:
       - path: packages/wpc-0.2/E7G-T_WPC_v0.2_Validation.json
         blob_sha: 08e9391c722cea864ea59f6dec996f8d353d32ed
     components:
+      - identity: WPC/0.1
+        source_status: package_predecessor_requires_differential
+        register_entry: GPR-014
       - identity: WPC-Core/0.2
         register_entry: GPR-001
       - identity: WPC-Evolution/0.1
@@ -94,6 +101,7 @@ artifacts:
       - identity: WPC-Distributed/0.1
         register_entry: GPR-012
     register_entries:
+      - GPR-014
       - GPR-001
       - GPR-011
       - GPR-012
