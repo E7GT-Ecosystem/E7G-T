@@ -185,6 +185,28 @@ class MSCReferenceTests(unittest.TestCase):
         with self.assertRaisesRegex(MSC.MSCError, "cycle"):
             MSC.validate_diagram(doc)
 
+    def test_deep_acyclic_scope_chain_uses_iterative_validation(self):
+        count = 1100
+        doc = {
+            "schema_version": "msc-diagram-v1",
+            "diagram_id": "deep-chain",
+            "max_combinations": 2,
+            "carriers": [{"carrier_id": "singleton", "values": ["x"]}],
+            "scopes": [
+                {"scope_id": f"s{i}", "edition": "1", "state_carrier": "singleton"}
+                for i in range(count)
+            ],
+            "maps": [
+                {"map_id": "identity", "source_carrier": "singleton", "target_carrier": "singleton", "table": {"x": "x"}}
+            ],
+            "links": [
+                {"link_id": f"e{i}", "lower_scope": f"s{i}", "upper_scope": f"s{i + 1}", "projection_map": "identity", "comparison_map": "identity", "criterion": "exact"}
+                for i in range(count - 1)
+            ],
+        }
+        model = MSC.validate_diagram(doc)
+        self.assertIn(["s0", f"s{count - 1}"], model["scope_order"])
+
     def test_commuting_and_non_commuting_maps(self):
         doc = {
             "schema_version": "msc-diagram-v1", "diagram_id": "maps", "max_combinations": 10,

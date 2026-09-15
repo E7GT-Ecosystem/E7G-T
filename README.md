@@ -29,7 +29,7 @@ The first-party package passes 34 internal checks and 24 external unit tests. Th
 
 The standalone [MSC/0.1 proposal](proposals/msc-0.1/) investigates whether independently constituted wholes at different declared scopes form a unique compatible family, several compatible families, or a global obstruction. It adds typed common-codomain bridges, access-induced quotients, link-wise-versus-global closure, map commutation and cross-scope invariant checks.
 
-MSC is optional speculative formal research. It is not v0.15, does not replace REC/0.1 or WPC/0.2, creates no product migration obligation, and makes no claim that an externally instantiated scope hierarchy or an actually infinite hierarchy exists. The bounded first-party model passes 25 tests; external formal review and an independent implementation remain promotion gates.
+MSC is optional speculative formal research. It is not v0.15, does not replace REC/0.1 or WPC/0.2, creates no product migration obligation, and makes no claim that an externally instantiated scope hierarchy or an actually infinite hierarchy exists. The bounded first-party model passes 26 tests; external formal review and an independent implementation remain promotion gates.
 
 ---
 

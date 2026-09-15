@@ -27,7 +27,8 @@ maps those findings to the revised package.
 | Reconstruction-query membership type errors | `kind` and `observation_map` are admitted as non-empty strings before set/dictionary membership. Malformed array/object values produce `MSCError` and CLI exit 2 without traceback. | direct and CLI reconstruction-query type regressions |
 | Partial-observation missingness | MSC-B1 fixes `co_undefined_equal`: co-undefined results are equivalent, while defined/undefined results are distinct. Each quotient reports the policy. | proposal MSC.12, conformance matrix and access-quotient regression |
 | Schema validation absent from CI | CI installs a Draft 2020-12 validator, checks the schema and validates both fixtures. | `MSC proposal validation` workflow |
-| Stale test count | Root README, changelog and validation record now report 25 tests. | bounded test run |
+| Stale test count | Root README, changelog and validation record now report 26 tests. | bounded test run |
+| Recursive graph validation overflow | Cycle admission now uses an iterative topological traversal rather than Python recursion. | `test_deep_acyclic_scope_chain_uses_iterative_validation` with 1,100 scopes |
 | `C_e` terminology | `C_e` is the lower-scope comparison map; bridge means the whole span. Schema field is `comparison_map`. | schema and both fixtures |
 | Non-native boundary vocabulary | Replaced with model-independent truth, external system existence and externally instantiated scope hierarchy. | textual review |
 

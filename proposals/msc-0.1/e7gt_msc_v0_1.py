@@ -102,19 +102,20 @@ def validate_diagram(doc: Any) -> dict[str, Any]:
         _require(projection["target_carrier"] == comparison["target_carrier"], f"link {link_id} has no common comparison carrier")
         edges[lower].append(upper)
 
-    visiting: set[str] = set()
-    visited: set[str] = set()
-    def visit(node: str) -> None:
-        _require(node not in visiting, "scope extension graph contains a cycle")
-        if node in visited:
-            return
-        visiting.add(node)
+    indegree = {scope_id: 0 for scope_id in scopes}
+    for children in edges.values():
+        for child in children:
+            indegree[child] += 1
+    ready = [scope_id for scope_id, degree in indegree.items() if degree == 0]
+    visited_count = 0
+    while ready:
+        node = ready.pop()
+        visited_count += 1
         for child in edges[node]:
-            visit(child)
-        visiting.remove(node)
-        visited.add(node)
-    for node in scopes:
-        visit(node)
+            indegree[child] -= 1
+            if indegree[child] == 0:
+                ready.append(child)
+    _require(visited_count == len(scopes), "scope extension graph contains a cycle")
 
     for profile_id, profile in access_profiles.items():
         _shape(profile, f"access profile {profile_id}", {"profile_id", "scope", "context", "observation_maps"})
