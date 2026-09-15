@@ -1,0 +1,101 @@
+schema: e7c-successor-source-coverage/v0alpha2
+status: wp0_complete_with_named_deferrals_pending_acceptance_review
+repository: E7GT-Ecosystem/E7G-T
+baseline_commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+cutoff_utc: "2026-09-15T19:52:58Z"
+canonical_baseline:
+  identity: E7G-T-v0.12.1-experimental-RGP2
+  profile_identity: RGP/0.1
+  revision: RGP2
+  path: E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md
+  blob_sha: a84da2c4de2ada23577cde4512a10c3369aba2b5
+  sha256: 4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1
+  register_entries: [GPR-013]
+artifacts:
+  - id: successor-v013
+    status: merged_experimental_candidate_not_canonical
+    source_pr: 29
+    source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
+    paths:
+      - {path: E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md, blob_sha: e11da3e39e6334c42f838f69fe462451f0d7c61e}
+      - {path: E7G-T_v0.13_Experimental_Release_Manifest.md, blob_sha: c5cccccb235b4650950ab5bf0b24e1635ed3aa22}
+    components:
+      - {identity: EEC-Q/0.1, status: inherited_requires_differential, register_entry: GPR-015}
+      - {identity: SF/0.1, status: inherited_requires_differential, register_entry: GPR-016}
+      - {identity: CFS/0.1, status: inherited_requires_differential, register_entry: GPR-017}
+      - {identity: RGP/0.2, predecessor: RGP/0.1, status: successor_candidate, register_entry: GPR-018}
+      - {identity: WPC/0.1, status: successor_addition, register_entry: GPR-014}
+      - {identity: WPC-Core/0.2, predecessor: WPC/0.1, status: successor_extension, register_entry: GPR-001}
+      - {identity: WPC-Evolution/0.1, status: optional_partial, register_entry: GPR-011}
+      - {identity: WPC-Distributed/0.1, status: optional_unsupported, register_entry: GPR-012}
+    register_entries: [GPR-015, GPR-016, GPR-017, GPR-018, GPR-014, GPR-001, GPR-011, GPR-012]
+  - id: successor-wpc-package
+    status: merged_experimental_candidate_package_not_canonical
+    source_pr: 29
+    source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
+    root: packages/wpc-0.2/
+    predecessor_contract: {identity: WPC/0.1, relation: explicit_successor_extension, register_entry: GPR-014}
+    anchor_blobs:
+      - {path: packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md, blob_sha: 52a9606dc8eda798b66c12b07424aff929d0f502}
+      - {path: packages/wpc-0.2/E7G-T_WPC_v0.2_Conformance_Matrix.md, blob_sha: 9df047f2e3239067138620ba19f1c6b853ecbfea}
+      - {path: packages/wpc-0.2/E7G-T_WPC_v0.2_Reference_Model.py, blob_sha: 8fbd237471a4d5ab9157afa299f065df3aa42486}
+    register_entries: [GPR-014, GPR-001, GPR-011, GPR-012]
+  - id: successor-v014
+    status: merged_experimental_candidate_not_canonical
+    source_pr: 30
+    source_pr_head: 461dbe3b43836394f07d7fe88944ec2451a5395a
+    paths:
+      - {path: E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md, blob_sha: 5caf01e5e1ab4aacd878a4889aa9eeaea6127756}
+      - {path: E7G-T_v0.14_Experimental_Release_Manifest.md, blob_sha: 9e5f95fcc9d94995a50ea07e912c5eb28a506cac}
+    register_entries: [GPR-015, GPR-016, GPR-017, GPR-018, GPR-014, GPR-001, GPR-011, GPR-012, GPR-002]
+  - id: successor-rec-package
+    status: merged_experimental_candidate_package_not_canonical
+    source_pr: 30
+    source_pr_head: 461dbe3b43836394f07d7fe88944ec2451a5395a
+    root: packages/rec-0.1/
+    anchor_blobs:
+      - {path: packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md, blob_sha: b57a798c168917787766ddd17dcf847a852e689b}
+      - {path: packages/rec-0.1/E7G-T_REC_v0.1_Conformance_Matrix.md, blob_sha: c321802b535c5f67e3afe43091ea756012eeacb0}
+      - {path: packages/rec-0.1/e7gt_rec_v0_1.py, blob_sha: f76e9a30f38657817a244af2cf7fcbbb9a3fc697}
+    register_entries: [GPR-002]
+  - id: successor-msc
+    status: merged_research_proposal_not_canonical
+    source_pr: 32
+    source_pr_head: b5ed1d96ad29fde52daf672e21632bd58eaa5be9
+    root: proposals/msc-0.1/
+    anchor_blobs:
+      - {path: proposals/msc-0.1/E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md, blob_sha: 2f400ed9f3179337ea6ac74a5a1d98f0be2d9737}
+      - {path: proposals/msc-0.1/E7G-T_MSC_v0.1_Conformance_Matrix.md, blob_sha: ae4cfbdfec9d7c610bbcf9d0e1c76fabbd3e4e9f}
+    register_entries: [GPR-003]
+  - id: successor-rec-eval
+    status: open_empirical_proposal_not_policy
+    source_pr: 31
+    source_pr_head: 90ee0258ef41517892b832daea8ddd503038dfb7
+    root_at_pr_head: benchmarks/rec-eval-0.1/
+    register_entries: [GPR-010]
+  - id: successor-relational-nonseparability
+    status: open_informative_proposal_not_core
+    source_issue: 22
+    source_pr: 23
+    source_pr_head: 67eed6765bb3eff93976a9da94af2fe8b9741e81
+    path_at_pr_head: E7G-T_Relational_Non-Separability_Clarification_v0.1.md
+    register_entries: [GPR-004]
+  - id: successor-e7c
+    status: merged_foundation_mandate_not_implemented
+    source_pr: 33
+    source_pr_head: f6b6525e15d6b378fc632e31427f81d5967eb6c7
+    merge_commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    register_entries: [GPR-005, GPR-006, GPR-007, GPR-008, GPR-009]
+explicit_exclusions:
+  - {pull_request: 5, reason: pre-v0.12.1 historical release metadata; no successor mathematics}
+  - {pull_request: 6, reason: pre-v0.12.1 reference-backed draft; no successor mathematics}
+  - {pull_request: 12, reason: pre-v0.12.1 superseded publication branch; no successor mathematics}
+  - {pull_request: 19, reason: stale UC5 editorial pointer change; no post-v0.12.1 mathematical addition}
+missing_or_inaccessible:
+  - private or unpublished collaborator material was not admitted
+  - conversation-only suggestions require an immutable author-supplied source before later intake
+closure:
+  first_party_verdict: complete_with_named_deferrals
+  acceptance_status: pending_originating_author_and_foundation_semantics_review
+  deferrals: [GPR-004, GPR-010, GPR-011, GPR-012, GPR-014, GPR-015, GPR-016, GPR-017, GPR-018]
+  implementation_authorised: false

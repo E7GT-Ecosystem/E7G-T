@@ -1,0 +1,163 @@
+schema: e7c-source-registry/v0alpha1
+status: wp0_drafted_for_acceptance_review
+direction: E7-ECO-DIR-2026-09-15.1
+repository: E7GT-Ecosystem/E7G-T
+baseline_commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+cutoff_utc: "2026-09-15T19:52:58Z"
+canonical_baseline:
+  identity: E7G-T-v0.12.1-experimental-RGP2
+  profile_identity: RGP/0.1
+  revision: RGP2
+  status: published_experimental_canonical_reference
+  path: E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md
+  git_blob_sha: a84da2c4de2ada23577cde4512a10c3369aba2b5
+  sha256: 4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1
+  conformance: embedded_X13_X18_R12_and_appendices_V_VI
+  implemented_subset: FG3/0.1_IC/0.1_CG3/0.1_and_RGP-B1/0.1_companion
+  consumers: [E7Q, E2CI, E7DB, E7Q-ENC, E7-Ecosystem]
+  limitations: experimental; bounded first-party models; no general correctness, external instantiation, production readiness or product migration
+  register_entries: [GPR-013]
+artifacts:
+  - id: eec-q-canonical
+    identity: EEC-Q/0.1
+    status: canonical_optional_profile_within_v0.12.1
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    path: E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md
+    git_blob_sha: a84da2c4de2ada23577cde4512a10c3369aba2b5
+    sha256: 4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1
+    implemented_subset: finite exact rational states and bounded operations in FG3
+    consumers: [E7Q_as_formal_construction_only]
+    limitations: coefficients are not probability, evidence weights or quantum amplitudes
+    register_entries: [GPR-015]
+  - id: sf-canonical-companion
+    identity: SF/0.1
+    status: canonical_optional_profile_within_v0.12.1
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    profile_path: E7G-T_Symbolic_Family_Realisation_Profile_v0.1.md
+    profile_blob_sha: dfebe159cc20e943edaac3b861a9463b15509d00
+    profile_sha256: 3eaed99a842b7e99774b9f0caa6b9ab904de5fb0345d593ce42c9be7b7c978b4
+    model_path: E7G-T_Symbolic_Families_v0.1.py
+    model_blob_sha: 23a1b28d9bbbef2533cd63edb3a794057013a594
+    model_sha256: 0a827d55cc95c4840ba5427e8585378b23ee6a3b00296856f192176cb4a2dca8
+    implemented_subset: IC/0.1 finite interval-and-circle realisation
+    consumers: [E7Q_candidate_families, E2CI_provisional_families]
+    limitations: no general symbolic solver
+    register_entries: [GPR-016]
+  - id: cfs-canonical-companion
+    identity: CFS/0.1
+    status: canonical_optional_profile_within_v0.12.1
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    profile_path: E7G-T_Combined_Family-State_Profile_v0.1.md
+    profile_blob_sha: 35c2ca90185be7afb9c32b0bd278ec7925ba87de
+    profile_sha256: a3e5b9096c7243066ab3367df214e3724a3de2063044f2806e49d0ec7bfe42d5
+    model_path: E7G-T_Combined_Family_State_v0.1.py
+    model_blob_sha: 8ac91bf3be54476a6dee9d5daf13e2db06a672af
+    model_sha256: ed6ba76f6638c859e65d9908ecd4ef2539cd1348df8249471ca706a51b94d542
+    implemented_subset: CG3/0.1 bounded SF-outside_EEC-inside model
+    consumers: [E7Q_future_planning_adapter]
+    limitations: EvidenceState families are not CFS without a separately reviewed inner algebra
+    register_entries: [GPR-017]
+  - id: rgp-canonical-companion
+    identity: RGP/0.1_revision_RGP2
+    status: canonical_optional_profile_within_v0.12.1
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    model_path: E7G-T_RGP_v0.1.py
+    model_blob_sha: 75d8659829a17bd27b3da0dd54d7d4656797fb8c
+    model_sha256: 6fa76bb0d5f80a5767d85b2510f7f97c5b677f85699644c7dd90bbdc65eaa4cd
+    validation_path: E7G-T_RGP_Validation_v0.1.json
+    validation_blob_sha: c218f090cd673121d37165dc924c0a46f35d1be8
+    validation_sha256: e9b51a1476048fbb48961b2e257e67f0729e834dbbd3afa24345ab48ae9e8f53
+    implemented_subset: RGP-B1/0.1 finite structural model with 12 first-party tests
+    consumers: [E7Q_future_receipts, E2CI_isolated_generation, E7DB_deferred_persistence, E7Q-ENC_experimental_structural_layer]
+    limitations: no general interchange, authorisation, distributed runtime or general conformance
+    register_entries: [GPR-013, GPR-018]
+  - id: v013-wpc-candidate
+    identity: E7G-T-v0.13-WPC_RGP/0.2_WPC/0.1_WPC/0.2
+    status: merged_experimental_candidate_not_canonical
+    source_pr: 29
+    source_pr_head: 9884caacfc5e3eb23adc1fc49f3a5f179e86356c
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    kernel_path: E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md
+    kernel_blob_sha: e11da3e39e6334c42f838f69fe462451f0d7c61e
+    kernel_sha256: ecade9da08df04d257735d399848ebf2231590cabab8e48fa0b228db3051bdbe
+    manifest_path: E7G-T_v0.13_Experimental_Release_Manifest.md
+    manifest_blob_sha: c5cccccb235b4650950ab5bf0b24e1635ed3aa22
+    package_root: packages/wpc-0.2/
+    conformance: packages/wpc-0.2/E7G-T_WPC_v0.2_Conformance_Matrix.md
+    implemented_subset: WPC_Core_partial_WPC_Evolution_partial_WPC_Distributed_unsupported
+    consumers: []
+    limitations: first-party bounded evidence; predecessor differentials remain required
+    register_entries: [GPR-001, GPR-011, GPR-012, GPR-014, GPR-015, GPR-016, GPR-017, GPR-018]
+  - id: v014-rec-candidate
+    identity: E7G-T-v0.14-REC1_REC/0.1
+    status: merged_experimental_candidate_not_canonical
+    source_pr: 30
+    source_pr_head: 461dbe3b43836394f07d7fe88944ec2451a5395a
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    kernel_path: E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md
+    kernel_blob_sha: 5caf01e5e1ab4aacd878a4889aa9eeaea6127756
+    kernel_sha256: a64a8d9ecbd417cbe59883e33be7529cb779354b377b3ac261488a2a81cfc43a
+    manifest_path: E7G-T_v0.14_Experimental_Release_Manifest.md
+    manifest_blob_sha: 9e5f95fcc9d94995a50ea07e912c5eb28a506cac
+    package_root: packages/rec-0.1/
+    conformance: packages/rec-0.1/E7G-T_REC_v0.1_Conformance_Matrix.md
+    implemented_subset: REC-B1/0.1 finite information-flow evaluator_and_separate_checker
+    consumers: [E2CI_candidate_only]
+    limitations: opaque propositions; no source truth, domain validity, general logic, probability, independent reproduction or measured improvement
+    register_entries: [GPR-002, GPR-015, GPR-016, GPR-017, GPR-018]
+  - id: msc-proposal
+    identity: MSC/0.1_MSC-B1/0.1
+    status: merged_research_proposal_not_canonical
+    source_pr: 32
+    source_pr_head: b5ed1d96ad29fde52daf672e21632bd58eaa5be9
+    commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    root: proposals/msc-0.1/
+    conformance: proposals/msc-0.1/E7G-T_MSC_v0.1_Conformance_Matrix.md
+    implemented_subset: finite exact scope diagrams_and_compatibility_closure
+    consumers: []
+    limitations: partial first-party bounded implementation; no model-independent truth or external hierarchy
+    register_entries: [GPR-003]
+  - id: rec-eval-open
+    identity: REC-EVAL/0.1
+    status: open_empirical_proposal_not_policy
+    source_pr: 31
+    source_pr_head: 90ee0258ef41517892b832daea8ddd503038dfb7
+    root_at_pr_head: benchmarks/rec-eval-0.1/
+    conformance: proposal-local_validation_record
+    implemented_subset: proposed harness and synthetic scorer tests
+    consumers: [future_Pilot_A]
+    limitations: open PR; synthetic data are not empirical evidence
+    register_entries: [GPR-010]
+  - id: relational-nonseparability-open
+    identity: relational-non-separability/0.1
+    status: open_informative_proposal_not_core
+    source_issue: 22
+    source_pr: 23
+    source_pr_head: 67eed6765bb3eff93976a9da94af2fe8b9741e81
+    path_at_pr_head: E7G-T_Relational_Non-Separability_Clarification_v0.1.md
+    implemented_subset: none_in_main
+    consumers: []
+    limitations: open and currently non-mergeable; candidate derived predicate only
+    register_entries: [GPR-004]
+  - id: e7c-mandate
+    identity: E7C/0.1_research_mandate
+    status: merged_research_control_not_implemented
+    source_pr: 33
+    source_pr_head: f6b6525e15d6b378fc632e31427f81d5967eb6c7
+    merge_commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
+    paths: [roadmaps/E7C_0.1_FOUNDATION_BUILD_MANDATE.md, roadmaps/E7C_0.1_IMPLEMENTER_HANDOFF.md]
+    implemented_subset: WP0_authority_only
+    consumers: [all_future_E7C_work]
+    limitations: no syntax, semantics, proofs, IR, runtime or API
+    register_entries: [GPR-005, GPR-006, GPR-007, GPR-008, GPR-009]
+consumer_snapshots:
+  - {repository: E7GT-Ecosystem/E7Q, main: 19dd348818aed665c4a3775f97e997f8b5efb4da, role: compatibility_fixture_only}
+  - {repository: E7GT-Ecosystem/E2CI, main: b596f0eb76034ad3314c926b4242d1f0d9074a20, role: compatibility_fixture_only}
+  - {repository: E7GT-Ecosystem/E7DB, main: 8f9a36683f2078f8112393a8066bd802da1293b9, role: downstream_storage_boundary}
+  - {repository: E7GT-Ecosystem/E7Q-ENC, main: 31060027ba9c3d04da8350f81b6c30e8c4f815cb, role: security_boundary_and_future_adapter}
+  - {repository: E7GT-Ecosystem/E7-Ecosystem, main: e868fa2ae1330f4c376890534da45242d38dc3fb, role: governance_snapshot}
+visibility_limits:
+  - GitHub repository search returned issue 22 as the only repository issue at cutoff; PR discussions were inspected through PR 33.
+  - PRs 5, 6, 12 and 19 are open historical work predating v0.12.1; they are explicit exclusions, not successor inputs.
+  - Private or unpublished collaborator material is excluded. Conversation memory is not treated as an immutable source.
+  - Product snapshots record compatibility surfaces only; their complete private histories were not imported.
