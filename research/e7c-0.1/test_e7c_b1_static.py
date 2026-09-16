@@ -106,7 +106,13 @@ class E7CB1StaticTests(unittest.TestCase):
                 "arg": {"tag": "var", "name": "source_config"},
             }
         )
-        self.assertIn(Effect("partiality", "strict@map-1"), result.effects)
+        self.assertIn(
+            Effect(
+                "partiality",
+                '{"domain_policy":"strict","failure_family":"domain-errors-1","map_declaration":"strict_normalise","map_edition":"map-1"}',
+            ),
+            result.effects,
+        )
 
     def test_non_object_document_is_controlled_invalid_input(self):
         result = check_document([])
@@ -121,6 +127,69 @@ class E7CB1StaticTests(unittest.TestCase):
             }
         )
         self.assertEqual(len(result.effects), len(set(result.effects)))
+
+    def test_structured_loss_payloads_are_unambiguous(self):
+        left_environment = copy.deepcopy(self.positive["environment"])
+        right_environment = copy.deepcopy(self.positive["environment"])
+        left_environment["views"]["lossy_projection"]["excluded_observations"] = ["a,b", "c"]
+        right_environment["views"]["lossy_projection"]["excluded_observations"] = ["a", "b,c"]
+        term = {
+            "tag": "view",
+            "declaration": "lossy_projection",
+            "arg": {"tag": "var", "name": "source_config"},
+        }
+        left = Checker(left_environment).check(term)
+        right = Checker(right_environment).check(term)
+        self.assertNotEqual(left.effects, right.effects)
+
+    def test_lossy_projection_is_not_exactly_reconstructable(self):
+        result = self.checker.check(
+            {
+                "tag": "view",
+                "declaration": "lossy_projection",
+                "arg": {"tag": "var", "name": "source_config"},
+            }
+        )
+        self.assertEqual(result.type.tag, "projection")
+        with self.assertRaises(Diagnostic) as raised:
+            self.checker.check(
+                {
+                    "tag": "reconstruct",
+                    "declaration": "exact_reconstruction",
+                    "resource_policy": "bounded-100",
+                    "arg": {
+                        "tag": "view",
+                        "declaration": "lossy_projection",
+                        "arg": {"tag": "var", "name": "source_config"},
+                    },
+                }
+            )
+        self.assertEqual(raised.exception.code, "E7C-T002")
+
+    def test_projection_cannot_claim_exact_source_return(self):
+        environment = copy.deepcopy(self.positive["environment"])
+        environment["views"]["lossy_projection"]["reconstruction_obligation"] = (
+            "exact_source_return"
+        )
+        result = check_document(
+            {"environment": environment, "term": {"tag": "var", "name": "source_config"}}
+        )
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S011")
+
+    def test_input_depth_limit_is_controlled(self):
+        term = {"tag": "var", "name": "source_config"}
+        for _ in range(70):
+            term = {"tag": "apply", "declaration": "total_identity", "arg": term}
+        result = check_document({"environment": self.positive["environment"], "term": term})
+        self.assertEqual(result["status"], "diagnostic")
+        self.assertEqual(result["diagnostic"]["category"], "invalid_input")
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S012")
+
+    def test_input_node_limit_is_controlled(self):
+        document = {"environment": self.positive["environment"], "term": [None] * 10_001}
+        result = check_document(document)
+        self.assertEqual(result["status"], "diagnostic")
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S012")
 
     def test_denotational_or_phase_equality_is_not_conversion(self):
         left = Type("config", ("Sigma-A",))
@@ -152,6 +221,15 @@ class E7CB1StaticTests(unittest.TestCase):
             "does not certify completeness",
         ):
             self.assertIn(boundary, normalized)
+
+    def test_specification_defines_bounded_effect_contract(self):
+        normalized = " ".join(self.specification.split()).lower()
+        for contract in (
+            r"\varepsilon_1 \subseteq \varepsilon_2",
+            "sequential composition and the path-insensitive branch join are both set union",
+            r"\mathsf{atoms}(\lambda) \subseteq \varepsilon",
+        ):
+            self.assertIn(contract, normalized)
 
 
 if __name__ == "__main__":

@@ -31,6 +31,12 @@
       "code": "E7C-T002"
     },
     {
+      "id": "lossy_projection_cannot_request_exact_fibre",
+      "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "bounded-100", "arg": {"tag": "view", "declaration": "lossy_projection", "arg": {"tag": "var", "name": "source_config"}}},
+      "category": "type_error",
+      "code": "E7C-T002"
+    },
+    {
       "id": "unknown_term",
       "term": {"tag": "prove_truth", "arg": {"tag": "var", "name": "source_config"}},
       "category": "invalid_input",

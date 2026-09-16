@@ -68,7 +68,8 @@ TYPE_ARITY = {
     "entity": 1,
     "config": 1,
     "map": 4,
-    "view": 3,
+    "view": 4,
+    "projection": 5,
     "family": 2,
     "fibre": 2,
     "partition": 2,
@@ -78,6 +79,7 @@ TYPE_ARITY = {
 NESTED_TYPE_POSITIONS = {
     "map": (0, 1),
     "view": (0, 1),
+    "projection": (0, 1),
     "family": (1,),
     "fibre": (0,),
     "partition": (0,),
@@ -98,6 +100,14 @@ EFFECT_DIMENSIONS = {
 }
 
 DOMAIN_POLICIES = {"total", "strict", "filtering"}
+VIEW_KINDS = {"source_preserving", "projection"}
+MAX_INPUT_DEPTH = 64
+MAX_INPUT_NODES = 10_000
+
+
+def _canonical_payload(value: Any) -> str:
+    """Encode structured effect payloads without delimiter collisions."""
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
 def _object(value: Any, path: str) -> Mapping[str, Any]:
@@ -125,7 +135,9 @@ def _text(value: Any, path: str) -> str:
     return value
 
 
-def parse_type(value: Any, path: str = "$.type") -> Type:
+def parse_type(value: Any, path: str = "$.type", _depth: int = 0) -> Type:
+    if _depth > MAX_INPUT_DEPTH:
+        raise Diagnostic("invalid_input", "E7C-S012", "type depth limit exceeded", path)
     obj = _object(value, path)
     _exact_keys(obj, {"tag", "args"}, path)
     tag = _text(obj["tag"], f"{path}.tag")
@@ -143,7 +155,9 @@ def parse_type(value: Any, path: str = "$.type") -> Type:
     parsed: list[Any] = []
     for index, arg in enumerate(args):
         arg_path = f"{path}.args[{index}]"
-        parsed.append(parse_type(arg, arg_path) if index in nested else _text(arg, arg_path))
+        parsed.append(
+            parse_type(arg, arg_path, _depth + 1) if index in nested else _text(arg, arg_path)
+        )
     if tag == "map" and parsed[2] not in DOMAIN_POLICIES:
         raise Diagnostic(
             "invalid_input",
@@ -193,15 +207,31 @@ class Checker:
         schemas = {
             "maps": (
                 self.maps,
-                {"source", "target", "domain_policy", "map_edition", "outcome_extension"},
+                {
+                    "source",
+                    "target",
+                    "domain_policy",
+                    "map_edition",
+                    "failure_family",
+                    "outcome_extension",
+                },
                 {"source", "target"},
-                {"domain_policy", "map_edition", "outcome_extension"},
+                {"domain_policy", "map_edition", "failure_family", "outcome_extension"},
             ),
             "views": (
                 self.views,
-                {"source", "target", "inquiry", "loss"},
+                {
+                    "kind",
+                    "source",
+                    "target",
+                    "inquiry",
+                    "preserved_observations",
+                    "excluded_observations",
+                    "quotient_relation",
+                    "reconstruction_obligation",
+                },
                 {"source", "target"},
-                {"inquiry"},
+                {"kind", "inquiry", "quotient_relation", "reconstruction_obligation"},
             ),
             "restrictions": (
                 self.restrictions,
@@ -211,9 +241,17 @@ class Checker:
             ),
             "reconstructions": (
                 self.reconstructions,
-                {"source", "view_type", "inquiry", "resource_policies", "outcome_extension"},
+                {
+                    "source",
+                    "view_type",
+                    "inquiry",
+                    "view_policy",
+                    "required_obligation",
+                    "resource_policies",
+                    "outcome_extension",
+                },
                 {"source", "view_type"},
-                {"inquiry", "outcome_extension"},
+                {"inquiry", "view_policy", "required_obligation", "outcome_extension"},
             ),
             "criteria": (
                 self.criteria,
@@ -239,19 +277,53 @@ class Checker:
                     f"unknown domain policy {policy!r}",
                     f"$.environment.maps.{name}.domain_policy",
                 )
-        for section, field in (("views", "loss"), ("reconstructions", "resource_policies")):
-            table = self.views if section == "views" else self.reconstructions
-            for name, declaration in table.items():
+        for name, declaration in self.views.items():
+            path = f"$.environment.views.{name}"
+            kind = declaration["kind"]
+            if kind not in VIEW_KINDS:
+                raise Diagnostic("invalid_input", "E7C-S011", f"unknown view kind {kind!r}", f"{path}.kind")
+            for field in ("preserved_observations", "excluded_observations"):
                 values = declaration[field]
                 if not isinstance(values, list) or any(
                     not isinstance(item, str) or not item for item in values
                 ):
-                    raise Diagnostic(
-                        "invalid_input",
-                        "E7C-S008" if field == "loss" else "E7C-S009",
-                        f"{field} must be a string list",
-                        f"$.environment.{section}.{name}.{field}",
-                    )
+                    raise Diagnostic("invalid_input", "E7C-S008", f"{field} must be a string list", f"{path}.{field}")
+            preserved = set(declaration["preserved_observations"])
+            excluded = set(declaration["excluded_observations"])
+            if preserved & excluded:
+                raise Diagnostic("invalid_input", "E7C-S011", "preserved and excluded observations overlap", path)
+            if kind == "source_preserving" and (
+                excluded
+                or declaration["quotient_relation"] != "identity"
+                or declaration["reconstruction_obligation"] != "exact_source_return"
+            ):
+                raise Diagnostic("invalid_input", "E7C-S011", "invalid source-preserving view contract", path)
+            if kind == "projection" and (
+                not excluded
+                or declaration["quotient_relation"] == "identity"
+                or declaration["reconstruction_obligation"] == "exact_source_return"
+            ):
+                raise Diagnostic("invalid_input", "E7C-S011", "projection requires explicit loss and quotient", path)
+        for name, declaration in self.reconstructions.items():
+            path = f"$.environment.reconstructions.{name}"
+            values = declaration["resource_policies"]
+            if not isinstance(values, list) or any(
+                not isinstance(item, str) or not item for item in values
+            ):
+                raise Diagnostic("invalid_input", "E7C-S009", "resource_policies must be a string list", f"{path}.resource_policies")
+            view_name = declaration["view_policy"]
+            if view_name not in self.views:
+                raise Diagnostic("invalid_input", "E7C-S011", f"unknown view policy {view_name!r}", f"{path}.view_policy")
+            view = self.views[view_name]
+            expected_contract = (
+                view["kind"] == "source_preserving"
+                and view["reconstruction_obligation"] == declaration["required_obligation"]
+                and parse_type(view["source"]) == parse_type(declaration["source"])
+                and parse_type(view["target"]) == parse_type(declaration["view_type"])
+                and view["inquiry"] == declaration["inquiry"]
+            )
+            if not expected_contract:
+                raise Diagnostic("invalid_input", "E7C-S011", "reconstruction/view contract mismatch", path)
 
     @staticmethod
     def _type_table(value: Any, section: str) -> dict[str, Type]:
@@ -302,20 +374,22 @@ class Checker:
             raise Diagnostic("invalid_input", "E7C-S006", f"missing field {field!r}", path)
         return _text(decl[field], f"{path}.{field}")
 
-    def check(self, term: Any, path: str = "$.term") -> StaticResult:
+    def check(self, term: Any, path: str = "$.term", _depth: int = 0) -> StaticResult:
+        if _depth > MAX_INPUT_DEPTH:
+            raise Diagnostic("invalid_input", "E7C-S012", "term depth limit exceeded", path)
         obj = _object(term, path)
         tag = _text(obj.get("tag"), f"{path}.tag")
         method = getattr(self, f"_check_{tag}", None)
         if method is None:
             raise Diagnostic("invalid_input", "E7C-S007", f"unknown term tag {tag!r}", path)
-        return method(obj, path)
+        return method(obj, path, _depth)
 
-    def _check_var(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_var(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "name"}, path)
         value_type = self._lookup(self.variables, term["name"], "variable", f"{path}.name")
         return StaticResult(value_type, ())
 
-    def _check_apply(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_apply(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "declaration", "arg"}, path)
         name = _text(term["declaration"], f"{path}.declaration")
         decl = self._lookup(self.maps, name, "map declaration", f"{path}.declaration")
@@ -323,30 +397,72 @@ class Checker:
         target = self._decl_type(decl, "target", f"$.environment.maps.{name}")
         policy = self._decl_text(decl, "domain_policy", f"$.environment.maps.{name}")
         edition = self._decl_text(decl, "map_edition", f"$.environment.maps.{name}")
+        failure_family = self._decl_text(decl, "failure_family", f"$.environment.maps.{name}")
         extension = self._decl_text(decl, "outcome_extension", f"$.environment.maps.{name}")
-        arg = self.check(term["arg"], f"{path}.arg")
+        arg = self.check(term["arg"], f"{path}.arg", _depth + 1)
         self._expect(arg.type, source, f"{path}.arg")
-        added = () if policy == "total" else (Effect("partiality", f"{policy}@{edition}"),)
-        return StaticResult(Type("outcome", (target, extension)), _effects(*arg.effects, *added))
+        map_evidence = _canonical_payload(
+            {
+                "domain_policy": policy,
+                "failure_family": failure_family,
+                "map_declaration": name,
+                "map_edition": edition,
+                "outcome_extension": extension,
+            }
+        )
+        added = () if policy == "total" else (
+            Effect(
+                "partiality",
+                _canonical_payload(
+                    {
+                        "domain_policy": policy,
+                        "failure_family": failure_family,
+                        "map_declaration": name,
+                        "map_edition": edition,
+                    }
+                ),
+            ),
+        )
+        return StaticResult(
+            Type("outcome", (target, extension)),
+            _effects(*arg.effects, Effect("evidence", map_evidence), *added),
+        )
 
-    def _check_view(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_view(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "declaration", "arg"}, path)
         name = _text(term["declaration"], f"{path}.declaration")
         decl = self._lookup(self.views, name, "view policy", f"{path}.declaration")
         source = self._decl_type(decl, "source", f"$.environment.views.{name}")
         target = self._decl_type(decl, "target", f"$.environment.views.{name}")
+        kind = self._decl_text(decl, "kind", f"$.environment.views.{name}")
         inquiry = self._decl_text(decl, "inquiry", f"$.environment.views.{name}")
-        loss = decl.get("loss")
-        if not isinstance(loss, list) or any(not isinstance(item, str) or not item for item in loss):
-            raise Diagnostic("invalid_input", "E7C-S008", "loss must be a string list", f"$.environment.views.{name}.loss")
-        arg = self.check(term["arg"], f"{path}.arg")
+        preserved = decl["preserved_observations"]
+        excluded = decl["excluded_observations"]
+        quotient = self._decl_text(decl, "quotient_relation", f"$.environment.views.{name}")
+        obligation = self._decl_text(decl, "reconstruction_obligation", f"$.environment.views.{name}")
+        arg = self.check(term["arg"], f"{path}.arg", _depth + 1)
         self._expect(arg.type, source, f"{path}.arg")
         added = [Effect("inquiry", inquiry)]
-        if loss:
-            added.append(Effect("loss", ",".join(sorted(set(loss)))))
-        return StaticResult(Type("view", (source, target, inquiry)), _effects(*arg.effects, *added))
+        if kind == "projection":
+            added.append(
+                Effect(
+                    "loss",
+                    _canonical_payload(
+                        {
+                            "excluded": sorted(set(excluded)),
+                            "preserved": sorted(set(preserved)),
+                            "quotient_relation": quotient,
+                        }
+                    ),
+                )
+            )
+            result = Type("projection", (source, target, inquiry, quotient, name))
+        else:
+            result = Type("view", (source, target, inquiry, name))
+        added.append(Effect("alternatives", obligation))
+        return StaticResult(result, _effects(*arg.effects, *added))
 
-    def _check_restrict(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_restrict(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "declaration", "arg"}, path)
         name = _text(term["declaration"], f"{path}.declaration")
         decl = self._lookup(self.restrictions, name, "restriction policy", f"{path}.declaration")
@@ -354,7 +470,7 @@ class Checker:
         output_index = self._decl_text(decl, "output_index", f"$.environment.restrictions.{name}")
         element = self._decl_type(decl, "element", f"$.environment.restrictions.{name}")
         extension = self._decl_text(decl, "outcome_extension", f"$.environment.restrictions.{name}")
-        arg = self.check(term["arg"], f"{path}.arg")
+        arg = self.check(term["arg"], f"{path}.arg", _depth + 1)
         self._expect(arg.type, Type("family", (input_index, element)), f"{path}.arg")
         result = Type("family", (output_index, element))
         return StaticResult(
@@ -362,7 +478,7 @@ class Checker:
             _effects(*arg.effects, Effect("alternatives", name)),
         )
 
-    def _check_reconstruct(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_reconstruct(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "declaration", "resource_policy", "arg"}, path)
         name = _text(term["declaration"], f"{path}.declaration")
         resource = _text(term["resource_policy"], f"{path}.resource_policy")
@@ -370,14 +486,15 @@ class Checker:
         source = self._decl_type(decl, "source", f"$.environment.reconstructions.{name}")
         view_type = self._decl_type(decl, "view_type", f"$.environment.reconstructions.{name}")
         inquiry = self._decl_text(decl, "inquiry", f"$.environment.reconstructions.{name}")
+        view_policy = self._decl_text(decl, "view_policy", f"$.environment.reconstructions.{name}")
         extension = self._decl_text(decl, "outcome_extension", f"$.environment.reconstructions.{name}")
         allowed = decl.get("resource_policies")
         if not isinstance(allowed, list) or any(not isinstance(item, str) or not item for item in allowed):
             raise Diagnostic("invalid_input", "E7C-S009", "resource_policies must be a string list", f"$.environment.reconstructions.{name}.resource_policies")
         if resource not in allowed:
             raise Diagnostic("type_error", "E7C-T003", f"resource policy {resource!r} is not admitted", f"{path}.resource_policy")
-        expected = Type("view", (source, view_type, inquiry))
-        arg = self.check(term["arg"], f"{path}.arg")
+        expected = Type("view", (source, view_type, inquiry, view_policy))
+        arg = self.check(term["arg"], f"{path}.arg", _depth + 1)
         self._expect(arg.type, expected, f"{path}.arg")
         result = Type("fibre", (source, name))
         return StaticResult(
@@ -385,13 +502,13 @@ class Checker:
             _effects(*arg.effects, Effect("resources", resource), Effect("alternatives", name)),
         )
 
-    def _check_classify(self, term: Mapping[str, Any], path: str) -> StaticResult:
+    def _check_classify(self, term: Mapping[str, Any], path: str, _depth: int) -> StaticResult:
         _exact_keys(term, {"tag", "declaration", "arg"}, path)
         name = _text(term["declaration"], f"{path}.declaration")
         decl = self._lookup(self.criteria, name, "criterion", f"{path}.declaration")
         source = self._decl_type(decl, "source", f"$.environment.criteria.{name}")
         extension = self._decl_text(decl, "outcome_extension", f"$.environment.criteria.{name}")
-        arg = self.check(term["arg"], f"{path}.arg")
+        arg = self.check(term["arg"], f"{path}.arg", _depth + 1)
         self._expect(arg.type, source, f"{path}.arg")
         result = Type("partition", (source, name))
         return StaticResult(
@@ -400,8 +517,25 @@ class Checker:
         )
 
 
+def _check_input_budget(document: Any) -> None:
+    stack = [(document, 0)]
+    nodes = 0
+    while stack:
+        value, depth = stack.pop()
+        nodes += 1
+        if nodes > MAX_INPUT_NODES:
+            raise Diagnostic("invalid_input", "E7C-S012", "input node limit exceeded", "$")
+        if depth > MAX_INPUT_DEPTH:
+            raise Diagnostic("invalid_input", "E7C-S012", "input depth limit exceeded", "$")
+        if isinstance(value, Mapping):
+            stack.extend((child, depth + 1) for child in value.values())
+        elif isinstance(value, list):
+            stack.extend((child, depth + 1) for child in value)
+
+
 def check_document(document: Any) -> dict[str, Any]:
     try:
+        _check_input_budget(document)
         obj = _object(document, "$")
         _exact_keys(obj, {"environment", "term"}, "$")
         return {"status": "ok", "result": Checker(obj["environment"]).check(obj["term"]).as_dict()}
