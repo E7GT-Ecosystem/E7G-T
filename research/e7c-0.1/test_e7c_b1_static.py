@@ -3,7 +3,15 @@ import json
 from pathlib import Path
 import unittest
 
-from e7c_b1_static import Checker, Diagnostic, Type, check_document, parse_type, type_json
+from e7c_b1_static import (
+    Checker,
+    Diagnostic,
+    Effect,
+    Type,
+    check_document,
+    parse_type,
+    type_json,
+)
 
 
 HERE = Path(__file__).resolve().parent
@@ -38,6 +46,23 @@ class E7CB1StaticTests(unittest.TestCase):
         parsed = parse_type(source)
         self.assertEqual(parse_type(type_json(parsed)), parsed)
 
+    def test_rendered_types_are_unambiguous(self):
+        left = parse_type(
+            {
+                "tag": "family",
+                "args": ["I,A", {"tag": "base", "args": ["B"]}],
+            }
+        )
+        right = parse_type(
+            {
+                "tag": "family",
+                "args": ["I", {"tag": "base", "args": ["A,B"]}],
+            }
+        )
+        self.assertEqual(left.render(), 'Family["I,A",Base["B"]]')
+        self.assertEqual(right.render(), 'Family["I",Base["A,B"]]')
+        self.assertNotEqual(left.render(), right.render())
+
     def test_extra_ast_fields_are_invalid_input(self):
         term = copy.deepcopy(self.positive["cases"][0]["term"])
         term["surprise"] = True
@@ -53,6 +78,35 @@ class E7CB1StaticTests(unittest.TestCase):
         environment["maps"]["strict_normalise"]["domain_policy"] = "maybe"
         result = check_document({"environment": environment, "term": {"tag": "var", "name": "source_config"}})
         self.assertEqual(result["diagnostic"]["code"], "E7C-S010")
+
+    def test_unrecognised_map_type_domain_policy_is_rejected(self):
+        with self.assertRaises(Diagnostic) as raised:
+            parse_type(
+                {
+                    "tag": "map",
+                    "args": [
+                        {"tag": "base", "args": ["A"]},
+                        {"tag": "base", "args": ["B"]},
+                        "maybe",
+                        "map-1",
+                    ],
+                }
+            )
+        self.assertEqual(raised.exception.code, "E7C-S010")
+        self.assertEqual(raised.exception.path, "$.type.args[2]")
+
+    def test_checker_snapshots_declarations_at_admission(self):
+        environment = copy.deepcopy(self.positive["environment"])
+        checker = Checker(environment)
+        environment["maps"]["strict_normalise"]["domain_policy"] = "total"
+        result = checker.check(
+            {
+                "tag": "apply",
+                "declaration": "strict_normalise",
+                "arg": {"tag": "var", "name": "source_config"},
+            }
+        )
+        self.assertIn(Effect("partiality", "strict@map-1"), result.effects)
 
     def test_non_object_document_is_controlled_invalid_input(self):
         result = check_document([])

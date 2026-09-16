@@ -51,32 +51,32 @@
     {
       "id": "variable",
       "term": {"tag": "var", "name": "source_config"},
-      "expected": {"type": "Config[Sigma-A]", "effects": []}
+      "expected": {"type": "Config[\"Sigma-A\"]", "effects": []}
     },
     {
       "id": "strict_apply",
       "term": {"tag": "apply", "declaration": "strict_normalise", "arg": {"tag": "var", "name": "source_config"}},
-      "expected": {"type": "Outcome[Config[Sigma-B],core-1]", "effects": [{"dimension": "partiality", "payload": "strict@map-1"}]}
+      "expected": {"type": "Outcome[Config[\"Sigma-B\"],\"core-1\"]", "effects": [{"dimension": "partiality", "payload": "strict@map-1"}]}
     },
     {
       "id": "lossy_view",
       "term": {"tag": "view", "declaration": "lossy_projection", "arg": {"tag": "var", "name": "source_config"}},
-      "expected": {"type": "View[Config[Sigma-A],Summary,inventory]", "effects": [{"dimension": "inquiry", "payload": "inventory"}, {"dimension": "loss", "payload": "history,ordering"}]}
+      "expected": {"type": "View[Config[\"Sigma-A\"],Base[\"Summary\"],\"inventory\"]", "effects": [{"dimension": "inquiry", "payload": "inventory"}, {"dimension": "loss", "payload": "history,ordering"}]}
     },
     {
       "id": "restriction",
       "term": {"tag": "restrict", "declaration": "select_J", "arg": {"tag": "var", "name": "source_family"}},
-      "expected": {"type": "Outcome[Family[J,Config[Sigma-A]],core-1]", "effects": [{"dimension": "alternatives", "payload": "select_J"}]}
+      "expected": {"type": "Outcome[Family[\"J\",Config[\"Sigma-A\"]],\"core-1\"]", "effects": [{"dimension": "alternatives", "payload": "select_J"}]}
     },
     {
       "id": "reconstruction",
       "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "bounded-100", "arg": {"tag": "var", "name": "source_view"}},
-      "expected": {"type": "Outcome[Fibre[Config[Sigma-A],exact_reconstruction],core-1]", "effects": [{"dimension": "alternatives", "payload": "exact_reconstruction"}, {"dimension": "resources", "payload": "bounded-100"}]}
+      "expected": {"type": "Outcome[Fibre[Config[\"Sigma-A\"],\"exact_reconstruction\"],\"core-1\"]", "effects": [{"dimension": "alternatives", "payload": "exact_reconstruction"}, {"dimension": "resources", "payload": "bounded-100"}]}
     },
     {
       "id": "classification",
       "term": {"tag": "classify", "declaration": "phase_by_shape", "arg": {"tag": "var", "name": "source_fibre"}},
-      "expected": {"type": "Outcome[Partition[Fibre[Config[Sigma-A],exact_reconstruction],phase_by_shape],core-1]", "effects": [{"dimension": "inquiry", "payload": "phase_by_shape"}]}
+      "expected": {"type": "Outcome[Partition[Fibre[Config[\"Sigma-A\"],\"exact_reconstruction\"],\"phase_by_shape\"],\"core-1\"]", "effects": [{"dimension": "inquiry", "payload": "phase_by_shape"}]}
     }
   ]
 }

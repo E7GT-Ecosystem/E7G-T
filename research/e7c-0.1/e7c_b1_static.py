@@ -6,6 +6,8 @@ stabilise a public API, or implement any source-profile adapter.
 
 from __future__ import annotations
 
+import copy
+import json
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -33,9 +35,10 @@ class Type:
     args: tuple[Any, ...]
 
     def render(self) -> str:
-        if self.tag == "base":
-            return str(self.args[0])
-        rendered = ",".join(a.render() if isinstance(a, Type) else str(a) for a in self.args)
+        rendered = ",".join(
+            a.render() if isinstance(a, Type) else json.dumps(a, ensure_ascii=False)
+            for a in self.args
+        )
         return f"{self.tag.capitalize()}[{rendered}]"
 
 
@@ -141,6 +144,13 @@ def parse_type(value: Any, path: str = "$.type") -> Type:
     for index, arg in enumerate(args):
         arg_path = f"{path}.args[{index}]"
         parsed.append(parse_type(arg, arg_path) if index in nested else _text(arg, arg_path))
+    if tag == "map" and parsed[2] not in DOMAIN_POLICIES:
+        raise Diagnostic(
+            "invalid_input",
+            "E7C-S010",
+            f"unknown domain policy {parsed[2]!r}",
+            f"{path}.args[2]",
+        )
     return Type(tag, tuple(parsed))
 
 
@@ -257,8 +267,8 @@ class Checker:
     def _declaration_table(value: Any, section: str) -> dict[str, Mapping[str, Any]]:
         obj = _object(value, f"$.environment.{section}")
         return {
-            _text(name, f"$.environment.{section}.<key>"): _object(
-                declaration, f"$.environment.{section}.{name}"
+            _text(name, f"$.environment.{section}.<key>"): copy.deepcopy(
+                _object(declaration, f"$.environment.{section}.{name}")
             )
             for name, declaration in obj.items()
         }
