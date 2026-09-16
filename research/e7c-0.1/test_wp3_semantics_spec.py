@@ -29,6 +29,8 @@ class WP3SemanticsSpecificationTests(unittest.TestCase):
         self.assertIn("`E7C-S013`", self.spec)
         self.assertIn("x \\Downarrow (o,[])", self.spec)
         self.assertIn("not `success(o,none)`", self.spec)
+        self.assertIn("`Family[I,Outcome[A,xi]]`", self.spec)
+        self.assertIn("any value position beneath another type constructor", self.normalized)
         self.assertIn("WP3-I remains blocked", self.spec)
 
     def test_resource_charges_and_precedence_are_exact(self):

@@ -165,14 +165,31 @@ def parse_type(value: Any, path: str = "$.type", _depth: int = 0) -> Type:
             f"unknown domain policy {parsed[2]!r}",
             f"{path}.args[2]",
         )
-    if tag == "outcome" and isinstance(parsed[0], Type) and parsed[0].tag == "outcome":
+    if tag != "outcome" and any(
+        isinstance(argument, Type) and _contains_outcome(argument)
+        for argument in parsed
+    ):
         raise Diagnostic(
             "invalid_input",
             "E7C-S013",
-            "directly nested Outcome is not outcome-normal",
+            "Outcome may appear only as a terminal outer type",
+            path,
+        )
+    if tag == "outcome" and _contains_outcome(parsed[0]):
+        raise Diagnostic(
+            "invalid_input",
+            "E7C-S013",
+            "Outcome success type must be outcome-free",
             f"{path}.args[0]",
         )
     return Type(tag, tuple(parsed))
+
+
+def _contains_outcome(value: Type) -> bool:
+    return value.tag == "outcome" or any(
+        isinstance(argument, Type) and _contains_outcome(argument)
+        for argument in value.args
+    )
 
 
 def type_json(value: Type) -> dict[str, Any]:
@@ -315,6 +332,10 @@ class Checker:
                 or declaration["reconstruction_obligation"] == "exact_source_return"
             ):
                 raise Diagnostic("invalid_input", "E7C-S011", "projection requires explicit loss and quotient", path)
+        for name, declaration in self.restrictions.items():
+            self._reject_consumed_outcome(
+                declaration["element"], f"$.environment.restrictions.{name}.element"
+            )
         for name, declaration in self.reconstructions.items():
             path = f"$.environment.reconstructions.{name}"
             self._reject_consumed_outcome(declaration["source"], f"{path}.source")
