@@ -38,6 +38,10 @@ class WP1FormalVocabularyTests(unittest.TestCase):
             "| `r` | `ReconstructionPolicy` |", "| `kappa` | `CriterionId` |",
             "| `m`, `n` | `ModuleId` |", "| `e_s`, `e_t` | `EditionId` |",
             "| `a` | `AdapterId` |", "| `d` | `FidelityDisposition` |",
+            "| `x` | `SuccessValue` |", "| `w_o` | `OptionalWitness` |",
+            "| `diag` | `Diagnostic` |", "| `cap` | `Capability` |",
+            "| `obl` | `Obligation` |", "| `bound` | `ResourceBound` |",
+            "| `progress` | `ProgressRecord` |",
         )
         for row in expected_rows:
             self.assertIn(row, self.vocabulary)
@@ -52,6 +56,23 @@ class WP1FormalVocabularyTests(unittest.TestCase):
         ):
             self.assertIn(row, self.vocabulary)
         self.assertIn("`ProfileId`, `ModuleId`, `AdapterId`, `EditionId`", self.vocabulary)
+
+    def test_evaluation_policy_and_outcome_payloads_are_unambiguous(self):
+        self.assertIn(r"\vdash_{\beta} t \Downarrow (o,\lambda)", self.vocabulary)
+        self.assertIn("where `beta` is an explicit resource policy", self.vocabulary)
+        self.assertNotIn(r"\vdash_{B}", self.vocabulary)
+        for constructor in (
+            "success(x,w_o)", "type_error(diag)", "domain_error(diag)",
+            "unsupported(cap)", "undetermined(obl)",
+            "resource_limit(bound,progress)", "invalid_input(diag)",
+        ):
+            self.assertIn(f"`{constructor}`", self.vocabulary)
+        for overloaded in (
+            "success(a,w)", "type_error(d)", "domain_error(d)",
+            "unsupported(c)", "undetermined(p)",
+            "resource_limit(b,p)", "invalid_input(d)",
+        ):
+            self.assertNotIn(f"`{overloaded}`", self.vocabulary)
 
     def test_operation_indices_and_outputs_are_consistently_typed(self):
         declarations = (
