@@ -37,9 +37,26 @@ class WitnessContractSpecificationTests(unittest.TestCase):
         self.assertIn("audit commitment, not a replayable B1 witness", self.normalized)
 
     def test_integrity_identity_is_not_self_referential(self):
-        self.assertIn("excluding `witness_identifier`", self.spec)
+        self.assertIn("digest payload omits `witness_identifier`", self.spec)
         self.assertIn("`omega:root_digest`", self.spec)
-        self.assertIn("never hashed into themselves", self.spec)
+
+    def test_root_digest_omits_nested_optional_witness_reference(self):
+        self.assertIn(
+            "`terminal_outcome.success.optional_witness`", self.spec
+        )
+        self.assertIn(
+            "Only after the root digest is fixed, bind that identifier",
+            self.normalized,
+        )
+        self.assertIn(
+            "nested field is omitted from the evaluation-claim digest payload",
+            self.normalized,
+        )
+
+    def test_node_digest_omits_its_own_identifier(self):
+        self.assertIn("digest payload omits its own `node_id`", self.spec)
+        self.assertIn("Derive node identifiers bottom-up", self.spec)
+        self.assertIn("explicitly excludes its own `node_id`", self.spec)
 
     def test_checker_is_independent_and_recomputes(self):
         self.assertIn("must not import evaluator code", self.spec)
