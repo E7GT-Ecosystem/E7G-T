@@ -13,6 +13,7 @@ COVERAGE_PATH = RESEARCH / "E7C_0.1_SUCCESSOR_SOURCE_COVERAGE.yaml"
 REGISTER_PATH = RESEARCH / "E7C_0.1_POST_V0121_GAP_AND_PROPOSAL_REGISTER.md"
 DISPOSITIONS_PATH = RESEARCH / "E7C_0.1_COMPONENT_DISPOSITIONS.md"
 ALLOWED_DECISIONS = {"retain", "adapt", "replace", "retire"}
+EXPECTED_PR_INTERVAL = (1, 33)
 
 
 class WP0AcceptanceGateTests(unittest.TestCase):
@@ -22,6 +23,10 @@ class WP0AcceptanceGateTests(unittest.TestCase):
 
     def test_every_pr_through_cutoff_is_accounted_for_exactly_once(self):
         ledger = self.coverage["pull_request_ledger"]
+        self.assertEqual(
+            (ledger["interval"]["first"], ledger["interval"]["last"]),
+            EXPECTED_PR_INTERVAL,
+        )
         numbers = [entry["pull_request"] for entry in ledger["entries"]]
         expected = list(range(ledger["interval"]["first"], ledger["interval"]["last"] + 1))
 
