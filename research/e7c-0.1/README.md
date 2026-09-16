@@ -1,6 +1,6 @@
 # E7C/0.1 research control surface
 
-Status: `WP0_ACCEPTED; WP1_FORMAL_VOCABULARY_DRAFTED_FOR_REVIEW`
+Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_STATIC_SEMANTICS_IN_PROGRESS`
 
 Direction: `E7-ECO-DIR-2026-09-15.1`
 
@@ -20,16 +20,18 @@ experimental canonical reference.
 3. `E7C_0.1_FORMAL_VOCABULARY.md`
 4. `E7C_0.1_PROFILE_MODULE_CONTRACT.md`
 5. `E7C_0.1_WP1_REVIEW_MATRIX.md`
-6. `E7C_0.1_SOURCE_REGISTRY.yaml`
-7. `E7C_0.1_POST_V0121_GAP_AND_PROPOSAL_REGISTER.md`
-8. `E7C_0.1_SUCCESSOR_SOURCE_COVERAGE.yaml`
-9. `E7C_0.1_COMPONENT_DISPOSITIONS.md`
-10. `E7C_0.1_TERMINOLOGY_MATRIX.md`
-11. `E7C_0.1_COMPATIBILITY_BOUNDARIES.md`
-12. `E7C_0.1_DECISION_REGISTER.md`
-13. `E7C_0.1_RISK_REGISTER.md`
+6. `E7C_0.1_STATIC_SEMANTICS.md`
+7. `E7C_0.1_SOURCE_REGISTRY.yaml`
+8. `E7C_0.1_POST_V0121_GAP_AND_PROPOSAL_REGISTER.md`
+9. `E7C_0.1_SUCCESSOR_SOURCE_COVERAGE.yaml`
+10. `E7C_0.1_COMPONENT_DISPOSITIONS.md`
+11. `E7C_0.1_TERMINOLOGY_MATRIX.md`
+12. `E7C_0.1_COMPATIBILITY_BOUNDARIES.md`
+13. `E7C_0.1_DECISION_REGISTER.md`
+14. `E7C_0.1_RISK_REGISTER.md`
 
-WP0 was accepted with named deferrals at PR #34 merge `64c49b4676…`. WP1
-notation remains metalanguage-level, illustrative and unfrozen. WP2, WP3,
-executable vertical-slice work, IR, runtime, schemas and APIs remain blocked
-until their respective gates and explicit authorization.
+WP0 was accepted with named deferrals at PR #34 merge `64c49b4676…`. WP1 was
+accepted at PR #35 and merged as `1f4c7cf…`. WP2 now contains a bounded,
+unfrozen static-semantics prototype only. WP3 evaluation/denotation, the
+vertical slice, IR, runtime, stable schemas and APIs remain blocked until their
+respective gates and explicit authorization.

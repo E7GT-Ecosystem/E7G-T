@@ -1,0 +1,118 @@
+{
+  "environment": {
+    "variables": {
+      "source_config": {"tag": "config", "args": ["Sigma-A"]},
+      "source_family": {"tag": "family", "args": ["I", {"tag": "config", "args": ["Sigma-A"]}]},
+      "source_view": {"tag": "view", "args": [{"tag": "config", "args": ["Sigma-A"]}, {"tag": "base", "args": ["Summary"]}, "inventory", "source_preserving_inventory"]},
+      "source_projection": {"tag": "projection", "args": [{"tag": "config", "args": ["Sigma-A"]}, {"tag": "base", "args": ["Summary"]}, "inventory", "history-ordering-quotient", "lossy_projection"]},
+      "source_fibre": {"tag": "fibre", "args": [{"tag": "config", "args": ["Sigma-A"]}, "exact_reconstruction"]}
+    },
+    "maps": {
+      "strict_normalise": {
+        "source": {"tag": "config", "args": ["Sigma-A"]},
+        "target": {"tag": "config", "args": ["Sigma-B"]},
+        "domain_policy": "strict",
+        "map_edition": "map-1",
+        "failure_family": "domain-errors-1",
+        "outcome_extension": "core-1"
+      },
+      "total_identity": {
+        "source": {"tag": "config", "args": ["Sigma-A"]},
+        "target": {"tag": "config", "args": ["Sigma-A"]},
+        "domain_policy": "total",
+        "map_edition": "map-identity-1",
+        "failure_family": "no-domain-errors-1",
+        "outcome_extension": "core-1"
+      }
+    },
+    "views": {
+      "source_preserving_inventory": {
+        "kind": "source_preserving",
+        "source": {"tag": "config", "args": ["Sigma-A"]},
+        "target": {"tag": "base", "args": ["Summary"]},
+        "inquiry": "inventory",
+        "preserved_observations": ["history", "ordering", "inventory"],
+        "excluded_observations": [],
+        "quotient_relation": "identity",
+        "reconstruction_obligation": "exact_source_return"
+      },
+      "lossy_projection": {
+        "kind": "projection",
+        "source": {"tag": "config", "args": ["Sigma-A"]},
+        "target": {"tag": "base", "args": ["Summary"]},
+        "inquiry": "inventory",
+        "preserved_observations": ["inventory"],
+        "excluded_observations": ["history", "ordering"],
+        "quotient_relation": "history-ordering-quotient",
+        "reconstruction_obligation": "quotient_only"
+      }
+    },
+    "restrictions": {
+      "select_J": {
+        "input_index": "I",
+        "output_index": "J",
+        "element": {"tag": "config", "args": ["Sigma-A"]},
+        "outcome_extension": "core-1"
+      }
+    },
+    "reconstructions": {
+      "exact_reconstruction": {
+        "source": {"tag": "config", "args": ["Sigma-A"]},
+        "view_type": {"tag": "base", "args": ["Summary"]},
+        "inquiry": "inventory",
+        "view_policy": "source_preserving_inventory",
+        "required_obligation": "exact_source_return",
+        "resource_policies": ["bounded-100"],
+        "outcome_extension": "core-1"
+      }
+    },
+    "criteria": {
+      "phase_by_shape": {
+        "source": {"tag": "fibre", "args": [{"tag": "config", "args": ["Sigma-A"]}, "exact_reconstruction"]},
+        "outcome_extension": "core-1"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "variable",
+      "term": {"tag": "var", "name": "source_config"},
+      "expected": {"type": "Config[\"Sigma-A\"]", "effects": []}
+    },
+    {
+      "id": "strict_apply",
+      "term": {"tag": "apply", "declaration": "strict_normalise", "arg": {"tag": "var", "name": "source_config"}},
+      "expected": {"type": "Outcome[Config[\"Sigma-B\"],\"core-1\"]", "effects": [{"dimension": "evidence", "payload": "{\"domain_policy\":\"strict\",\"failure_family\":\"domain-errors-1\",\"map_declaration\":\"strict_normalise\",\"map_edition\":\"map-1\",\"outcome_extension\":\"core-1\"}"}, {"dimension": "partiality", "payload": "{\"domain_policy\":\"strict\",\"failure_family\":\"domain-errors-1\",\"map_declaration\":\"strict_normalise\",\"map_edition\":\"map-1\"}"}]}
+    },
+    {
+      "id": "total_apply",
+      "term": {"tag": "apply", "declaration": "total_identity", "arg": {"tag": "var", "name": "source_config"}},
+      "expected": {"type": "Outcome[Config[\"Sigma-A\"],\"core-1\"]", "effects": [{"dimension": "evidence", "payload": "{\"domain_policy\":\"total\",\"failure_family\":\"no-domain-errors-1\",\"map_declaration\":\"total_identity\",\"map_edition\":\"map-identity-1\",\"outcome_extension\":\"core-1\"}"}]}
+    },
+    {
+      "id": "lossy_view",
+      "term": {"tag": "view", "declaration": "lossy_projection", "arg": {"tag": "var", "name": "source_config"}},
+      "expected": {"type": "Projection[Config[\"Sigma-A\"],Base[\"Summary\"],\"inventory\",\"history-ordering-quotient\",\"lossy_projection\"]", "effects": [{"dimension": "alternatives", "payload": "quotient_only"}, {"dimension": "inquiry", "payload": "inventory"}, {"dimension": "loss", "payload": "{\"excluded\":[\"history\",\"ordering\"],\"preserved\":[\"inventory\"],\"quotient_relation\":\"history-ordering-quotient\"}"}]}
+    },
+    {
+      "id": "source_preserving_view",
+      "term": {"tag": "view", "declaration": "source_preserving_inventory", "arg": {"tag": "var", "name": "source_config"}},
+      "expected": {"type": "View[Config[\"Sigma-A\"],Base[\"Summary\"],\"inventory\",\"source_preserving_inventory\"]", "effects": [{"dimension": "alternatives", "payload": "exact_source_return"}, {"dimension": "inquiry", "payload": "inventory"}]}
+    },
+    {
+      "id": "restriction",
+      "term": {"tag": "restrict", "declaration": "select_J", "arg": {"tag": "var", "name": "source_family"}},
+      "expected": {"type": "Outcome[Family[\"J\",Config[\"Sigma-A\"]],\"core-1\"]", "effects": [{"dimension": "alternatives", "payload": "select_J"}]}
+    },
+    {
+      "id": "reconstruction",
+      "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "bounded-100", "arg": {"tag": "var", "name": "source_view"}},
+      "expected": {"type": "Outcome[Fibre[Config[\"Sigma-A\"],\"exact_reconstruction\"],\"core-1\"]", "effects": [{"dimension": "alternatives", "payload": "exact_reconstruction"}, {"dimension": "resources", "payload": "bounded-100"}]}
+    },
+    {
+      "id": "classification",
+      "term": {"tag": "classify", "declaration": "phase_by_shape", "arg": {"tag": "var", "name": "source_fibre"}},
+      "expected": {"type": "Outcome[Partition[Fibre[Config[\"Sigma-A\"],\"exact_reconstruction\"],\"phase_by_shape\"],\"core-1\"]", "effects": [{"dimension": "inquiry", "payload": "phase_by_shape"}]}
+    }
+  ]
+}

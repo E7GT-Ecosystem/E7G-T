@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "id": "unknown_variable",
+      "term": {"tag": "var", "name": "missing"},
+      "category": "type_error",
+      "code": "E7C-T001"
+    },
+    {
+      "id": "map_source_mismatch",
+      "term": {"tag": "apply", "declaration": "strict_normalise", "arg": {"tag": "var", "name": "source_view"}},
+      "category": "type_error",
+      "code": "E7C-T002"
+    },
+    {
+      "id": "family_index_mismatch",
+      "term": {"tag": "restrict", "declaration": "select_J", "arg": {"tag": "var", "name": "source_config"}},
+      "category": "type_error",
+      "code": "E7C-T002"
+    },
+    {
+      "id": "unadmitted_resource_policy",
+      "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "unbounded", "arg": {"tag": "var", "name": "source_view"}},
+      "category": "type_error",
+      "code": "E7C-T003"
+    },
+    {
+      "id": "wrong_reconstruction_view",
+      "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "bounded-100", "arg": {"tag": "var", "name": "source_config"}},
+      "category": "type_error",
+      "code": "E7C-T002"
+    },
+    {
+      "id": "lossy_projection_cannot_request_exact_fibre",
+      "term": {"tag": "reconstruct", "declaration": "exact_reconstruction", "resource_policy": "bounded-100", "arg": {"tag": "view", "declaration": "lossy_projection", "arg": {"tag": "var", "name": "source_config"}}},
+      "category": "type_error",
+      "code": "E7C-T002"
+    },
+    {
+      "id": "unknown_term",
+      "term": {"tag": "prove_truth", "arg": {"tag": "var", "name": "source_config"}},
+      "category": "invalid_input",
+      "code": "E7C-S007"
+    }
+  ]
+}
