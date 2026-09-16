@@ -15,17 +15,72 @@ class WP1FormalVocabularyTests(unittest.TestCase):
 
     def test_candidate_nucleus_families_are_typed(self):
         rows = re.findall(r"^\| `([^`]+)` \| ([^|]+) \|", self.vocabulary, re.MULTILINE)
-        expected = {"Entity[K]", "Description[A,R]", "Config[S]", "Map[A,B_t,D,P]",
-                    "View[A,V,Q]", "Encoding[A,R,S]", "History[A,H]",
-                    "Outcome[A,X]", "Ledger[E]", "Witness[J,W]"}
-        self.assertTrue(expected <= {name for name, _ in rows})
+        expected = {"Entity[K]", "Description[A,rho]", "Config[Sigma]",
+                    "Map[A,B_t,delta,mu]", "View[A,V,iota]",
+                    "Encoding[A,V,rho,tau]", "History[A,eta]",
+                    "Outcome[A,xi]", "Ledger[epsilon_d]", "Witness[j,omega]"}
+        families = {name for name, _ in rows}
+        self.assertTrue(expected <= families)
         self.assertTrue(all(parameters.strip() for _, parameters in rows))
-        for meta_sort in ("EntityKind", "ConfigSignature", "RepresentationContract",
-                          "DomainPolicy", "MapEdition", "InquiryId", "HistoryPolicy",
-                          "OutcomeExtensionEdition", "EffectVocabularyEdition",
-                          "JudgementClass", "WitnessEdition", "IndexSignature",
-                          "ResourcePolicy"):
-            self.assertIn(f"`{meta_sort}`", self.vocabulary)
+
+    def test_metavariables_have_exact_declared_sorts(self):
+        expected_rows = (
+            "| `K` | `EntityKind` |", "| `Sigma` | `ConfigSignature` |",
+            "| `rho` | `RepresentationContract` |", "| `delta` | `DomainPolicy` |",
+            "| `mu` | `MapEdition` |", "| `iota` | `InquiryId` |",
+            "| `eta` | `HistoryPolicy` |",
+            "| `xi`, `xi_f`, `xi_p`, `xi_r`, `xi_k` | `OutcomeExtensionEdition` |",
+            "| `epsilon_d` | `EffectVocabularyEdition` |",
+            "| `j` | `JudgementClass` |", "| `omega` | `WitnessEdition` |",
+            "| `I`, `J` | `IndexSignature` |", "| `beta` | `ResourcePolicy` |",
+            "| `tau` | `RetentionStrength` |", "| `f` | `MapDeclaration` |",
+            "| `q` | `ViewPolicy` |", "| `p` | `RestrictionPolicy` |",
+            "| `r` | `ReconstructionPolicy` |", "| `kappa` | `CriterionId` |",
+            "| `m`, `n` | `ModuleId` |", "| `e_s`, `e_t` | `EditionId` |",
+            "| `a` | `AdapterId` |", "| `d` | `FidelityDisposition` |",
+        )
+        for row in expected_rows:
+            self.assertIn(row, self.vocabulary)
+        for row in (
+            "| `Delta` | `SignatureEnvironment` |",
+            "| `Gamma` | `VariableResourceContext` |",
+            "| `Phi` | `ObligationContext` |",
+            "| `epsilon` | `StaticEffectBound` |",
+            "| `lambda` | `RuntimeLedger` |",
+            "| `M` | `ModelId` |", "| `O` | `ObservationFamily` |",
+            "| `t`, `u`, `v` | `Term` |", "| `o` | `TerminalOutcome` |",
+        ):
+            self.assertIn(row, self.vocabulary)
+        self.assertIn("`ProfileId`, `ModuleId`, `AdapterId`, `EditionId`", self.vocabulary)
+
+    def test_operation_indices_and_outputs_are_consistently_typed(self):
+        declarations = (
+            "f:MapDeclaration[A,B_t,delta,mu]",
+            "q:ViewPolicy[A,V,iota]",
+            "p:RestrictionPolicy[I,J,A]",
+            "r:ReconstructionPolicy[A,V,iota]",
+            "`kappa:CriterionId`",
+        )
+        for declaration in declarations:
+            self.assertIn(declaration, self.vocabulary)
+        for signature in (
+            r"\mathsf{apply}_{f}: A \to \mathsf{Outcome}[B_t,xi_f]",
+            r"\mathsf{view}_{q}: A \to \mathsf{View}[A,V,iota]",
+            r"\mathsf{Outcome}[\mathsf{Family}[J,A],xi_p]",
+            r"\mathsf{reconstruct}_{r,beta}: \mathsf{View}[A,V,iota]",
+            r"\mathsf{Outcome}[\mathsf{Fibre}[A,r],xi_r]",
+            r"\mathsf{Outcome}[\mathsf{Partition}[A,kappa],xi_k]",
+        ):
+            self.assertIn(signature, self.vocabulary)
+
+    def test_module_adapter_judgement_has_no_overloaded_or_untyped_symbols(self):
+        self.assertIn(r"\Delta \vdash m@e_s\;\mathsf{module}", self.vocabulary)
+        self.assertIn(r"\Delta \vdash a:m@e_s \Rightarrow n@e_t\;[d]", self.vocabulary)
+        self.assertIn("`m,n:ModuleId`, `e_s,e_t:EditionId`, `a:AdapterId`, and\n"
+                      "`d:FidelityDisposition`", self.vocabulary)
+        for stale in ("P@e", "F:P@e", "C@c", "Encoding[A,R,S]",
+                      "Family[J,A],X_p", "View[A,V,Q]"):
+            self.assertNotIn(stale, self.vocabulary)
 
     def test_equality_judgements_are_separate_and_conversion_is_bounded(self):
         for marker in ("equiv_{\\mathsf{def}}", "=_{\\mathsf{den}}",
