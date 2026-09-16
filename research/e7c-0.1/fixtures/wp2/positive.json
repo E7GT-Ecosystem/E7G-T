@@ -5,6 +5,7 @@
       "source_family": {"tag": "family", "args": ["I", {"tag": "config", "args": ["Sigma-A"]}]},
       "source_view": {"tag": "view", "args": [{"tag": "config", "args": ["Sigma-A"]}, {"tag": "base", "args": ["Summary"]}, "inventory", "source_preserving_inventory"]},
       "source_projection": {"tag": "projection", "args": [{"tag": "config", "args": ["Sigma-A"]}, {"tag": "base", "args": ["Summary"]}, "inventory", "history-ordering-quotient", "lossy_projection"]},
+      "terminal_result": {"tag": "outcome", "args": [{"tag": "config", "args": ["Sigma-A"]}, "core-1"]},
       "source_fibre": {"tag": "fibre", "args": [{"tag": "config", "args": ["Sigma-A"]}, "exact_reconstruction"]}
     },
     "maps": {

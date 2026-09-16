@@ -24,10 +24,23 @@ class WP3SemanticsSpecificationTests(unittest.TestCase):
             self.normalized,
         )
 
-    def test_outcome_nesting_gap_is_explicit_and_blocking(self):
+    def test_outcome_normal_amendment_has_direct_terminal_rule(self):
         self.assertIn("WP3-GAP-001", self.spec)
-        self.assertIn("Implicit flattening", self.spec)
-        self.assertIn("evaluator implementation remains blocked", self.spec)
+        self.assertIn("`E7C-S013`", self.spec)
+        self.assertIn("x \\Downarrow (o,[])", self.spec)
+        self.assertIn("not `success(o,none)`", self.spec)
+        self.assertIn("WP3-I remains blocked", self.spec)
+
+    def test_resource_charges_and_precedence_are_exact(self):
+        for phrase in (
+            "before variable lookup or argument evaluation",
+            "Immediately before each required ledger append",
+            "Immediately before each candidate predicate or equality check",
+            "Resource checks and semantic failures are resolved by program order",
+            "zero step bound makes even variable lookup return `resource_limit`",
+            "ledger bound exhausted at `evidence` or `partiality` wins",
+        ):
+            self.assertIn(phrase, self.normalized)
 
     def test_every_terminal_outcome_is_named(self):
         for outcome in (
@@ -58,7 +71,9 @@ class WP3SemanticsSpecificationTests(unittest.TestCase):
 
     def test_reconstruction_cannot_report_partial_success(self):
         self.assertIn("No rule returns a successful incomplete subset", self.spec)
-        self.assertIn("Projection values have no exact-reconstruction rule", self.spec)
+        self.assertIn(
+            "Projection values have no exact-reconstruction rule", self.normalized
+        )
 
     def test_observation_keeps_outcomes_and_ledgers_distinct(self):
         self.assertIn(
