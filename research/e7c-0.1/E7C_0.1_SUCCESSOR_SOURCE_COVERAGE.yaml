@@ -1,5 +1,5 @@
 schema: e7c-successor-source-coverage/v0alpha2
-status: wp0_complete_with_named_deferrals_pending_acceptance_review
+status: wp0_accepted_with_named_deferrals
 repository: E7GT-Ecosystem/E7G-T
 baseline_commit: 4867f36976d83f7c8effebdea91a9bf25d4f276b
 cutoff_utc: "2026-09-15T19:52:58Z"
@@ -139,6 +139,8 @@ missing_or_inaccessible:
   - conversation-only suggestions require an immutable author-supplied source before later intake
 closure:
   first_party_verdict: complete_with_named_deferrals
-  acceptance_status: pending_originating_author_and_foundation_semantics_review
+  acceptance_status: wp0_accepted_with_named_deferrals
+  accepted_head: d84d3fd5a1126985eb7a1730a0167617caca4b8e
+  merge_commit: 64c49b4676c4805dee248058f43ec210d7113903
   deferrals: [GPR-004, GPR-010, GPR-011, GPR-012, GPR-014, GPR-015, GPR-016, GPR-017, GPR-018]
   implementation_authorised: false
