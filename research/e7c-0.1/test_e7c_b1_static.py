@@ -95,6 +95,89 @@ class E7CB1StaticTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "E7C-S010")
         self.assertEqual(raised.exception.path, "$.type.args[2]")
 
+    def test_outcome_typed_variable_is_admitted_as_terminal_only(self):
+        result = self.checker.check({"tag": "var", "name": "terminal_result"})
+        self.assertEqual(result.type.tag, "outcome")
+
+    def test_directly_nested_outcome_is_rejected(self):
+        with self.assertRaises(Diagnostic) as raised:
+            parse_type(
+                {
+                    "tag": "outcome",
+                    "args": [
+                        {
+                            "tag": "outcome",
+                            "args": [{"tag": "config", "args": ["Sigma-A"]}, "core-1"],
+                        },
+                        "core-2",
+                    ],
+                }
+            )
+        self.assertEqual(raised.exception.code, "E7C-S013")
+
+    def test_outcome_nested_inside_value_constructor_is_rejected(self):
+        with self.assertRaises(Diagnostic) as raised:
+            parse_type(
+                {
+                    "tag": "family",
+                    "args": [
+                        "I",
+                        {
+                            "tag": "outcome",
+                            "args": [
+                                {"tag": "config", "args": ["Sigma-A"]},
+                                "core-1",
+                            ],
+                        },
+                    ],
+                }
+            )
+        self.assertEqual(raised.exception.code, "E7C-S013")
+
+    def test_restriction_cannot_consume_family_of_outcomes(self):
+        environment = copy.deepcopy(self.positive["environment"])
+        environment["restrictions"]["select_J"]["element"] = {
+            "tag": "outcome",
+            "args": [{"tag": "config", "args": ["Sigma-A"]}, "core-1"],
+        }
+        result = check_document(
+            {
+                "environment": environment,
+                "term": {
+                    "tag": "restrict",
+                    "declaration": "select_J",
+                    "arg": {"tag": "var", "name": "source_family"},
+                },
+            }
+        )
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S013")
+        self.assertEqual(
+            result["diagnostic"]["path"],
+            "$.environment.restrictions.select_J.element",
+        )
+
+    def test_map_cannot_consume_outcome_without_eliminator(self):
+        environment = copy.deepcopy(self.positive["environment"])
+        environment["maps"]["strict_normalise"]["source"] = {
+            "tag": "outcome",
+            "args": [{"tag": "config", "args": ["Sigma-A"]}, "core-1"],
+        }
+        result = check_document(
+            {"environment": environment, "term": {"tag": "var", "name": "source_config"}}
+        )
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S013")
+
+    def test_map_cannot_produce_nested_outcome(self):
+        environment = copy.deepcopy(self.positive["environment"])
+        environment["maps"]["strict_normalise"]["target"] = {
+            "tag": "outcome",
+            "args": [{"tag": "config", "args": ["Sigma-B"]}, "core-1"],
+        }
+        result = check_document(
+            {"environment": environment, "term": {"tag": "var", "name": "source_config"}}
+        )
+        self.assertEqual(result["diagnostic"]["code"], "E7C-S013")
+
     def test_checker_snapshots_declarations_at_admission(self):
         environment = copy.deepcopy(self.positive["environment"])
         checker = Checker(environment)

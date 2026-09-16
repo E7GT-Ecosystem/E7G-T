@@ -165,7 +165,31 @@ def parse_type(value: Any, path: str = "$.type", _depth: int = 0) -> Type:
             f"unknown domain policy {parsed[2]!r}",
             f"{path}.args[2]",
         )
+    if tag != "outcome" and any(
+        isinstance(argument, Type) and _contains_outcome(argument)
+        for argument in parsed
+    ):
+        raise Diagnostic(
+            "invalid_input",
+            "E7C-S013",
+            "Outcome may appear only as a terminal outer type",
+            path,
+        )
+    if tag == "outcome" and _contains_outcome(parsed[0]):
+        raise Diagnostic(
+            "invalid_input",
+            "E7C-S013",
+            "Outcome success type must be outcome-free",
+            f"{path}.args[0]",
+        )
     return Type(tag, tuple(parsed))
+
+
+def _contains_outcome(value: Type) -> bool:
+    return value.tag == "outcome" or any(
+        isinstance(argument, Type) and _contains_outcome(argument)
+        for argument in value.args
+    )
 
 
 def type_json(value: Type) -> dict[str, Any]:
@@ -269,16 +293,20 @@ class Checker:
                 for field in text_fields:
                     _text(declaration[field], f"{path}.{field}")
         for name, declaration in self.maps.items():
+            path = f"$.environment.maps.{name}"
             policy = declaration["domain_policy"]
             if policy not in DOMAIN_POLICIES:
                 raise Diagnostic(
                     "invalid_input",
                     "E7C-S010",
                     f"unknown domain policy {policy!r}",
-                    f"$.environment.maps.{name}.domain_policy",
+                    f"{path}.domain_policy",
                 )
+            self._reject_consumed_outcome(declaration["source"], f"{path}.source")
+            self._reject_produced_outcome(declaration["target"], f"{path}.target")
         for name, declaration in self.views.items():
             path = f"$.environment.views.{name}"
+            self._reject_consumed_outcome(declaration["source"], f"{path}.source")
             kind = declaration["kind"]
             if kind not in VIEW_KINDS:
                 raise Diagnostic("invalid_input", "E7C-S011", f"unknown view kind {kind!r}", f"{path}.kind")
@@ -304,8 +332,13 @@ class Checker:
                 or declaration["reconstruction_obligation"] == "exact_source_return"
             ):
                 raise Diagnostic("invalid_input", "E7C-S011", "projection requires explicit loss and quotient", path)
+        for name, declaration in self.restrictions.items():
+            self._reject_consumed_outcome(
+                declaration["element"], f"$.environment.restrictions.{name}.element"
+            )
         for name, declaration in self.reconstructions.items():
             path = f"$.environment.reconstructions.{name}"
+            self._reject_consumed_outcome(declaration["source"], f"{path}.source")
             values = declaration["resource_policies"]
             if not isinstance(values, list) or any(
                 not isinstance(item, str) or not item for item in values
@@ -324,6 +357,30 @@ class Checker:
             )
             if not expected_contract:
                 raise Diagnostic("invalid_input", "E7C-S011", "reconstruction/view contract mismatch", path)
+        for name, declaration in self.criteria.items():
+            self._reject_consumed_outcome(
+                declaration["source"], f"$.environment.criteria.{name}.source"
+            )
+
+    @staticmethod
+    def _reject_consumed_outcome(value: Any, path: str) -> None:
+        if parse_type(value, path).tag == "outcome":
+            raise Diagnostic(
+                "invalid_input",
+                "E7C-S013",
+                "Outcome cannot be consumed without an explicit eliminator",
+                path,
+            )
+
+    @staticmethod
+    def _reject_produced_outcome(value: Any, path: str) -> None:
+        if parse_type(value, path).tag == "outcome":
+            raise Diagnostic(
+                "invalid_input",
+                "E7C-S013",
+                "Outcome-producing primitive cannot add a second Outcome layer",
+                path,
+            )
 
     @staticmethod
     def _type_table(value: Any, section: str) -> dict[str, Type]:
