@@ -20,6 +20,7 @@ STATIC_RULES_ID = "E7C-WP2/B1@ed2a49de"
 DYNAMIC_RULES_ID = "E7C-WP3-S/B1@bae84fb7"
 CLAIM_CLASS = "bounded_derivation_replay"
 OUTCOME_EXTENSION_EDITION = "core-1"
+INTERPRETATION_EDITION = "e7c-b1-finite-tables-0.1"
 
 
 def canonical_bytes(value: Any) -> bytes:

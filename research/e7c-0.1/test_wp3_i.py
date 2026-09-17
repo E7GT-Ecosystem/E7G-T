@@ -4,12 +4,13 @@ from pathlib import Path
 import unittest
 
 from e7c_b1_canonical import (
+    INTERPRETATION_EDITION,
     bind_envelope,
     canonical_key,
     digest,
     node_digest_payload,
 )
-from e7c_b1_evaluator import EvaluationInputError, evaluate
+from e7c_b1_evaluator import EvaluationInputError, Evaluator, evaluate
 from e7c_b1_replay_checker import check_witness
 
 
@@ -22,6 +23,9 @@ def document(term, *, steps=20, candidates=20, ledger=20):
     config_a = {"id": "a", "valid": True}
     config_b = {"id": "b", "valid": False}
     config_c = {"id": "c", "valid": True}
+    config_a_type = environment["variables"]["source_config"]
+    config_b_type = environment["maps"]["strict_normalise"]["target"]
+    summary_type = environment["views"]["source_preserving_inventory"]["target"]
     return {
         "environment": environment,
         "term": copy.deepcopy(term),
@@ -44,6 +48,15 @@ def document(term, *, steps=20, candidates=20, ledger=20):
             "source_fibre": [config_a, config_c],
         },
         "interpretation": {
+            "interpretation_edition": INTERPRETATION_EDITION,
+            "carriers": {
+                canonical_key(config_a_type): [config_a, config_b, config_c],
+                canonical_key(config_b_type): [{"id": "A"}, {"id": "C"}],
+                canonical_key(summary_type): [
+                    {"bucket": "one"}, {"bucket": "two"},
+                    {"count": 1}, {"count": 2}, {"count": 3},
+                ],
+            },
             "maps": {
                 "strict_normalise": {
                     "capability": True,
@@ -51,12 +64,17 @@ def document(term, *, steps=20, candidates=20, ledger=20):
                     "cases": [
                         {"input": config_a, "in_domain": True, "output": {"id": "A"}},
                         {"input": config_b, "in_domain": False},
+                        {"input": config_c, "in_domain": True, "output": {"id": "C"}},
                     ],
                 },
                 "total_identity": {
                     "capability": True,
                     "obligation": "resolved",
-                    "cases": [{"input": config_a, "in_domain": True, "output": config_a}],
+                    "cases": [
+                        {"input": config_a, "in_domain": True, "output": config_a},
+                        {"input": config_b, "in_domain": True, "output": config_b},
+                        {"input": config_c, "in_domain": True, "output": config_c},
+                    ],
                 },
             },
             "views": {
@@ -72,7 +90,11 @@ def document(term, *, steps=20, candidates=20, ledger=20):
                 "lossy_projection": {
                     "capability": True,
                     "obligation": "resolved",
-                    "cases": [{"input": config_a, "output": {"count": 3}}],
+                    "cases": [
+                        {"input": config_a, "output": {"count": 1}},
+                        {"input": config_b, "output": {"count": 2}},
+                        {"input": config_c, "output": {"count": 3}},
+                    ],
                 },
             },
             "restrictions": {
@@ -89,7 +111,7 @@ def document(term, *, steps=20, candidates=20, ledger=20):
                     "carrier_finite": True,
                     "equality_resolved": True,
                     "constraint_resolved": True,
-                    "carrier": [config_c, config_b, config_a],
+                    "carrier": [config_a, config_b, config_c],
                 }
             },
             "criteria": {
@@ -98,6 +120,7 @@ def document(term, *, steps=20, candidates=20, ledger=20):
                     "obligation": "resolved",
                     "cases": [
                         {"input": config_a, "output": "stable"},
+                        {"input": config_b, "output": "unstable"},
                         {"input": config_c, "output": "stable"},
                     ],
                 }
@@ -136,6 +159,16 @@ RECONSTRUCT_BOUND_VIEW = {
     "declaration": "exact_reconstruction",
     "resource_policy": "bounded-100",
     "arg": {"tag": "var", "name": "source_view"},
+}
+RESTRICT = {
+    "tag": "restrict",
+    "declaration": "select_J",
+    "arg": {"tag": "var", "name": "source_family"},
+}
+CLASSIFY = {
+    "tag": "classify",
+    "declaration": "phase_by_shape",
+    "arg": {"tag": "var", "name": "source_fibre"},
 }
 
 
@@ -180,7 +213,7 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
 
     def test_ledger_exhaustion_precedes_domain_failure(self):
         source = document(STRICT, ledger=0)
-        source["values"]["source_config"] = {"id": "missing", "valid": False}
+        source["values"]["source_config"] = {"id": "b", "valid": False}
         result = evaluate(source)
         self.assertEqual(result["terminal_outcome"]["tag"], "resource_limit")
         self.assertEqual(result["ordered_ledger"], [])
@@ -199,21 +232,38 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
         term = {"tag": "apply", "declaration": "total_identity", "arg": VAR}
         source = document(term)
         source["environment"]["maps"]["total_identity"]["domain_policy"] = "filtering"
-        case = source["interpretation"]["maps"]["total_identity"]["cases"][0]
-        case["retained"] = [{"id": "a"}]
-        case["excluded"] = [{"id": "discarded"}]
+        for case in source["interpretation"]["maps"]["total_identity"]["cases"]:
+            case["retained"] = [copy.deepcopy(case["input"])]
+            case["excluded"] = []
         result = evaluate(source)
         partiality = result["ordered_ledger"][1]
         self.assertEqual(partiality["static_atom"]["dimension"], "partiality")
-        self.assertEqual(partiality["detail"]["retained"], [{"id": "a"}])
-        self.assertEqual(partiality["detail"]["excluded"], [{"id": "discarded"}])
+        self.assertEqual(partiality["detail"]["retained"], [{"id": "a", "valid": True}])
+        self.assertEqual(partiality["detail"]["excluded"], [])
 
     def test_restriction_uses_canonical_family_order(self):
-        term = {"tag": "restrict", "declaration": "select_J", "arg": {"tag": "var", "name": "source_family"}}
-        source = document(term)
+        source = document(RESTRICT)
         source["values"]["source_family"].reverse()
         result = evaluate(source)
         self.assertEqual([item["id"] for item in result["terminal_outcome"]["value"]], ["a", "c"])
+        self.assertEqual(result["resource_progress"]["completed_candidate_checks"], 3)
+
+    def test_restriction_candidate_exhaustion_prevents_partial_success(self):
+        result = evaluate(document(RESTRICT, candidates=2))
+        self.assertEqual(result["terminal_outcome"]["tag"], "resource_limit")
+        self.assertEqual(result["resource_progress"]["completed_candidate_checks"], 2)
+        self.assertEqual(result["resource_progress"]["last_candidate_key"], canonical_key({"id": "b", "valid": False}))
+
+    def test_classification_charges_each_candidate(self):
+        result = evaluate(document(CLASSIFY, candidates=2))
+        self.assertEqual(result["terminal_outcome"]["tag"], "success")
+        self.assertEqual(result["resource_progress"]["completed_candidate_checks"], 2)
+
+    def test_classification_candidate_exhaustion_prevents_partial_success(self):
+        result = evaluate(document(CLASSIFY, candidates=1))
+        self.assertEqual(result["terminal_outcome"]["tag"], "resource_limit")
+        self.assertNotIn("value", result["terminal_outcome"])
+        self.assertEqual(result["resource_progress"]["last_candidate_key"], canonical_key({"id": "a", "valid": True}))
 
     def test_complete_fibre_is_canonical_and_exhaustive(self):
         result = evaluate(document(RECONSTRUCT))
@@ -258,7 +308,7 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
             "representation": {"bucket": "one"},
             "source_return_token": None,
         }
-        with self.assertRaisesRegex(EvaluationInputError, "declared view policy"):
+        with self.assertRaisesRegex(EvaluationInputError, "nominal view policy"):
             evaluate(source)
 
     def test_missing_candidate_comparison_prevents_fibre_success(self):
@@ -267,15 +317,36 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
         source["interpretation"]["views"]["source_preserving_inventory"]["cases"] = [
             case for case in cases if case["input"]["id"] != "c"
         ]
-        with self.assertRaisesRegex(EvaluationInputError, "missing reconstruction comparison"):
+        with self.assertRaisesRegex(EvaluationInputError, "lacks source-carrier coverage"):
             evaluate(source)
 
     def test_total_map_requires_a_target_case_for_its_input(self):
         term = {"tag": "apply", "declaration": "total_identity", "arg": VAR}
         source = document(term)
         source["interpretation"]["maps"]["total_identity"]["cases"] = []
-        with self.assertRaisesRegex(EvaluationInputError, "missing map interpretation case"):
+        with self.assertRaisesRegex(EvaluationInputError, "lacks source-carrier coverage"):
             evaluate(source)
+
+    def test_plain_runtime_value_must_belong_to_declared_carrier(self):
+        source = document(VAR)
+        source["values"]["source_config"] = {"id": "outside", "valid": True}
+        with self.assertRaisesRegex(EvaluationInputError, "outside its declared carrier"):
+            evaluate(source)
+
+    def test_interpretation_requires_explicit_obligation(self):
+        source = document(VAR)
+        del source["interpretation"]["maps"]["total_identity"]["obligation"]
+        with self.assertRaisesRegex(EvaluationInputError, "non-canonical fields"):
+            evaluate(source)
+
+    def test_failed_candidate_does_not_advance_last_completed_key(self):
+        evaluator = Evaluator(document(RECONSTRUCT_BOUND_VIEW))
+        evaluator.interpretation["views"]["source_preserving_inventory"]["cases"].pop()
+        with self.assertRaisesRegex(EvaluationInputError, "reconstruction comparison"):
+            evaluator.run()
+        progress = evaluator.state.progress()
+        self.assertEqual(progress["completed_candidate_checks"], 3)
+        self.assertEqual(progress["last_candidate_key"], canonical_key({"id": "b", "valid": False}))
 
 
 class WP3IIndependentReplayTests(unittest.TestCase):
@@ -375,6 +446,54 @@ class WP3IIndependentReplayTests(unittest.TestCase):
         witness = replace_claimed_terminal(witness, false_domain_error)
         result = check_witness(witness)
         self.assertEqual(result["diagnostic"], "missing_replay_material")
+
+    def test_rebound_runtime_value_outside_carrier_is_rejected(self):
+        witness = self.witness()
+        witness["runtime_inputs"]["values"]["source_config"] = {"id": "outside", "valid": True}
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "runtime_input_mismatch")
+
+    def test_rebound_missing_obligation_is_rejected_at_admission(self):
+        witness = self.witness()
+        del witness["runtime_inputs"]["interpretation"]["maps"]["total_identity"]["obligation"]
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "runtime_input_mismatch")
+
+    def test_rebound_missing_carrier_is_rejected_at_admission(self):
+        witness = self.witness()
+        carriers = witness["runtime_inputs"]["interpretation"]["carriers"]
+        del carriers[next(iter(carriers))]
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "missing_replay_material")
+
+    def test_duplicate_derivation_node_identifier_is_rejected(self):
+        witness = self.witness()
+        nodes = witness["derivation_record"]["nodes_bottom_up"]
+        nodes[1]["node_id"] = nodes[0]["node_id"]
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "malformed_witness")
+
+    def test_derivation_cycle_is_rejected(self):
+        witness = self.witness()
+        nodes = witness["derivation_record"]["nodes_bottom_up"]
+        nodes[0]["child_node_ids"] = [nodes[-1]["node_id"]]
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "derivation_order_mismatch")
+
+    def test_orphan_derivation_node_is_rejected(self):
+        witness = self.witness()
+        orphan = copy.deepcopy(witness["derivation_record"]["nodes_bottom_up"][0])
+        orphan["term"] = {"tag": "var", "name": "source_family"}
+        orphan["node_id"] = digest(node_digest_payload(orphan))
+        witness["derivation_record"]["nodes_bottom_up"].insert(-1, orphan)
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "malformed_witness")
+
+    def test_dangling_derivation_child_is_rejected(self):
+        witness = self.witness()
+        witness["derivation_record"]["nodes_bottom_up"][-1]["child_node_ids"].append("missing-node")
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "missing_replay_material")
 
 
 if __name__ == "__main__":

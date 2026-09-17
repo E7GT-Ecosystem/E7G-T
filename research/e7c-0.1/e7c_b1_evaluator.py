@@ -10,6 +10,7 @@ import copy
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
+from e7c_b1_admission import AdmissionError, validate_runtime_package
 from e7c_b1_canonical import (
     CALCULUS_EDITION,
     CLAIM_CLASS,
@@ -63,12 +64,14 @@ class State:
         self.steps += 1
         return True
 
-    def charge_candidate(self, key: str) -> bool:
+    def charge_candidate(self) -> bool:
         if self.candidates >= self.beta["candidate_bound"]:
             return False
         self.candidates += 1
-        self.last_candidate_key = key
         return True
+
+    def complete_candidate(self, key: str) -> None:
+        self.last_candidate_key = key
 
     def append(self, atom: Mapping[str, Any], detail: Mapping[str, Any]) -> bool:
         if len(self.ledger) >= self.beta["ledger_entry_bound"]:
@@ -124,69 +127,11 @@ class Evaluator:
         )):
             raise EvaluationInputError("resource bounds must be non-negative integers")
         self.static = Checker(self.environment).check(self.term).as_dict()
-        if not isinstance(self.values, Mapping) or set(self.values) != set(self.environment["variables"]):
-            raise EvaluationInputError("value environment must bind every declared variable exactly once")
-        for name, declared_type in self.environment["variables"].items():
-            tag = declared_type["tag"]
-            if tag == "outcome":
-                self._validate_terminal(self.values[name], f"values.{name}")
-            elif tag in {"view", "projection"}:
-                self._validate_indexed_view(
-                    self.values[name], declared_type, f"values.{name}"
-                )
-            elif tag in {"family", "fibre", "partition"} and not isinstance(
-                self.values[name], list
-            ):
-                raise EvaluationInputError(f"values.{name} must be a finite sequence")
-        self._validate_case_tables()
+        try:
+            validate_runtime_package(self.environment, self.values, self.interpretation)
+        except AdmissionError as error:
+            raise EvaluationInputError(f"{error.diagnostic}: {error.detail}") from error
         self.state = State(copy.deepcopy(self.beta))
-
-    @staticmethod
-    def _validate_terminal(value: Any, path: str) -> None:
-        if not isinstance(value, Mapping) or "tag" not in value:
-            raise EvaluationInputError(f"{path} is not a terminal outcome")
-        shapes = {
-            "success": {"tag", "value", "optional_witness"},
-            "domain_error": {"tag", "diagnostic"},
-            "unsupported": {"tag", "capability"},
-            "undetermined": {"tag", "obligation"},
-            "resource_limit": {"tag", "bound", "progress"},
-        }
-        expected = shapes.get(value["tag"])
-        if expected is None or set(value) != expected:
-            raise EvaluationInputError(f"{path} has an invalid terminal outcome shape")
-        if value["tag"] == "success" and value["optional_witness"] is not None:
-            raise EvaluationInputError(f"{path} must not import an envelope witness binding")
-
-    @staticmethod
-    def _validate_indexed_view(value: Any, declared_type: Mapping[str, Any], path: str) -> None:
-        if not isinstance(value, Mapping) or set(value) != {
-            "kind", "declaration", "representation", "source_return_token"
-        }:
-            raise EvaluationInputError(f"{path} has an invalid indexed-view shape")
-        tag = declared_type["tag"]
-        expected_kind = "source_preserving" if tag == "view" else "projection"
-        policy_index = 3 if tag == "view" else 4
-        if value["kind"] != expected_kind or value["declaration"] != declared_type["args"][policy_index]:
-            raise EvaluationInputError(f"{path} does not match its declared view policy")
-        token = value["source_return_token"]
-        if (tag == "view" and token is None) or (tag == "projection" and token is not None):
-            raise EvaluationInputError(f"{path} violates its source-return boundary")
-
-    def _validate_case_tables(self) -> None:
-        for section in ("maps", "views", "criteria"):
-            table = self.interpretation.get(section, {})
-            if not isinstance(table, Mapping):
-                raise EvaluationInputError(f"interpretation.{section} must be an object")
-            for name, record in table.items():
-                if not isinstance(record, Mapping):
-                    raise EvaluationInputError(f"interpretation.{section}.{name} must be an object")
-                cases = record.get("cases", [])
-                if not isinstance(cases, list):
-                    raise EvaluationInputError(f"interpretation.{section}.{name}.cases must be a list")
-                keys = [canonical_key(case.get("input")) for case in cases if isinstance(case, Mapping)]
-                if len(keys) != len(cases) or len(keys) != len(set(keys)):
-                    raise EvaluationInputError(f"interpretation.{section}.{name}.cases is not a canonical function table")
 
     def run(self) -> dict[str, Any]:
         terminal, tree = self._eval(self.term)
@@ -267,9 +212,9 @@ class Evaluator:
         return self.interpretation.get(section, {}).get(name, {})
 
     def _guard(self, record: Mapping[str, Any], capability: str, obligation: str) -> dict[str, Any] | None:
-        if record.get("capability") is not True:
+        if record["capability"] is not True:
             return outcome("unsupported", capability)
-        resolution = record.get("obligation", "resolved")
+        resolution = record["obligation"]
         if resolution != "resolved":
             return outcome("undetermined", obligation)
         return None
@@ -369,15 +314,34 @@ class Evaluator:
         name = term["declaration"]
         record = self._table("restrictions", name)
         appended: list[dict[str, Any]] = []
-        ordered = sorted(value, key=canonical_key)
-        retained = [item for item in ordered if canonical_key(item) in set(record.get("retained_keys", []))]
-        excluded = [item for item in ordered if canonical_key(item) not in set(record.get("retained_keys", []))]
-        detail = {"declaration": name, "retained": retained, "excluded": excluded}
-        if not self._append({"dimension": "alternatives", "payload": name}, detail, appended):
+        if not self._append(
+            {"dimension": "alternatives", "payload": name},
+            {"declaration": name, "event": "restriction_partition"},
+            appended,
+        ):
             return self._finish(term, "restrict.ledger_limit", pre, child, self._limit(), appended, [])
         guarded = self._guard(record, f"restriction:{name}", f"restriction:{name}")
-        terminal = guarded or outcome("success", retained)
-        return self._finish(term, "restrict", pre, child, terminal, appended, [])
+        if guarded:
+            return self._finish(term, "restrict.guard", pre, child, guarded, appended, [])
+        ordered = sorted(value, key=canonical_key)
+        retained: list[Any] = []
+        excluded: list[Any] = []
+        retained_keys = set(record["retained_keys"])
+        candidates: list[str] = []
+        for item in ordered:
+            key = canonical_key(item)
+            if not self.state.charge_candidate():
+                return self._finish(term, "restrict.candidate_limit", pre, child, self._limit(), appended, candidates)
+            if key in retained_keys:
+                retained.append(item)
+            else:
+                excluded.append(item)
+            self.state.complete_candidate(key)
+            candidates.append(key)
+        detail = {"declaration": name, "retained": retained, "excluded": excluded}
+        self.state.ledger[-1]["detail"] = copy.deepcopy(detail)
+        appended[-1]["detail"] = copy.deepcopy(detail)
+        return self._finish(term, "restrict", pre, child, outcome("success", retained), appended, candidates)
 
     def _eval_reconstruct(self, term: Mapping[str, Any], value: Any, pre: Mapping[str, Any], child: dict[str, Any]):
         name = term["declaration"]
@@ -394,18 +358,17 @@ class Evaluator:
         if guarded:
             return self._finish(term, "reconstruct.guard", pre, child, guarded, appended, candidates)
         for obligation in ("carrier_finite", "equality_resolved", "constraint_resolved"):
-            if record.get(obligation) is not True:
+            if record[obligation] is not True:
                 return self._finish(term, "reconstruct.undetermined", pre, child,
                     outcome("undetermined", f"{obligation}:{name}"), appended, candidates)
-        carrier = sorted(record.get("carrier", []), key=canonical_key)
+        carrier = record["carrier"]
         target = value["representation"]
         fibre: list[Any] = []
         view_record = self._table("views", self.environment["reconstructions"][name]["view_policy"])
         for candidate in carrier:
             key = canonical_key(candidate)
-            if not self.state.charge_candidate(key):
+            if not self.state.charge_candidate():
                 return self._finish(term, "reconstruct.candidate_limit", pre, child, self._limit(), appended, candidates)
-            candidates.append(key)
             case = self._lookup_case(view_record, candidate)
             if case is None or "output" not in case:
                 raise EvaluationInputError(
@@ -413,6 +376,8 @@ class Evaluator:
                 )
             if canonical_key(case["output"]) == canonical_key(target):
                 fibre.append(copy.deepcopy(candidate))
+            self.state.complete_candidate(key)
+            candidates.append(key)
         return self._finish(term, "reconstruct", pre, child, outcome("success", fibre), appended, candidates)
 
     def _eval_classify(self, term: Mapping[str, Any], value: Any, pre: Mapping[str, Any], child: dict[str, Any]):
@@ -426,14 +391,20 @@ class Evaluator:
         if guarded:
             return self._finish(term, "classify.guard", pre, child, guarded, appended, [])
         classes: dict[str, dict[str, Any]] = {}
+        candidates: list[str] = []
         for item in sorted(value, key=canonical_key):
+            key = canonical_key(item)
+            if not self.state.charge_candidate():
+                return self._finish(term, "classify.candidate_limit", pre, child, self._limit(), appended, candidates)
             case = self._lookup_case(record, item)
             if case is None:
                 raise EvaluationInputError(f"missing criterion interpretation case for {name}")
             label = canonical_key(case["output"])
             classes.setdefault(label, {"criterion_value": case["output"], "members": []})["members"].append(item)
+            self.state.complete_candidate(key)
+            candidates.append(key)
         terminal = outcome("success", [classes[key] for key in sorted(classes)])
-        return self._finish(term, "classify", pre, child, terminal, appended, [])
+        return self._finish(term, "classify", pre, child, terminal, appended, candidates)
 
 
 def evaluate(document: Mapping[str, Any]) -> dict[str, Any]:

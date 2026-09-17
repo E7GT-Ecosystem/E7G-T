@@ -10,6 +10,7 @@ import copy
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
+from e7c_b1_admission import AdmissionError, validate_runtime_package
 from e7c_b1_canonical import (
     CALCULUS_EDITION,
     CLAIM_CLASS,
@@ -63,12 +64,14 @@ class ReplayState:
         self.steps += 1
         return True
 
-    def take_candidate(self, key: str) -> bool:
+    def take_candidate(self) -> bool:
         if self.candidates == self.beta["candidate_bound"]:
             return False
         self.candidates += 1
-        self.last_key = key
         return True
+
+    def complete_candidate(self, key: str) -> None:
+        self.last_key = key
 
     def add_entry(self, atom: Mapping[str, Any], detail: Mapping[str, Any]) -> bool:
         if len(self.entries) == self.beta["ledger_entry_bound"]:
@@ -129,9 +132,9 @@ class ReplayMachine:
 
     @staticmethod
     def guard(record: Mapping[str, Any], capability: str, obligation: str) -> dict[str, Any] | None:
-        if record.get("capability") is not True:
+        if record["capability"] is not True:
             return outcome("unsupported", capability)
-        if record.get("obligation", "resolved") != "resolved":
+        if record["obligation"] != "resolved":
             return outcome("undetermined", obligation)
         return None
 
@@ -269,18 +272,34 @@ class ReplayMachine:
     def restrict(self, term, value, pre, child):
         name = term["declaration"]
         record = self.table("restrictions", name)
-        retained_keys = set(record.get("retained_keys", []))
-        ordered = sorted(value, key=canonical_key)
-        retained = [item for item in ordered if canonical_key(item) in retained_keys]
-        excluded = [item for item in ordered if canonical_key(item) not in retained_keys]
         additions: list[dict[str, Any]] = []
         if not self.append(
             {"dimension": "alternatives", "payload": name},
-            {"declaration": name, "retained": retained, "excluded": excluded}, additions
+            {"declaration": name, "event": "restriction_partition"}, additions
         ):
             return self.finish(term, "restrict.ledger_limit", pre, child, self.limit(), additions, [])
         stopped = self.guard(record, f"restriction:{name}", f"restriction:{name}")
-        return self.finish(term, "restrict", pre, child, stopped or outcome("success", retained), additions, [])
+        if stopped:
+            return self.finish(term, "restrict.guard", pre, child, stopped, additions, [])
+        retained_keys = set(record["retained_keys"])
+        ordered = sorted(value, key=canonical_key)
+        retained: list[Any] = []
+        excluded: list[Any] = []
+        keys: list[str] = []
+        for item in ordered:
+            key = canonical_key(item)
+            if not self.state.take_candidate():
+                return self.finish(term, "restrict.candidate_limit", pre, child, self.limit(), additions, keys)
+            if key in retained_keys:
+                retained.append(item)
+            else:
+                excluded.append(item)
+            self.state.complete_candidate(key)
+            keys.append(key)
+        detail = {"declaration": name, "retained": retained, "excluded": excluded}
+        self.state.entries[-1]["detail"] = copy.deepcopy(detail)
+        additions[-1]["detail"] = copy.deepcopy(detail)
+        return self.finish(term, "restrict", pre, child, outcome("success", retained), additions, keys)
 
     def reconstruct(self, term, value, pre, child):
         name = term["declaration"]
@@ -298,18 +317,17 @@ class ReplayMachine:
         if stopped:
             return self.finish(term, "reconstruct.guard", pre, child, stopped, additions, keys)
         for obligation in ("carrier_finite", "equality_resolved", "constraint_resolved"):
-            if record.get(obligation) is not True:
+            if record[obligation] is not True:
                 return self.finish(term, "reconstruct.undetermined", pre, child,
                                    outcome("undetermined", f"{obligation}:{name}"), additions, keys)
         fibre: list[Any] = []
         target = value["representation"]
         view_name = self.env["reconstructions"][name]["view_policy"]
         view_table = self.table("views", view_name)
-        for candidate in sorted(record.get("carrier", []), key=canonical_key):
+        for candidate in record["carrier"]:
             key = canonical_key(candidate)
-            if not self.state.take_candidate(key):
+            if not self.state.take_candidate():
                 return self.finish(term, "reconstruct.candidate_limit", pre, child, self.limit(), additions, keys)
-            keys.append(key)
             case = self.table_case(view_table, candidate)
             if case is None or "output" not in case:
                 raise ReplayReject(
@@ -317,6 +335,8 @@ class ReplayMachine:
                 )
             if canonical_key(case["output"]) == canonical_key(target):
                 fibre.append(copy.deepcopy(candidate))
+            self.state.complete_candidate(key)
+            keys.append(key)
         return self.finish(term, "reconstruct", pre, child, outcome("success", fibre), additions, keys)
 
     def classify(self, term, value, pre, child):
@@ -330,14 +350,20 @@ class ReplayMachine:
         if stopped:
             return self.finish(term, "classify.guard", pre, child, stopped, additions, [])
         classes: dict[str, dict[str, Any]] = {}
+        keys: list[str] = []
         for item in sorted(value, key=canonical_key):
+            key = canonical_key(item)
+            if not self.state.take_candidate():
+                return self.finish(term, "classify.candidate_limit", pre, child, self.limit(), additions, keys)
             case = self.table_case(record, item)
             if case is None:
                 raise ReplayReject("missing_replay_material", f"criterion case {name}")
             label = canonical_key(case["output"])
             classes.setdefault(label, {"criterion_value": case["output"], "members": []})["members"].append(item)
+            self.state.complete_candidate(key)
+            keys.append(key)
         return self.finish(term, "classify", pre, child,
-            outcome("success", [classes[key] for key in sorted(classes)]), additions, [])
+            outcome("success", [classes[key] for key in sorted(classes)]), additions, keys)
 
 
 EXPECTED_TOP_LEVEL = set(GROUP_ORDER) | {"integrity"}
@@ -413,17 +439,49 @@ def _verify_nodes(witness: Mapping[str, Any]) -> None:
     nodes = record.get("nodes_bottom_up")
     if not isinstance(nodes, list) or not nodes:
         raise ReplayReject("missing_replay_material", "derivation nodes")
-    seen: set[str] = set()
-    for node in nodes:
-        if not isinstance(node, Mapping) or "node_id" not in node:
+    by_id: dict[str, Mapping[str, Any]] = {}
+    positions: dict[str, int] = {}
+    for position, node in enumerate(nodes):
+        if not isinstance(node, Mapping) or not isinstance(node.get("node_id"), str):
             raise ReplayReject("malformed_witness", "derivation node")
-        if any(child not in seen for child in node.get("child_node_ids", [])):
-            raise ReplayReject("derivation_order_mismatch", "child is not earlier in bottom-up order")
+        node_id = node["node_id"]
+        if node_id in by_id:
+            raise ReplayReject("malformed_witness", "duplicate derivation node identifier")
+        if not isinstance(node.get("child_node_ids"), list) or not all(
+            isinstance(child, str) for child in node["child_node_ids"]
+        ):
+            raise ReplayReject("malformed_witness", "derivation child identifiers")
+        by_id[node_id] = node
+        positions[node_id] = position
+    root = record.get("root_node_id")
+    if root != nodes[-1]["node_id"] or root not in by_id:
+        raise ReplayReject("identity_mismatch", "root node identity")
+    for node_id, node in by_id.items():
+        for child in node["child_node_ids"]:
+            if child not in by_id:
+                raise ReplayReject("missing_replay_material", "dangling derivation child")
+            if positions[child] >= positions[node_id]:
+                raise ReplayReject("derivation_order_mismatch", "child is not earlier in bottom-up order")
+    reachable: set[str] = set()
+    active: set[str] = set()
+
+    def visit(node_id: str) -> None:
+        if node_id in active:
+            raise ReplayReject("derivation_order_mismatch", "derivation cycle")
+        if node_id in reachable:
+            return
+        active.add(node_id)
+        for child in by_id[node_id]["child_node_ids"]:
+            visit(child)
+        active.remove(node_id)
+        reachable.add(node_id)
+
+    visit(root)
+    if reachable != set(by_id):
+        raise ReplayReject("malformed_witness", "orphan derivation node")
+    for node in nodes:
         if node["node_id"] != digest(node_digest_payload(node)):
             raise ReplayReject("digest_mismatch", "node identity")
-        seen.add(node["node_id"])
-    if record.get("root_node_id") != nodes[-1]["node_id"]:
-        raise ReplayReject("identity_mismatch", "root node identity")
 
 
 def _strip_witness_binding(terminal: Any) -> Any:
@@ -431,62 +489,6 @@ def _strip_witness_binding(terminal: Any) -> Any:
     if isinstance(value, dict) and value.get("tag") == "success":
         value["optional_witness"] = None
     return value
-
-
-def _validate_runtime_values(environment: Mapping[str, Any], values: Any) -> None:
-    variables = environment.get("variables", {})
-    if not isinstance(values, Mapping) or set(values) != set(variables):
-        raise ReplayReject("missing_replay_material", "value environment is incomplete")
-    terminal_shapes = {
-        "success": {"tag", "value", "optional_witness"},
-        "domain_error": {"tag", "diagnostic"},
-        "unsupported": {"tag", "capability"},
-        "undetermined": {"tag", "obligation"},
-        "resource_limit": {"tag", "bound", "progress"},
-    }
-    for name, declared_type in variables.items():
-        tag = declared_type.get("tag")
-        if tag in {"view", "projection"}:
-            value = values[name]
-            if not isinstance(value, Mapping) or set(value) != {
-                "kind", "declaration", "representation", "source_return_token"
-            }:
-                raise ReplayReject("runtime_input_mismatch", f"indexed-view shape {name}")
-            expected_kind = "source_preserving" if tag == "view" else "projection"
-            policy_index = 3 if tag == "view" else 4
-            if value["kind"] != expected_kind or value["declaration"] != declared_type["args"][policy_index]:
-                raise ReplayReject("runtime_input_mismatch", f"view policy {name}")
-            token = value["source_return_token"]
-            if (tag == "view" and token is None) or (tag == "projection" and token is not None):
-                raise ReplayReject("runtime_input_mismatch", f"source-return boundary {name}")
-            continue
-        if tag in {"family", "fibre", "partition"} and not isinstance(values[name], list):
-            raise ReplayReject("runtime_input_mismatch", f"finite sequence {name}")
-        if tag != "outcome":
-            continue
-        value = values[name]
-        if not isinstance(value, Mapping) or value.get("tag") not in terminal_shapes:
-            raise ReplayReject("malformed_witness", f"invalid outcome binding {name}")
-        if set(value) != terminal_shapes[value["tag"]]:
-            raise ReplayReject("malformed_witness", f"invalid outcome shape {name}")
-        if value["tag"] == "success" and value["optional_witness"] is not None:
-            raise ReplayReject("identity_mismatch", f"imported witness binding {name}")
-
-
-def _validate_case_tables(interpretation: Any) -> None:
-    if not isinstance(interpretation, Mapping):
-        raise ReplayReject("missing_replay_material", "interpretation package")
-    for section in ("maps", "views", "criteria"):
-        table = interpretation.get(section, {})
-        if not isinstance(table, Mapping):
-            raise ReplayReject("missing_replay_material", f"interpretation section {section}")
-        for name, record in table.items():
-            if not isinstance(record, Mapping) or not isinstance(record.get("cases", []), list):
-                raise ReplayReject("malformed_witness", f"case table {section}.{name}")
-            cases = record.get("cases", [])
-            keys = [canonical_key(case.get("input")) for case in cases if isinstance(case, Mapping)]
-            if len(keys) != len(cases) or len(keys) != len(set(keys)):
-                raise ReplayReject("runtime_input_mismatch", f"non-functional table {section}.{name}")
 
 
 def check_witness(witness: Any, resolver: Mapping[str, bytes] | None = None) -> dict[str, Any]:
@@ -528,8 +530,10 @@ def check_witness(witness: Any, resolver: Mapping[str, bytes] | None = None) -> 
         claim = envelope["evaluation_claim"]
         if static != claim.get("static_judgement"):
             raise ReplayReject("static_judgement_mismatch")
-        _validate_runtime_values(environment, values)
-        _validate_case_tables(interpretation)
+        try:
+            validate_runtime_package(environment, values, interpretation)
+        except AdmissionError as error:
+            raise ReplayReject(error.diagnostic, error.detail) from error
         machine = ReplayMachine(environment, values, interpretation, beta)
         terminal, tree = machine.execute(term)
         if terminal != _strip_witness_binding(claim.get("terminal_outcome")):
