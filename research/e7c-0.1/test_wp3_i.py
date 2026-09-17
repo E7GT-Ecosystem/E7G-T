@@ -3,8 +3,13 @@ import json
 from pathlib import Path
 import unittest
 
-from e7c_b1_canonical import bind_envelope, canonical_key
-from e7c_b1_evaluator import evaluate
+from e7c_b1_canonical import (
+    bind_envelope,
+    canonical_key,
+    digest,
+    node_digest_payload,
+)
+from e7c_b1_evaluator import EvaluationInputError, evaluate
 from e7c_b1_replay_checker import check_witness
 
 
@@ -126,6 +131,30 @@ RECONSTRUCT = {
     "resource_policy": "bounded-100",
     "arg": VIEW,
 }
+RECONSTRUCT_BOUND_VIEW = {
+    "tag": "reconstruct",
+    "declaration": "exact_reconstruction",
+    "resource_policy": "bounded-100",
+    "arg": {"tag": "var", "name": "source_view"},
+}
+
+
+def rebind_derivation_and_envelope(witness):
+    remapped = {}
+    nodes = witness["derivation_record"]["nodes_bottom_up"]
+    for node in nodes:
+        old_id = node["node_id"]
+        node["child_node_ids"] = [remapped.get(child, child) for child in node["child_node_ids"]]
+        node["node_id"] = digest(node_digest_payload(node))
+        remapped[old_id] = node["node_id"]
+    witness["derivation_record"]["root_node_id"] = nodes[-1]["node_id"]
+    return bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+
+
+def replace_claimed_terminal(witness, terminal):
+    witness["evaluation_claim"]["terminal_outcome"] = copy.deepcopy(terminal)
+    witness["derivation_record"]["nodes_bottom_up"][-1]["terminal_outcome"] = copy.deepcopy(terminal)
+    return rebind_derivation_and_envelope(witness)
 
 
 class WP3IDisposableEvaluatorTests(unittest.TestCase):
@@ -221,6 +250,33 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
         self.assertEqual(result["terminal_outcome"]["tag"], "undetermined")
         self.assertEqual(result["resource_progress"]["completed_candidate_checks"], 0)
 
+    def test_projection_cannot_bind_a_source_preserving_view_variable(self):
+        source = document(RECONSTRUCT_BOUND_VIEW)
+        source["values"]["source_view"] = {
+            "kind": "projection",
+            "declaration": "source_preserving_inventory",
+            "representation": {"bucket": "one"},
+            "source_return_token": None,
+        }
+        with self.assertRaisesRegex(EvaluationInputError, "declared view policy"):
+            evaluate(source)
+
+    def test_missing_candidate_comparison_prevents_fibre_success(self):
+        source = document(RECONSTRUCT_BOUND_VIEW)
+        cases = source["interpretation"]["views"]["source_preserving_inventory"]["cases"]
+        source["interpretation"]["views"]["source_preserving_inventory"]["cases"] = [
+            case for case in cases if case["input"]["id"] != "c"
+        ]
+        with self.assertRaisesRegex(EvaluationInputError, "missing reconstruction comparison"):
+            evaluate(source)
+
+    def test_total_map_requires_a_target_case_for_its_input(self):
+        term = {"tag": "apply", "declaration": "total_identity", "arg": VAR}
+        source = document(term)
+        source["interpretation"]["maps"]["total_identity"]["cases"] = []
+        with self.assertRaisesRegex(EvaluationInputError, "missing map interpretation case"):
+            evaluate(source)
+
 
 class WP3IIndependentReplayTests(unittest.TestCase):
     def witness(self):
@@ -274,6 +330,51 @@ class WP3IIndependentReplayTests(unittest.TestCase):
         witness = self.witness()
         witness["runtime_inputs"]["mandatory_future_rule"] = True
         self.assertEqual(check_witness(witness)["diagnostic"], "malformed_witness")
+
+    def test_rebound_projection_as_exact_view_is_rejected_before_replay(self):
+        witness = evaluate(document(RECONSTRUCT_BOUND_VIEW))["witness"]
+        forged_view = {
+            "kind": "projection",
+            "declaration": "source_preserving_inventory",
+            "representation": {"bucket": "one"},
+            "source_return_token": None,
+        }
+        witness["runtime_inputs"]["values"]["source_view"] = copy.deepcopy(forged_view)
+        witness["derivation_record"]["nodes_bottom_up"][0]["terminal_outcome"] = {
+            "tag": "success",
+            "value": copy.deepcopy(forged_view),
+            "optional_witness": None,
+        }
+        witness = rebind_derivation_and_envelope(witness)
+        result = check_witness(witness)
+        self.assertEqual(result["diagnostic"], "runtime_input_mismatch")
+
+    def test_rebound_false_complete_fibre_is_rejected_for_missing_comparison(self):
+        witness = evaluate(document(RECONSTRUCT_BOUND_VIEW))["witness"]
+        cases = witness["runtime_inputs"]["interpretation"]["views"]["source_preserving_inventory"]["cases"]
+        witness["runtime_inputs"]["interpretation"]["views"]["source_preserving_inventory"]["cases"] = [
+            case for case in cases if case["input"]["id"] != "c"
+        ]
+        false_success = {
+            "tag": "success",
+            "value": [{"id": "a", "valid": True}],
+            "optional_witness": None,
+        }
+        witness = replace_claimed_terminal(witness, false_success)
+        result = check_witness(witness)
+        self.assertEqual(result["diagnostic"], "missing_replay_material")
+
+    def test_rebound_total_map_domain_error_is_rejected_for_missing_case(self):
+        term = {"tag": "apply", "declaration": "total_identity", "arg": VAR}
+        witness = evaluate(document(term))["witness"]
+        witness["runtime_inputs"]["interpretation"]["maps"]["total_identity"]["cases"] = []
+        false_domain_error = {
+            "tag": "domain_error",
+            "diagnostic": "outside-domain:total_identity",
+        }
+        witness = replace_claimed_terminal(witness, false_domain_error)
+        result = check_witness(witness)
+        self.assertEqual(result["diagnostic"], "missing_replay_material")
 
 
 if __name__ == "__main__":

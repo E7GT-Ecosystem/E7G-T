@@ -127,8 +127,18 @@ class Evaluator:
         if not isinstance(self.values, Mapping) or set(self.values) != set(self.environment["variables"]):
             raise EvaluationInputError("value environment must bind every declared variable exactly once")
         for name, declared_type in self.environment["variables"].items():
-            if declared_type["tag"] == "outcome":
+            tag = declared_type["tag"]
+            if tag == "outcome":
                 self._validate_terminal(self.values[name], f"values.{name}")
+            elif tag in {"view", "projection"}:
+                self._validate_indexed_view(
+                    self.values[name], declared_type, f"values.{name}"
+                )
+            elif tag in {"family", "fibre", "partition"} and not isinstance(
+                self.values[name], list
+            ):
+                raise EvaluationInputError(f"values.{name} must be a finite sequence")
+        self._validate_case_tables()
         self.state = State(copy.deepcopy(self.beta))
 
     @staticmethod
@@ -147,6 +157,36 @@ class Evaluator:
             raise EvaluationInputError(f"{path} has an invalid terminal outcome shape")
         if value["tag"] == "success" and value["optional_witness"] is not None:
             raise EvaluationInputError(f"{path} must not import an envelope witness binding")
+
+    @staticmethod
+    def _validate_indexed_view(value: Any, declared_type: Mapping[str, Any], path: str) -> None:
+        if not isinstance(value, Mapping) or set(value) != {
+            "kind", "declaration", "representation", "source_return_token"
+        }:
+            raise EvaluationInputError(f"{path} has an invalid indexed-view shape")
+        tag = declared_type["tag"]
+        expected_kind = "source_preserving" if tag == "view" else "projection"
+        policy_index = 3 if tag == "view" else 4
+        if value["kind"] != expected_kind or value["declaration"] != declared_type["args"][policy_index]:
+            raise EvaluationInputError(f"{path} does not match its declared view policy")
+        token = value["source_return_token"]
+        if (tag == "view" and token is None) or (tag == "projection" and token is not None):
+            raise EvaluationInputError(f"{path} violates its source-return boundary")
+
+    def _validate_case_tables(self) -> None:
+        for section in ("maps", "views", "criteria"):
+            table = self.interpretation.get(section, {})
+            if not isinstance(table, Mapping):
+                raise EvaluationInputError(f"interpretation.{section} must be an object")
+            for name, record in table.items():
+                if not isinstance(record, Mapping):
+                    raise EvaluationInputError(f"interpretation.{section}.{name} must be an object")
+                cases = record.get("cases", [])
+                if not isinstance(cases, list):
+                    raise EvaluationInputError(f"interpretation.{section}.{name}.cases must be a list")
+                keys = [canonical_key(case.get("input")) for case in cases if isinstance(case, Mapping)]
+                if len(keys) != len(cases) or len(keys) != len(set(keys)):
+                    raise EvaluationInputError(f"interpretation.{section}.{name}.cases is not a canonical function table")
 
     def run(self) -> dict[str, Any]:
         terminal, tree = self._eval(self.term)
@@ -273,7 +313,13 @@ class Evaluator:
         if guarded:
             return self._finish(term, "apply.guard", pre, child, guarded, appended, [])
         case = self._lookup_case(record, value)
-        if case is None or case.get("in_domain") is not True:
+        if case is None:
+            raise EvaluationInputError(f"missing map interpretation case for {name}")
+        if decl["domain_policy"] == "total" and (
+            case.get("in_domain") is not True or "output" not in case
+        ):
+            raise EvaluationInputError(f"total map {name} lacks a target value")
+        if case.get("in_domain") is not True:
             terminal = outcome("domain_error", f"outside-domain:{name}")
         elif "output" not in case:
             terminal = outcome("domain_error", f"no-target-value:{name}")
@@ -312,12 +358,11 @@ class Evaluator:
             return self._finish(term, "view.guard", pre, child, guarded, appended, [])
         case = self._lookup_case(record, value)
         if case is None or "output" not in case:
-            terminal = outcome("domain_error", f"uninterpreted-view:{name}")
-        else:
-            terminal = outcome("success", {
-                "kind": decl["kind"], "declaration": name, "representation": case["output"],
-                "source_return_token": copy.deepcopy(value) if decl["kind"] == "source_preserving" else None,
-            })
+            raise EvaluationInputError(f"missing view interpretation case for {name}")
+        terminal = outcome("success", {
+            "kind": decl["kind"], "declaration": name, "representation": case["output"],
+            "source_return_token": copy.deepcopy(value) if decl["kind"] == "source_preserving" else None,
+        })
         return self._finish(term, "view", pre, child, terminal, appended, [])
 
     def _eval_restrict(self, term: Mapping[str, Any], value: Any, pre: Mapping[str, Any], child: dict[str, Any]):
@@ -362,7 +407,11 @@ class Evaluator:
                 return self._finish(term, "reconstruct.candidate_limit", pre, child, self._limit(), appended, candidates)
             candidates.append(key)
             case = self._lookup_case(view_record, candidate)
-            if case is not None and canonical_key(case.get("output")) == canonical_key(target):
+            if case is None or "output" not in case:
+                raise EvaluationInputError(
+                    f"missing reconstruction comparison for candidate {key}"
+                )
+            if canonical_key(case["output"]) == canonical_key(target):
                 fibre.append(copy.deepcopy(candidate))
         return self._finish(term, "reconstruct", pre, child, outcome("success", fibre), appended, candidates)
 
@@ -380,8 +429,7 @@ class Evaluator:
         for item in sorted(value, key=canonical_key):
             case = self._lookup_case(record, item)
             if case is None:
-                return self._finish(term, "classify.undetermined", pre, child,
-                    outcome("undetermined", f"criterion-value:{name}"), appended, [])
+                raise EvaluationInputError(f"missing criterion interpretation case for {name}")
             label = canonical_key(case["output"])
             classes.setdefault(label, {"criterion_value": case["output"], "members": []})["members"].append(item)
         terminal = outcome("success", [classes[key] for key in sorted(classes)])
