@@ -1,0 +1,30 @@
+name: E7C Lean proof spike
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/proof-spikes/lean/**"
+      - ".github/workflows/e7c-proof-spike.yml"
+  push:
+    branches:
+      - "codex/e7c-01-wp4-proof-spike"
+    paths:
+      - "research/e7c-0.1/proof-spikes/lean/**"
+      - ".github/workflows/e7c-proof-spike.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-spikes/lean
+          auto-config: false
+          build: true
+          axiom-audit: true
+          axiom-audit-allow: ""
+          use-mathlib-cache: false
