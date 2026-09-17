@@ -71,7 +71,7 @@ theorem typing_substitution
               simpa [lookupType] using found
             cases sameType
             simpa [substitute] using replacementHasType
-          · simp only [substitute, if_neg sameName]
+          · simp only [substitute, sameName]
             apply HasType.var
             simpa [lookupType, sameName] using found
   | strictApp mapName argument inductionHypothesis =>
