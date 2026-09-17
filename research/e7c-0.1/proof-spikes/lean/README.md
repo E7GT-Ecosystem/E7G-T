@@ -34,9 +34,9 @@ and it says nothing about the full WP3-S denotation or WP3-I replay machine.
 | Standard library | `Std` bundled with the pinned Lean distribution; no external packages |
 | Build command | `lake build` from this directory |
 | Admissions | none intended; CI build and axiom audit pending |
-| User axioms | none intended; CI axiom audit pending |
+| Axioms | Lean's standard `propext`, explicitly allowlisted; no user axiom intended |
 | Generated proof code | none |
-| Trusted base | pinned Lean compiler/kernel, bundled Lake/Std, and the host/build chain used to execute them |
+| Trusted base | pinned Lean compiler/kernel, Lean's standard `propext`, bundled Lake/Std, and the host/build chain used to execute them |
 
 The initial builder environment did not contain Lean, Rocq or Isabelle. The
 repository workflow therefore performs the first executable Lean build and
