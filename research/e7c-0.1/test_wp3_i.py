@@ -5,6 +5,7 @@ import unittest
 
 from e7c_b1_canonical import (
     INTERPRETATION_EDITION,
+    RESOURCE_POLICY_EDITION,
     bind_envelope,
     canonical_key,
     digest,
@@ -130,7 +131,7 @@ def document(term, *, steps=20, candidates=20, ledger=20):
             "step_bound": steps,
             "candidate_bound": candidates,
             "ledger_entry_bound": ledger,
-            "policy_edition": "bounded-test-1",
+            "policy_edition": RESOURCE_POLICY_EDITION,
         },
         "pins": {"outcome_extension_edition": "core-1"},
         "external_assumptions": {
@@ -348,6 +349,45 @@ class WP3IDisposableEvaluatorTests(unittest.TestCase):
         self.assertEqual(progress["completed_candidate_checks"], 3)
         self.assertEqual(progress["last_candidate_key"], canonical_key({"id": "b", "valid": False}))
 
+    def test_non_json_resource_policy_edition_is_a_controlled_admission_error(self):
+        source = document(VAR)
+        source["resource_policy"]["policy_edition"] = b"not-json"
+        with self.assertRaisesRegex(EvaluationInputError, "canonical evaluation document"):
+            evaluate(source)
+
+    def test_non_json_external_assumption_is_a_controlled_admission_error(self):
+        source = document(VAR)
+        source["external_assumptions"]["scope"] = b"not-json"
+        with self.assertRaisesRegex(EvaluationInputError, "canonical evaluation document"):
+            evaluate(source)
+
+    def test_non_finite_external_assumption_is_a_controlled_admission_error(self):
+        source = document(VAR)
+        source["external_assumptions"]["scope"] = float("nan")
+        with self.assertRaisesRegex(EvaluationInputError, "canonical evaluation document"):
+            evaluate(source)
+
+    def test_boolean_resource_bound_is_not_an_integer_bound(self):
+        source = document(VAR)
+        source["resource_policy"]["step_bound"] = True
+        with self.assertRaisesRegex(EvaluationInputError, "non-negative integers"):
+            evaluate(source)
+
+    def test_external_assumption_shape_and_types_are_closed(self):
+        source = document(VAR)
+        source["external_assumptions"]["authority_asserted"] = 0
+        with self.assertRaisesRegex(EvaluationInputError, "must be Boolean"):
+            evaluate(source)
+
+    def test_malformed_canonical_document_is_a_controlled_admission_error(self):
+        source = document(VAR)
+        del source["environment"]["variables"]["source_config"]["args"]
+        with self.assertRaises(EvaluationInputError):
+            evaluate(source)
+
+        with self.assertRaisesRegex(EvaluationInputError, "unexpected shape"):
+            evaluate(None)
+
 
 class WP3IIndependentReplayTests(unittest.TestCase):
     def witness(self):
@@ -380,6 +420,28 @@ class WP3IIndependentReplayTests(unittest.TestCase):
         witness["identity"]["claim_class"] = "source_truth"
         witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
         self.assertEqual(check_witness(witness)["diagnostic"], "authority_claim_escalation")
+
+    def test_rebound_unknown_or_ill_typed_judgement_classes_are_rejected(self):
+        for judgement_class in ("not-E7C-at-all", "", None, 7):
+            with self.subTest(judgement_class=judgement_class):
+                witness = self.witness()
+                witness["identity"]["judgement_class"] = judgement_class
+                witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+                self.assertEqual(check_witness(witness)["diagnostic"], "edition_mismatch")
+
+    def test_rebound_unknown_or_ill_typed_resource_policy_editions_are_rejected(self):
+        for edition in ("", "attacker-policy-99", None, 7):
+            with self.subTest(edition=edition):
+                witness = self.witness()
+                witness["resource_input"]["beta"]["policy_edition"] = edition
+                witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+                self.assertEqual(check_witness(witness)["diagnostic"], "edition_mismatch")
+
+    def test_rebound_boolean_resource_bound_is_rejected(self):
+        witness = self.witness()
+        witness["resource_input"]["beta"]["candidate_bound"] = True
+        witness = bind_envelope({key: value for key, value in witness.items() if key != "integrity"})
+        self.assertEqual(check_witness(witness)["diagnostic"], "malformed_witness")
 
     def test_nested_optional_witness_binding_is_verified(self):
         witness = self.witness()

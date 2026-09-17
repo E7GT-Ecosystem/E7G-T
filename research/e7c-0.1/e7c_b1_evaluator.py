@@ -15,7 +15,9 @@ from e7c_b1_canonical import (
     CALCULUS_EDITION,
     CLAIM_CLASS,
     DYNAMIC_RULES_ID,
+    JUDGEMENT_CLASS,
     OUTCOME_EXTENSION_EDITION,
+    RESOURCE_POLICY_EDITION,
     STATIC_RULES_ID,
     WITNESS_EDITION,
     bind_envelope,
@@ -24,9 +26,11 @@ from e7c_b1_canonical import (
     flatten_bound_tree,
     is_success,
     outcome,
+    require_canonical_json,
     resource_limit,
+    validate_external_assumptions,
 )
-from e7c_b1_static import Checker
+from e7c_b1_static import Checker, Diagnostic
 
 
 REQUIRED_RESOURCE_FIELDS = {
@@ -106,11 +110,15 @@ def _node(term: Any, rule_id: str, pre: Mapping[str, Any], state: State,
 
 class Evaluator:
     def __init__(self, document: Mapping[str, Any]) -> None:
+        try:
+            require_canonical_json(document)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise EvaluationInputError(f"invalid canonical evaluation document: {error}") from error
         required = {
             "environment", "term", "values", "interpretation", "resource_policy",
             "pins", "external_assumptions",
         }
-        if not isinstance(document, Mapping) or set(document) != required:
+        if type(document) is not dict or set(document) != required:
             raise EvaluationInputError("evaluation document has an unexpected shape")
         self.document = copy.deepcopy(dict(document))
         self.environment = self.document["environment"]
@@ -122,11 +130,22 @@ class Evaluator:
             raise EvaluationInputError("unsupported outcome extension edition")
         if not isinstance(self.beta, dict) or set(self.beta) != REQUIRED_RESOURCE_FIELDS:
             raise EvaluationInputError("resource policy has an unexpected shape")
-        if any(not isinstance(self.beta[name], int) or self.beta[name] < 0 for name in (
+        if any(type(self.beta[name]) is not int or self.beta[name] < 0 for name in (
             "step_bound", "candidate_bound", "ledger_entry_bound"
         )):
             raise EvaluationInputError("resource bounds must be non-negative integers")
-        self.static = Checker(self.environment).check(self.term).as_dict()
+        if type(self.beta["policy_edition"]) is not str or self.beta["policy_edition"] != RESOURCE_POLICY_EDITION:
+            raise EvaluationInputError("unsupported resource policy edition")
+        try:
+            validate_external_assumptions(self.document["external_assumptions"])
+        except ValueError as error:
+            raise EvaluationInputError(str(error)) from error
+        try:
+            self.static = Checker(self.environment).check(self.term).as_dict()
+        except Diagnostic as diagnostic:
+            raise EvaluationInputError(
+                f"{diagnostic.code} at {diagnostic.path}: {diagnostic.message}"
+            ) from diagnostic
         try:
             validate_runtime_package(self.environment, self.values, self.interpretation)
         except AdmissionError as error:
@@ -140,7 +159,7 @@ class Evaluator:
         envelope = {
             "identity": {
                 "witness_edition": WITNESS_EDITION,
-                "judgement_class": "E7C-B1-resource-indexed-evaluation",
+                "judgement_class": JUDGEMENT_CLASS,
                 "claim_class": CLAIM_CLASS,
             },
             "rule_pins": {
@@ -408,4 +427,9 @@ class Evaluator:
 
 
 def evaluate(document: Mapping[str, Any]) -> dict[str, Any]:
-    return Evaluator(document).run()
+    try:
+        return Evaluator(document).run()
+    except EvaluationInputError:
+        raise
+    except (AdmissionError, Diagnostic, KeyError, TypeError, ValueError, OverflowError, RecursionError) as error:
+        raise EvaluationInputError(f"invalid evaluation document: {error}") from error

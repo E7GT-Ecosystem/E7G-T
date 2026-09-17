@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 from typing import Any, Mapping
 
 
@@ -19,8 +20,72 @@ CALCULUS_EDITION = "E7C-B1/0.1"
 STATIC_RULES_ID = "E7C-WP2/B1@ed2a49de"
 DYNAMIC_RULES_ID = "E7C-WP3-S/B1@bae84fb7"
 CLAIM_CLASS = "bounded_derivation_replay"
+JUDGEMENT_CLASS = "E7C-B1-resource-indexed-evaluation"
 OUTCOME_EXTENSION_EDITION = "core-1"
 INTERPRETATION_EDITION = "e7c-b1-finite-tables-0.1"
+RESOURCE_POLICY_EDITION = "e7c-b1-resource-policy-0.1"
+
+EXTERNAL_ASSUMPTION_FIELDS = {
+    "source_references",
+    "authority_asserted",
+    "scope",
+    "time",
+    "modality",
+    "model_edition",
+    "policy_labels",
+}
+
+
+def require_canonical_json(value: Any) -> None:
+    """Reject non-JSON values, cycles and non-finite numbers before hashing."""
+    active: set[int] = set()
+
+    def visit(item: Any) -> None:
+        if item is None or type(item) in {bool, int, str}:
+            return
+        if type(item) is float:
+            if not math.isfinite(item):
+                raise ValueError("non-finite JSON number")
+            return
+        if type(item) not in {list, dict}:
+            raise ValueError(f"non-JSON value of type {type(item).__name__}")
+        identity = id(item)
+        if identity in active:
+            raise ValueError("cyclic JSON value")
+        active.add(identity)
+        try:
+            if type(item) is list:
+                for child in item:
+                    visit(child)
+            else:
+                if any(type(key) is not str for key in item):
+                    raise ValueError("JSON object keys must be strings")
+                for child in item.values():
+                    visit(child)
+        finally:
+            active.remove(identity)
+
+    try:
+        visit(value)
+        canonical_bytes(value)
+    except RecursionError as error:
+        raise ValueError("canonical JSON depth exceeded") from error
+
+
+def validate_external_assumptions(value: Any) -> None:
+    if type(value) is not dict or set(value) != EXTERNAL_ASSUMPTION_FIELDS:
+        raise ValueError("external assumptions have an unexpected shape")
+    if type(value["authority_asserted"]) is not bool:
+        raise ValueError("external authority assertion must be Boolean")
+    for field in ("scope", "time", "modality", "model_edition"):
+        if type(value[field]) is not str or not value[field]:
+            raise ValueError(f"external assumption {field} must be a non-empty string")
+    for field in ("source_references", "policy_labels"):
+        items = value[field]
+        if type(items) is not list or any(type(item) is not str or not item for item in items):
+            raise ValueError(f"external assumption {field} must contain non-empty strings")
+        if items != sorted(set(items)):
+            raise ValueError(f"external assumption {field} must be canonical and duplicate-free")
 
 
 def canonical_bytes(value: Any) -> bytes:
