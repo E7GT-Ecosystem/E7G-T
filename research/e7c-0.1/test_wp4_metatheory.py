@@ -16,12 +16,29 @@ class WP4SpecificationControlTests(unittest.TestCase):
         catalogue = (HERE / "E7C_0.1_COUNTEREXAMPLE_CATALOGUE.md").read_text(encoding="utf-8")
         selection = (HERE / "E7C_0.1_PROOF_ASSISTANT_SELECTION.md").read_text(encoding="utf-8")
         for theorem in range(1, 18):
-            self.assertIn(f"E7C-T{theorem:03d}", obligations)
-        for counterexample in range(1, 25):
+            heading = f"### E7C-T{theorem:03d}"
+            self.assertIn(heading, obligations)
+            section = obligations.split(heading, 1)[1].split("\n### E7C-T", 1)[0]
+            self.assertIn("Applicable hypotheses", section)
+            self.assertIn("Exact statement", section)
+            self.assertIn("Status", section)
+            self.assertIn("Counterexample search", section)
+            self.assertIn("Mechanisation disposition", section)
+        for counterexample in range(1, 28):
             self.assertIn(f"CE-{counterexample:03d}", catalogue)
         self.assertIn("selection_deferred_pending_executable_spike", selection)
         self.assertIn("does not establish", obligations)
         self.assertNotIn("Status: `mechanised`", obligations)
+
+    def test_progress_and_replay_claims_are_explicitly_split(self):
+        obligations = (HERE / "E7C_0.1_PROOF_OBLIGATIONS.md").read_text(encoding="utf-8")
+        self.assertIn("Exact statement T009A", obligations)
+        self.assertIn("Exact statement T009B", obligations)
+        self.assertIn("`EvaluationInputError`", obligations)
+        self.assertIn("Exact statement T011A", obligations)
+        self.assertIn("Exact statement T011B", obligations)
+        self.assertIn("ReplayMachine adequacy to WP3-S", obligations)
+        self.assertIn("T011B remains blocked until", obligations)
 
 
 class WP4BoundedEvidenceTests(unittest.TestCase):

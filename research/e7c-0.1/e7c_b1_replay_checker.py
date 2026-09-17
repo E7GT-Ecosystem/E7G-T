@@ -18,7 +18,9 @@ from e7c_b1_canonical import (
     DYNAMIC_RULES_ID,
     ENCODING_EDITION,
     GROUP_ORDER,
+    JUDGEMENT_CLASS,
     OUTCOME_EXTENSION_EDITION,
+    RESOURCE_POLICY_EDITION,
     STATIC_RULES_ID,
     WITNESS_EDITION,
     bind_node_ids,
@@ -30,6 +32,8 @@ from e7c_b1_canonical import (
     node_digest_payload,
     outcome,
     resource_limit,
+    require_canonical_json,
+    validate_external_assumptions,
 )
 from e7c_b1_static import Checker, Diagnostic
 
@@ -407,6 +411,8 @@ def _verify_integrity(witness: Mapping[str, Any]) -> None:
     identity = witness["identity"]
     if identity.get("witness_edition") != WITNESS_EDITION:
         raise ReplayReject("unknown_witness_edition")
+    if identity.get("judgement_class") != JUDGEMENT_CLASS:
+        raise ReplayReject("edition_mismatch", "judgement class")
     if identity.get("claim_class") != CLAIM_CLASS:
         raise ReplayReject("authority_claim_escalation")
     integrity = witness["integrity"]
@@ -494,6 +500,10 @@ def _strip_witness_binding(terminal: Any) -> Any:
 def check_witness(witness: Any, resolver: Mapping[str, bytes] | None = None) -> dict[str, Any]:
     """Replay one complete inline witness. ``resolver`` is reserved for digests."""
     try:
+        try:
+            require_canonical_json(witness)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise ReplayReject("malformed_witness", f"non-canonical JSON: {error}") from error
         envelope = _require_shape(witness)
         _verify_integrity(envelope)
         _verify_nodes(envelope)
@@ -519,10 +529,16 @@ def check_witness(witness: Any, resolver: Mapping[str, bytes] | None = None) -> 
             "step_bound", "candidate_bound", "ledger_entry_bound", "policy_edition"
         }:
             raise ReplayReject("malformed_witness", "resource policy shape")
-        if any(not isinstance(beta[name], int) or beta[name] < 0 for name in (
+        if any(type(beta[name]) is not int or beta[name] < 0 for name in (
             "step_bound", "candidate_bound", "ledger_entry_bound"
         )):
             raise ReplayReject("malformed_witness", "resource bounds")
+        if type(beta["policy_edition"]) is not str or beta["policy_edition"] != RESOURCE_POLICY_EDITION:
+            raise ReplayReject("edition_mismatch", "resource policy edition")
+        try:
+            validate_external_assumptions(envelope["external_assumptions"])
+        except ValueError as error:
+            raise ReplayReject("malformed_witness", str(error)) from error
         try:
             static = Checker(environment).check(term).as_dict()
         except Diagnostic as diagnostic:
