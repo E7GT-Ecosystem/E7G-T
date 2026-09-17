@@ -14,7 +14,7 @@ class WitnessContractSpecificationTests(unittest.TestCase):
         cls.normalized = " ".join(cls.spec.split())
 
     def test_contract_is_specification_only(self):
-        self.assertIn("witness_contract_drafted_unimplemented", self.spec)
+        self.assertIn("witness_contract_accepted_for_bounded_wp3_i", self.spec)
         self.assertIn("It is a specification only", self.spec)
         self.assertIn("contains no evaluator", self.normalized)
 
@@ -96,7 +96,7 @@ class WitnessContractSpecificationTests(unittest.TestCase):
         self.assertIn("replay trusted base is limited", self.normalized)
 
     def test_wp3_i_is_blocked_with_required_first_tests(self):
-        self.assertIn("WP3-I remains blocked until review accepts this contract", self.spec)
+        self.assertIn("WP3-I was blocked until review accepted this contract", self.spec)
         for requirement in (
             "outcome propagation",
             "resource/failure precedence",
