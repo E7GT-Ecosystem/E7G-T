@@ -1,6 +1,6 @@
 # E7C/0.1 common spike — Lean 4 candidate
 
-Status: `implementation_in_progress; executable_result_pending`
+Status: `executable_candidate_built; exact_head_review_pending`
 
 Baseline: merge commit `f8748d315bdfc22546d9172c33138ac1a8799f0c`
 
@@ -33,15 +33,18 @@ and it says nothing about the full WP3-S denotation or WP3-I replay machine.
 | Toolchain pin | `leanprover/lean4:v4.34.0` in `lean-toolchain` |
 | Standard library | `Std` bundled with the pinned Lean distribution; no external packages |
 | Build command | `lake build` from this directory |
-| Admissions | none intended; CI build and axiom audit pending |
+| Admissions | none found by the successful build and axiom audit recorded below |
 | Axioms | Lean's standard `propext`, explicitly allowlisted; no user axiom intended |
 | Generated proof code | none |
 | Trusted base | pinned Lean compiler/kernel, Lean's standard `propext`, bundled Lake/Std, and the host/build chain used to execute them |
 
 The initial builder environment did not contain Lean, Rocq or Isabelle. The
-repository workflow therefore performs the first executable Lean build and
-axiom audit. Until that workflow succeeds and its exact head is reviewed, this
-artifact does not carry an executable-spike acceptance verdict.
+repository workflow therefore performs the executable Lean build and axiom
+audit. At draft head `c7005bd8acde4442e9610721e3df0f0b22aef740`, workflow
+run `35264670082` built the library and passed the axiom audit with only the
+documented `propext` allowance. This is executable candidate evidence, not an
+acceptance verdict. CI must pass again on every later exact head, and the exact
+head must still be reviewed.
 
 ## Non-claims
 
