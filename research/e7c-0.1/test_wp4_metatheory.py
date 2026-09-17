@@ -26,7 +26,8 @@ class WP4SpecificationControlTests(unittest.TestCase):
             self.assertIn("Mechanisation disposition", section)
         for counterexample in range(1, 28):
             self.assertIn(f"CE-{counterexample:03d}", catalogue)
-        self.assertIn("selection_deferred_pending_executable_spike", selection)
+        self.assertIn("selection_deferred; lean_executable_candidate_review_pending", selection)
+        self.assertIn("not an acceptance verdict", selection)
         self.assertIn("does not establish", obligations)
         self.assertNotIn("Status: `mechanised`", obligations)
 
