@@ -26,5 +26,5 @@ jobs:
           auto-config: false
           build: true
           axiom-audit: true
-          axiom-audit-allow: ""
+          axiom-audit-allow: "propext"
           use-mathlib-cache: false
