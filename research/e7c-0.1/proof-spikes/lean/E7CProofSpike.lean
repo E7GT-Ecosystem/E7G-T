@@ -257,7 +257,7 @@ theorem successful_type_preservation
     (interpretationType : InterpretationWellFormed maps interpretation)
     (successful : evaluate environment interpretation term = .success output) :
     ValueHasType output (successCarrier type) := by
-  induction termType with
+  induction termType generalizing output with
   | @var name type found =>
       obtain ⟨binding, bindingFound, bindingType⟩ :=
         environmentType.complete name type found
