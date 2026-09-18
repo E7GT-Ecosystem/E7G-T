@@ -1,6 +1,6 @@
 # E7C/0.1 common spike — Lean 4 candidate
 
-Status: `executable_candidate_built; exact_head_review_pending`
+Status: `revision_addressed; exact_head_rereview_pending`
 
 Baseline: merge commit `f8748d315bdfc22546d9172c33138ac1a8799f0c`
 
@@ -13,17 +13,24 @@ calculus and not a release-profile implementation.
 - explicit `Config`, `Outcome Config` and strict `Map Config Config` types;
 - binder-free variables and unary strict-map application;
 - finite list-backed reusable term and map contexts;
+- typed, unique and complete runtime environments and interpretation tables;
 - capture-free substitution for the binder-free syntax;
-- explicit `success` and `domainError` outcomes;
+- direct terminal-outcome bindings for outcome-typed variables;
+- explicit `success`, `domainError` and missing-capability `unsupported` outcomes;
 - finite list-backed interpretation tables without host callbacks;
 - typing substitution;
-- successful type preservation for the bounded evaluator; and
+- successful type preservation with environment and interpretation
+  well-formedness premises explicit; and
 - strict-map out-of-domain failure distinct from every success, including
   `success (config 0)`.
 
 The preservation theorem is intentionally narrow: its runtime has only config
 and text values, strict tables map natural-number config codes to config codes,
 and it says nothing about the full WP3-S denotation or WP3-I replay machine.
+An outcome-typed variable stores and returns a terminal outcome directly. A
+missing interpretation table returns `unsupported`, while `domainError` is
+reserved for a presented operand outside a strict table's domain or an
+ill-typed raw value outside the theorem's admitted premises.
 
 ## Reproducibility record
 
@@ -31,20 +38,25 @@ and it says nothing about the full WP3-S denotation or WP3-I replay machine.
 | --- | --- |
 | Tool | Lean 4 `v4.34.0` |
 | Toolchain pin | `leanprover/lean4:v4.34.0` in `lean-toolchain` |
-| Standard library | `Std` bundled with the pinned Lean distribution; no external packages |
+| Standard library | Lean core/prelude bundled with the pinned distribution; the proof module imports no external package |
 | Build command | `lake build` from this directory |
 | Admissions | none found by the successful build and axiom audit recorded below |
 | Axioms | Lean's standard `propext`, explicitly allowlisted; no user axiom intended |
 | Generated proof code | none |
-| Trusted base | pinned Lean compiler/kernel, Lean's standard `propext`, bundled Lake/Std, and the host/build chain used to execute them |
+| Trusted base | pinned Lean compiler/kernel, Lean's standard `propext`, bundled Lake, and the recorded host/build chain |
 
 The initial builder environment did not contain Lean, Rocq or Isabelle. The
 repository workflow therefore performs the executable Lean build and axiom
-audit. At draft head `c7005bd8acde4442e9610721e3df0f0b22aef740`, workflow
-run `35264670082` built the library and passed the axiom audit with only the
-documented `propext` allowance. This is executable candidate evidence, not an
-acceptance verdict. CI must pass again on every later exact head, and the exact
-head must still be reviewed.
+audit. At revision checkpoint `2e35b7a6e79c28b073e875b6644558c6636b3aef`,
+workflow run `35368213608` built the corrected library and passed the axiom
+audit with only the documented `propext` allowance. This is executable
+candidate evidence, not an acceptance verdict. CI must pass again on every
+later exact head, and the final exact head must still be reviewed.
+
+The regression theorems check that an outcome variable propagates both
+`success` and `domainError` directly, a missing interpretation returns
+`unsupported`, and incomplete environment or interpretation records fail the
+well-formedness premises.
 
 ## Non-claims
 
