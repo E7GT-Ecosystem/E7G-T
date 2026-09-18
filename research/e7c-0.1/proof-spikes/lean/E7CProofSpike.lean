@@ -34,6 +34,9 @@ inductive Term where
 abbrev Context := List (String × B1Type)
 abbrev MapContext := List (String × MapType)
 
+def PairNamesUnique {α : Type} (entries : List (String × α)) : Prop :=
+  (entries.map (fun entry => entry.1)).Nodup
+
 def lookupType : Context → String → Option B1Type
   | [], _ => none
   | (boundName, type) :: rest, name =>
@@ -87,6 +90,12 @@ inductive Value where
 inductive Outcome where
   | success (value : Value)
   | domainError
+  | unsupported (capability : String)
+  deriving DecidableEq, Repr
+
+inductive Binding where
+  | plain (value : Value)
+  | terminal (outcome : Outcome)
   deriving DecidableEq, Repr
 
 structure StrictRow where
@@ -113,12 +122,12 @@ def lookupTable : Interpretation → String → Option StrictTable
   | entry :: rest, mapName =>
       if mapName = entry.mapName then some entry.table else lookupTable rest mapName
 
-abbrev Environment := List (String × Value)
+abbrev Environment := List (String × Binding)
 
-def lookupValue : Environment → String → Option Value
+def lookupBinding : Environment → String → Option Binding
   | [], _ => none
-  | (boundName, value) :: rest, name =>
-      if name = boundName then some value else lookupValue rest name
+  | (boundName, binding) :: rest, name =>
+      if name = boundName then some binding else lookupBinding rest name
 
 def applyStrict (table : StrictTable) : Value → Outcome
   | .config input =>
@@ -127,18 +136,23 @@ def applyStrict (table : StrictTable) : Value → Outcome
       | none => .domainError
   | .text _ => .domainError
 
+def evaluateBinding : Binding → Outcome
+  | .plain value => .success value
+  | .terminal outcome => outcome
+
 def evaluate (environment : Environment) (interpretation : Interpretation) : Term → Outcome
   | .var name =>
-      match lookupValue environment name with
-      | some value => .success value
-      | none => .domainError
+      match lookupBinding environment name with
+      | some binding => evaluateBinding binding
+      | none => .unsupported name
   | .strictApp mapName argument =>
       match evaluate environment interpretation argument with
       | .domainError => .domainError
       | .success value =>
           match lookupTable interpretation mapName with
-          | none => .domainError
+          | none => .unsupported mapName
           | some table => applyStrict table value
+      | .unsupported capability => .unsupported capability
 
 def successCarrier : B1Type → B1Type
   | .config => .config
@@ -148,19 +162,85 @@ def ValueHasType : Value → B1Type → Prop
   | .config _, .config => True
   | _, _ => False
 
-def EnvironmentHasType (context : Context) (environment : Environment) : Prop :=
-  ∀ name type,
+def BindingHasType : Binding → B1Type → Prop
+  | .plain value, .config => ValueHasType value .config
+  | .terminal (.success value), .outcomeConfig => ValueHasType value .config
+  | .terminal .domainError, .outcomeConfig => True
+  | .terminal (.unsupported _), .outcomeConfig => True
+  | _, _ => False
+
+def StrictTableWellFormed (table : StrictTable) : Prop :=
+  (table.map StrictRow.input).Nodup
+
+def InterpretationNamesUnique (interpretation : Interpretation) : Prop :=
+  (interpretation.map InterpretationEntry.mapName).Nodup
+
+structure EnvironmentWellFormed (context : Context) (environment : Environment) : Prop where
+  contextNamesUnique : PairNamesUnique context
+  environmentNamesUnique : PairNamesUnique environment
+  complete : ∀ name type,
     lookupType context name = some type →
-      ∃ value,
-        lookupValue environment name = some value ∧
-        ValueHasType value (successCarrier type)
+      ∃ binding,
+        lookupBinding environment name = some binding ∧
+        BindingHasType binding type
+  exact : ∀ name binding,
+    lookupBinding environment name = some binding →
+      ∃ type,
+        lookupType context name = some type ∧
+        BindingHasType binding type
+
+structure InterpretationWellFormed
+    (maps : MapContext) (interpretation : Interpretation) : Prop where
+  mapNamesUnique : PairNamesUnique maps
+  interpretationNamesUnique : InterpretationNamesUnique interpretation
+  complete : ∀ mapName mapType,
+    lookupMap maps mapName = some mapType →
+      mapType = strictConfigMap ∧
+      ∃ table,
+        lookupTable interpretation mapName = some table ∧
+        StrictTableWellFormed table
+  exact : ∀ mapName table,
+    lookupTable interpretation mapName = some table →
+      lookupMap maps mapName = some strictConfigMap ∧
+      StrictTableWellFormed table
+
+theorem evaluateBinding_success_has_type
+    (bindingType : BindingHasType binding type)
+    (successful : evaluateBinding binding = .success output) :
+    ValueHasType output (successCarrier type) := by
+  cases binding with
+  | plain value =>
+      cases type with
+      | config =>
+          have valueEqualsOutput : value = output := by
+            simpa [evaluateBinding] using successful
+          cases valueEqualsOutput
+          simpa [BindingHasType, successCarrier] using bindingType
+      | outcomeConfig =>
+          simp [BindingHasType] at bindingType
+  | terminal outcome =>
+      cases outcome with
+      | success value =>
+          cases type with
+          | config =>
+              simp [BindingHasType] at bindingType
+          | outcomeConfig =>
+              have valueEqualsOutput : value = output := by
+                simpa [evaluateBinding] using successful
+              cases valueEqualsOutput
+              simpa [BindingHasType, successCarrier] using bindingType
+      | domainError =>
+          simp [evaluateBinding] at successful
+      | unsupported capability =>
+          simp [evaluateBinding] at successful
 
 theorem applyStrict_success_has_type
+    (inputType : ValueHasType input .config)
     (successful : applyStrict table input = .success output) :
     ValueHasType output .config := by
   cases input with
   | text content =>
-      simp [applyStrict] at successful
+      simp [ValueHasType] at inputType
   | config code =>
       cases found : lookupRow table code with
       | none =>
@@ -173,28 +253,31 @@ theorem applyStrict_success_has_type
 
 theorem successful_type_preservation
     (termType : HasType maps context term type)
-    (environmentType : EnvironmentHasType context environment)
+    (environmentType : EnvironmentWellFormed context environment)
+    (interpretationType : InterpretationWellFormed maps interpretation)
     (successful : evaluate environment interpretation term = .success output) :
     ValueHasType output (successCarrier type) := by
-  cases termType with
+  induction termType with
   | @var name type found =>
-      obtain ⟨value, valueFound, valueType⟩ := environmentType name type found
-      have valueEqualsOutput : value = output := by
-        simpa [evaluate, valueFound] using successful
-      cases valueEqualsOutput
-      exact valueType
-  | @strictApp mapName argument found argumentType =>
+      obtain ⟨binding, bindingFound, bindingType⟩ :=
+        environmentType.complete name type found
+      have bindingSuccessful : evaluateBinding binding = .success output := by
+        simpa [evaluate, bindingFound] using successful
+      exact evaluateBinding_success_has_type bindingType bindingSuccessful
+  | @strictApp mapName argument found argumentType inductionHypothesis =>
+      obtain ⟨_, table, tableFound, _⟩ :=
+        interpretationType.complete mapName strictConfigMap found
       cases argumentResult : evaluate environment interpretation argument with
       | domainError =>
           simp [evaluate, argumentResult] at successful
+      | unsupported capability =>
+          simp [evaluate, argumentResult] at successful
       | success input =>
-          cases tableResult : lookupTable interpretation mapName with
-          | none =>
-              simp [evaluate, argumentResult, tableResult] at successful
-          | some table =>
-              have applied : applyStrict table input = .success output := by
-                simpa [evaluate, argumentResult, tableResult] using successful
-              exact applyStrict_success_has_type applied
+          have inputType : ValueHasType input .config :=
+            inductionHypothesis argumentResult
+          have applied : applyStrict table input = .success output := by
+            simpa [evaluate, argumentResult, tableFound] using successful
+          exact applyStrict_success_has_type inputType applied
 
 theorem strict_failure_is_domain_error
     (outsideDomain : lookupRow table input = none) :
@@ -213,5 +296,36 @@ theorem strict_failure_is_not_zero_success
     (outsideDomain : lookupRow table input = none) :
     applyStrict table (.config input) ≠ .success (.config 0) :=
   strict_failure_is_not_success outsideDomain (.config 0)
+
+theorem outcome_variable_domain_error_is_direct :
+    evaluate [("x", .terminal .domainError)] [] (.var "x") = .domainError := by
+  rfl
+
+theorem outcome_variable_success_is_direct :
+    evaluate [("x", .terminal (.success (.config 7)))] [] (.var "x") =
+      .success (.config 7) := by
+  rfl
+
+theorem missing_interpretation_is_unsupported :
+    evaluate [("x", .plain (.config 0))] [] (.strictApp "f" (.var "x")) =
+      .unsupported "f" := by
+  rfl
+
+theorem missing_environment_binding_is_not_well_formed :
+    ¬ EnvironmentWellFormed [("x", .config)] [] := by
+  intro wellFormed
+  have found : lookupType [("x", .config)] "x" = some .config := by
+    rfl
+  obtain ⟨binding, bindingFound, _⟩ := wellFormed.complete "x" .config found
+  simp [lookupBinding] at bindingFound
+
+theorem missing_interpretation_table_is_not_well_formed :
+    ¬ InterpretationWellFormed [("f", strictConfigMap)] [] := by
+  intro wellFormed
+  have found : lookupMap [("f", strictConfigMap)] "f" = some strictConfigMap := by
+    rfl
+  obtain ⟨_, table, tableFound, _⟩ :=
+    wellFormed.complete "f" strictConfigMap found
+  simp [lookupTable] at tableFound
 
 end E7CProofSpike
