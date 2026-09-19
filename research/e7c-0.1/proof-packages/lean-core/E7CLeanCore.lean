@@ -264,9 +264,17 @@ def applySourceView (table : ViewTable) (name : Nat) : Value → Outcome
       | none => .unsupported name
   | _ => .domainError
 
+def retainMembers : List Nat → List Nat → List Nat
+  | [], _ => []
+  | member :: rest, retained =>
+      if retained.contains member then
+        member :: retainMembers rest retained
+      else
+        retainMembers rest retained
+
 def applyRestriction (retained : List Nat) : Value → Outcome
   | .familyConfig members =>
-      .success (.familyConfig (members.filter (fun member => retained.contains member)))
+      .success (.familyConfig (retainMembers members retained))
   | _ => .domainError
 
 def finishWith (child : EvaluationResult) (entries : Ledger)
@@ -475,7 +483,7 @@ theorem successful_type_preservation
               cases input with
               | familyConfig members =>
                   have outputIsFamily : output =
-                      .familyConfig (members.filter (fun member => retained.contains member)) := by
+                      .familyConfig (retainMembers members retained) := by
                     simpa [evaluate, finishWith, argumentResult, restrictionOperation,
                       retainedFound, applyRestriction] using successful.symm
                   cases outputIsFamily
