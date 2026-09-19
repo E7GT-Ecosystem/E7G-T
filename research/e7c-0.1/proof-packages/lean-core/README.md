@@ -36,9 +36,15 @@ to a strict-map `domainError`.
 | Toolchain pin | `leanprover/lean4:v4.34.0` |
 | Dependencies | Lean core/prelude only |
 | Build | `lake build` from this directory |
-| Axiom audit | repository workflow, with standard `propext` as the only allowed axiom |
+| Axiom audit | repository workflow, allowing Lean's standard `propext` and `Quot.sound` only |
 | Admissions | no `sorry`, `admit`, user axiom or opaque external oracle intended |
-| Trusted base | pinned Lean compiler/kernel, bundled Lake, standard `propext`, and CI host/build chain |
+| Trusted base | pinned Lean compiler/kernel, bundled Lake, standard `propext` and `Quot.sound`, and CI host/build chain |
+
+`Quot.sound` is reported only for ordered-ledger/effect containment and their
+typed transport theorems. Successful type preservation and successful-ledger
+exactness do not report it. The allowance is explicit rather than an assertion
+that the extension retained the feasibility spike's smaller `propext`-only
+audit surface; it does not permit a user axiom or `Classical.choice`.
 
 ## Review boundary and non-claims
 

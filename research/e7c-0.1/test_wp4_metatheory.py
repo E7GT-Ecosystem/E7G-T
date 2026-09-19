@@ -84,6 +84,8 @@ class WP4SpecificationControlTests(unittest.TestCase):
         self.assertIn("do **not** prove", specification)
         self.assertIn("Lean remains the provisional implementation vehicle", readme)
         self.assertIn("final proof-assistant selection", readme)
+        self.assertIn("`propext` and `Quot.sound` only", readme)
+        self.assertIn("does not permit a user axiom or `Classical.choice`", readme)
 
     def test_progress_and_replay_claims_are_explicitly_split(self):
         obligations = (HERE / "E7C_0.1_PROOF_OBLIGATIONS.md").read_text(encoding="utf-8")
