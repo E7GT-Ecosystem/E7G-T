@@ -34,5 +34,5 @@ jobs:
           auto-config: false
           build: true
           axiom-audit: true
-          axiom-audit-allow: "propext Quot.sound"
+          axiom-audit-allow: "propext,Quot.sound"
           use-mathlib-cache: false
