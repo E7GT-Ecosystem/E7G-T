@@ -1,0 +1,34 @@
+name: E7C Lean proof spike
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/proof-spikes/lean/**"
+      - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
+      - "research/e7c-0.1/test_wp4_metatheory.py"
+      - ".github/workflows/e7c-proof-spike.yml"
+  push:
+    branches:
+      - "codex/e7c-01-wp4-proof-spike"
+    paths:
+      - "research/e7c-0.1/proof-spikes/lean/**"
+      - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
+      - "research/e7c-0.1/test_wp4_metatheory.py"
+      - ".github/workflows/e7c-proof-spike.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-spikes/lean
+          auto-config: false
+          build: true
+          axiom-audit: true
+          axiom-audit-allow: "propext"
+          use-mathlib-cache: false

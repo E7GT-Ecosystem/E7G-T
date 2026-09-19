@@ -15,6 +15,7 @@ class WP4SpecificationControlTests(unittest.TestCase):
         obligations = (HERE / "E7C_0.1_PROOF_OBLIGATIONS.md").read_text(encoding="utf-8")
         catalogue = (HERE / "E7C_0.1_COUNTEREXAMPLE_CATALOGUE.md").read_text(encoding="utf-8")
         selection = (HERE / "E7C_0.1_PROOF_ASSISTANT_SELECTION.md").read_text(encoding="utf-8")
+        lean_spike = (HERE / "proof-spikes/lean/E7CProofSpike.lean").read_text(encoding="utf-8")
         for theorem in range(1, 18):
             heading = f"### E7C-T{theorem:03d}"
             self.assertIn(heading, obligations)
@@ -26,7 +27,21 @@ class WP4SpecificationControlTests(unittest.TestCase):
             self.assertIn("Mechanisation disposition", section)
         for counterexample in range(1, 28):
             self.assertIn(f"CE-{counterexample:03d}", catalogue)
-        self.assertIn("selection_deferred_pending_executable_spike", selection)
+        self.assertIn(
+            "selection_deferred; lean_revision_addressed_exact_head_rereview_pending",
+            selection,
+        )
+        self.assertIn("not an acceptance verdict", selection)
+        for marker in (
+            "structure EnvironmentWellFormed",
+            "structure InterpretationWellFormed",
+            "theorem successful_type_preservation",
+            "theorem outcome_variable_domain_error_is_direct",
+            "theorem missing_interpretation_is_unsupported",
+            "theorem missing_environment_binding_is_not_well_formed",
+            "theorem missing_interpretation_table_is_not_well_formed",
+        ):
+            self.assertIn(marker, lean_spike)
         self.assertIn("does not establish", obligations)
         self.assertNotIn("Status: `mechanised`", obligations)
 
