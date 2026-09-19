@@ -495,8 +495,16 @@ theorem successful_type_preservation
 def LedgerBounded (ledger : Ledger) (effects : EffectRow) : Prop :=
   ∀ entry, entry ∈ ledger → entry.atom ∈ effects
 
-def ledgerAtoms (ledger : Ledger) : EffectRow :=
-  ledger.map LedgerEntry.atom
+def ledgerAtoms : Ledger → EffectRow
+  | [] => []
+  | entry :: rest => entry.atom :: ledgerAtoms rest
+
+theorem ledgerAtoms_append (left right : Ledger) :
+    ledgerAtoms (left ++ right) = ledgerAtoms left ++ ledgerAtoms right := by
+  induction left with
+  | nil => rfl
+  | cons entry rest inductionHypothesis =>
+      simp only [List.cons_append, ledgerAtoms, inductionHypothesis]
 
 /- This is the ordered counterpart of `LedgerBounded`: the runtime atoms must
 be an initial segment of the statically ordered fragment row. The external WP2
@@ -545,10 +553,11 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith]
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -560,10 +569,11 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith]
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -575,10 +585,11 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith]
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -599,11 +610,13 @@ theorem ordered_ledger_preservation
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith,
+                LedgerOrderPreserved]
               refine ⟨[], ?_⟩
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'.symm
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
@@ -627,11 +640,13 @@ theorem ordered_ledger_preservation
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith,
+                LedgerOrderPreserved]
               refine ⟨[], ?_⟩
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'.symm
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
@@ -655,11 +670,13 @@ theorem ordered_ledger_preservation
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
               have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
-                simpa [argumentResult] using childExact
+                rw [argumentResult] at childExact
+                exact childExact
+              simp only [evaluate, argumentResult, finishWith,
+                LedgerOrderPreserved]
               refine ⟨[], ?_⟩
-              simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact']
-              simpa [ledgerAtoms] using childExact'.symm
+              rw [ledgerAtoms_append, childExact']
+              rfl
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
