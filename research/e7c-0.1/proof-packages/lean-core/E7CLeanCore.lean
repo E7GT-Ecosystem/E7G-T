@@ -18,43 +18,43 @@ inductive CoreType where
   deriving DecidableEq, Repr
 
 inductive EffectAtom where
-  | evidence (declaration : String)
-  | partiality (declaration : String)
-  | inquiry (declaration : String)
-  | alternatives (declaration : String)
+  | evidence (declaration : Nat)
+  | partiality (declaration : Nat)
+  | inquiry (declaration : Nat)
+  | alternatives (declaration : Nat)
   deriving DecidableEq, Repr
 
 abbrev EffectRow := List EffectAtom
 
 structure LedgerEntry where
   atom : EffectAtom
-  detail : String
+  detail : Nat
   deriving DecidableEq, Repr
 
 abbrev Ledger := List LedgerEntry
 
 def ledgerEntry (atom : EffectAtom) : LedgerEntry :=
-  { atom := atom, detail := "bounded-rule-event" }
+  { atom := atom, detail := 0 }
 
 inductive Term where
-  | var (name : String)
-  | strictApp (mapName : String) (argument : Term)
-  | sourceView (viewName : String) (argument : Term)
-  | restrict (policyName : String) (argument : Term)
+  | var (name : Nat)
+  | strictApp (mapName : Nat) (argument : Term)
+  | sourceView (viewName : Nat) (argument : Term)
+  | restrict (policyName : Nat) (argument : Term)
   deriving DecidableEq, Repr
 
-abbrev Context := List (String × CoreType)
+abbrev Context := List (Nat × CoreType)
 
 structure Declarations where
-  strictMaps : List String
-  sourceViews : List String
-  restrictions : List String
+  strictMaps : List Nat
+  sourceViews : List Nat
+  restrictions : List Nat
   deriving DecidableEq, Repr
 
-def PairNamesUnique {α : Type} (entries : List (String × α)) : Prop :=
+def PairNamesUnique {α : Type} (entries : List (Nat × α)) : Prop :=
   (entries.map (fun entry => entry.1)).Nodup
 
-def lookupType : Context → String → Option CoreType
+def lookupType : Context → Nat → Option CoreType
   | [], _ => none
   | (boundName, type) :: rest, name =>
       if name = boundName then some type else lookupType rest name
@@ -84,13 +84,13 @@ inductive Value where
   | config (code : Nat)
   | familyConfig (members : List Nat)
   | sourceView (representation : Nat) (sourceReturn : Nat)
-  | text (content : String)
+  | text (code : Nat)
   deriving DecidableEq, Repr
 
 inductive Outcome where
   | success (value : Value)
   | domainError
-  | unsupported (capability : String)
+  | unsupported (capability : Nat)
   deriving DecidableEq, Repr
 
 abbrev EvaluationResult := Outcome × Ledger
@@ -100,9 +100,9 @@ inductive Binding where
   | terminal (outcome : Outcome)
   deriving DecidableEq, Repr
 
-abbrev Environment := List (String × Binding)
+abbrev Environment := List (Nat × Binding)
 
-def lookupBinding : Environment → String → Option Binding
+def lookupBinding : Environment → Nat → Option Binding
   | [], _ => none
   | (boundName, binding) :: rest, name =>
       if name = boundName then some binding else lookupBinding rest name
@@ -120,7 +120,7 @@ def lookupStrictRow : StrictTable → Nat → Option Nat
       if input = row.input then some row.output else lookupStrictRow rest input
 
 structure StrictEntry where
-  name : String
+  name : Nat
   table : StrictTable
   deriving DecidableEq, Repr
 
@@ -137,12 +137,12 @@ def lookupViewRow : ViewTable → Nat → Option Nat
       if input = row.input then some row.representation else lookupViewRow rest input
 
 structure ViewEntry where
-  name : String
+  name : Nat
   table : ViewTable
   deriving DecidableEq, Repr
 
 structure RestrictionEntry where
-  name : String
+  name : Nat
   retained : List Nat
   deriving DecidableEq, Repr
 
@@ -152,17 +152,17 @@ structure Interpretation where
   restrictions : List RestrictionEntry
   deriving DecidableEq, Repr
 
-def lookupStrict : List StrictEntry → String → Option StrictTable
+def lookupStrict : List StrictEntry → Nat → Option StrictTable
   | [], _ => none
   | entry :: rest, name =>
       if name = entry.name then some entry.table else lookupStrict rest name
 
-def lookupView : List ViewEntry → String → Option ViewTable
+def lookupView : List ViewEntry → Nat → Option ViewTable
   | [], _ => none
   | entry :: rest, name =>
       if name = entry.name then some entry.table else lookupView rest name
 
-def lookupRestriction : List RestrictionEntry → String → Option (List Nat)
+def lookupRestriction : List RestrictionEntry → Nat → Option (List Nat)
   | [], _ => none
   | entry :: rest, name =>
       if name = entry.name then some entry.retained else lookupRestriction rest name
@@ -245,7 +245,7 @@ def evaluateBinding : Binding → Outcome
   | .plain value => .success value
   | .terminal outcome => outcome
 
-def evaluateVariable (environment : Environment) (name : String) : EvaluationResult :=
+def evaluateVariable (environment : Environment) (name : Nat) : EvaluationResult :=
   match lookupBinding environment name with
   | some binding => (evaluateBinding binding, [])
   | none => (.unsupported name, [])
@@ -257,11 +257,11 @@ def applyStrict (table : StrictTable) : Value → Outcome
       | none => .domainError
   | _ => .domainError
 
-def applySourceView (table : ViewTable) (name : String) : Value → Outcome
+def applySourceView (table : ViewTable) (name : Nat) : Value → Outcome
   | .config input =>
       match lookupViewRow table input with
       | some representation => .success (.sourceView representation input)
-      | none => .unsupported ("view-case:" ++ name)
+      | none => .unsupported name
   | _ => .domainError
 
 def applyRestriction (retained : List Nat) : Value → Outcome
@@ -276,20 +276,20 @@ def finishWith (child : EvaluationResult) (entries : Ledger)
   | (.domainError, ledger) => (.domainError, ledger)
   | (.unsupported capability, ledger) => (.unsupported capability, ledger)
 
-def strictOperation (interpretation : Interpretation) (name : String) : Value → Outcome :=
+def strictOperation (interpretation : Interpretation) (name : Nat) : Value → Outcome :=
   fun value =>
     match lookupStrict interpretation.strictMaps name with
     | some table => applyStrict table value
     | none => .unsupported name
 
-def viewOperation (interpretation : Interpretation) (name : String) : Value → Outcome :=
+def viewOperation (interpretation : Interpretation) (name : Nat) : Value → Outcome :=
   fun value =>
     match lookupView interpretation.sourceViews name with
     | some table => applySourceView table name value
     | none => .unsupported name
 
 def restrictionOperation
-    (interpretation : Interpretation) (name : String) : Value → Outcome :=
+    (interpretation : Interpretation) (name : Nat) : Value → Outcome :=
   fun value =>
     match lookupRestriction interpretation.restrictions name with
     | some retained => applyRestriction retained value
@@ -736,47 +736,47 @@ theorem ledger_effect_soundness
                   (additionalEffects := [.alternatives policyName]) childBounded)
 
 theorem outcome_variable_is_direct :
-    evaluate [("x", .terminal .domainError)]
-      { strictMaps := [], sourceViews := [], restrictions := [] } (.var "x") =
+    evaluate [(0, .terminal .domainError)]
+      { strictMaps := [], sourceViews := [], restrictions := [] } (.var 0) =
       (.domainError, []) := by
   rfl
 
 theorem missing_strict_interpretation_is_unsupported_with_ordered_ledger :
-    evaluate [("x", .plain (.config 1))]
+    evaluate [(0, .plain (.config 1))]
       { strictMaps := [], sourceViews := [], restrictions := [] }
-      (.strictApp "f" (.var "x")) =
-      (.unsupported "f",
-        [ledgerEntry (.evidence "f"), ledgerEntry (.partiality "f")]) := by
+      (.strictApp 1 (.var 0)) =
+      (.unsupported 1,
+        [ledgerEntry (.evidence 1), ledgerEntry (.partiality 1)]) := by
   rfl
 
 theorem source_view_ledger_order_is_exact :
     let interpretation : Interpretation :=
       { strictMaps := [],
-        sourceViews := [{ name := "q", table := [{ input := 1, representation := 7 }] }],
+        sourceViews := [{ name := 2, table := [{ input := 1, representation := 7 }] }],
         restrictions := [] }
-    evaluate [("x", .plain (.config 1))] interpretation
-      (.sourceView "q" (.var "x")) =
+    evaluate [(0, .plain (.config 1))] interpretation
+      (.sourceView 2 (.var 0)) =
       (.success (.sourceView 7 1),
-        [ledgerEntry (.inquiry "q"), ledgerEntry (.alternatives "q")]) := by
+        [ledgerEntry (.inquiry 2), ledgerEntry (.alternatives 2)]) := by
   rfl
 
 theorem restriction_ledger_and_result_are_exact :
     let interpretation : Interpretation :=
       { strictMaps := [], sourceViews := [],
-        restrictions := [{ name := "p", retained := [1, 3] }] }
-    evaluate [("xs", .plain (.familyConfig [1, 2, 3]))] interpretation
-      (.restrict "p" (.var "xs")) =
-      (.success (.familyConfig [1, 3]), [ledgerEntry (.alternatives "p")]) := by
+        restrictions := [{ name := 3, retained := [1, 3] }] }
+    evaluate [(4, .plain (.familyConfig [1, 2, 3]))] interpretation
+      (.restrict 3 (.var 4)) =
+      (.success (.familyConfig [1, 3]), [ledgerEntry (.alternatives 3)]) := by
   rfl
 
 theorem prior_failure_preserves_ledger_prefix :
     let interpretation : Interpretation :=
-      { strictMaps := [{ name := "f", table := [] }],
+      { strictMaps := [{ name := 1, table := [] }],
         sourceViews := [], restrictions := [] }
-    evaluate [("x", .plain (.config 1))] interpretation
-      (.sourceView "q" (.strictApp "f" (.var "x"))) =
+    evaluate [(0, .plain (.config 1))] interpretation
+      (.sourceView 2 (.strictApp 1 (.var 0))) =
       (.domainError,
-        [ledgerEntry (.evidence "f"), ledgerEntry (.partiality "f")]) := by
+        [ledgerEntry (.evidence 1), ledgerEntry (.partiality 1)]) := by
   rfl
 
 end E7CLeanCore
