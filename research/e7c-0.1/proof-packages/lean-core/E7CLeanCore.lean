@@ -322,25 +322,31 @@ inductive SpecEval (environment : Environment) (interpretation : Interpretation)
         (evaluateVariable environment name).1 (evaluateVariable environment name).2
   | wp3Strict
       (argumentEval : SpecEval environment interpretation argument childOutcome childLedger) :
-      let result := finishWith (childOutcome, childLedger)
-        [ledgerEntry (.evidence mapName), ledgerEntry (.partiality mapName)]
-        (strictOperation interpretation mapName)
       SpecEval environment interpretation (.strictApp mapName argument)
-        result.1 result.2
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.evidence mapName), ledgerEntry (.partiality mapName)]
+          (strictOperation interpretation mapName)).1
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.evidence mapName), ledgerEntry (.partiality mapName)]
+          (strictOperation interpretation mapName)).2
   | wp3SourceView
       (argumentEval : SpecEval environment interpretation argument childOutcome childLedger) :
-      let result := finishWith (childOutcome, childLedger)
-        [ledgerEntry (.inquiry viewName), ledgerEntry (.alternatives viewName)]
-        (viewOperation interpretation viewName)
       SpecEval environment interpretation (.sourceView viewName argument)
-        result.1 result.2
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.inquiry viewName), ledgerEntry (.alternatives viewName)]
+          (viewOperation interpretation viewName)).1
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.inquiry viewName), ledgerEntry (.alternatives viewName)]
+          (viewOperation interpretation viewName)).2
   | wp3Restriction
       (argumentEval : SpecEval environment interpretation argument childOutcome childLedger) :
-      let result := finishWith (childOutcome, childLedger)
-        [ledgerEntry (.alternatives policyName)]
-        (restrictionOperation interpretation policyName)
       SpecEval environment interpretation (.restrict policyName argument)
-        result.1 result.2
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.alternatives policyName)]
+          (restrictionOperation interpretation policyName)).1
+        (finishWith (childOutcome, childLedger)
+          [ledgerEntry (.alternatives policyName)]
+          (restrictionOperation interpretation policyName)).2
 
 theorem spec_eval_matches_function
     (derivation : SpecEval environment interpretation term outcome ledger) :
@@ -381,12 +387,8 @@ theorem evaluateBinding_success_has_type
     (bindingType : BindingHasType binding type)
     (successful : evaluateBinding binding = .success output) :
     ValueHasType output (successCarrier type) := by
-  cases binding with
-  | plain value =>
-      cases type <;> simp [BindingHasType, evaluateBinding, successCarrier] at *
-  | terminal outcome =>
-      cases outcome <;> cases type <;>
-        simp [BindingHasType, evaluateBinding, successCarrier] at *
+  cases binding <;> cases type <;>
+    simp_all [BindingHasType, evaluateBinding, successCarrier, ValueHasType]
 
 theorem successful_type_preservation
     (termType : HasType declarations context term type effects)
@@ -524,7 +526,9 @@ theorem successful_ledger_exact
     (successful : (evaluate environment interpretation term).1 = .success output) :
     ledgerAtoms (evaluate environment interpretation term).2 = effects := by
   induction termType generalizing output with
-  | @var name type found => simp [evaluate, evaluateVariable, ledgerAtoms]
+  | @var name type found =>
+      simp only [evaluate, evaluateVariable]
+      split <;> rfl
   | @strictApp mapName argument argumentEffects declared argumentType inductionHypothesis =>
       cases argumentResult : evaluate environment interpretation argument with
       | mk argumentOutcome argumentLedger =>
@@ -532,8 +536,10 @@ theorem successful_ledger_exact
           | success input =>
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]
+                List.map_append, ledgerEntry, childExact']
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -544,8 +550,10 @@ theorem successful_ledger_exact
           | success input =>
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]
+                List.map_append, ledgerEntry, childExact']
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -556,8 +564,10 @@ theorem successful_ledger_exact
           | success input =>
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]
+                List.map_append, ledgerEntry, childExact']
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
           | unsupported capability =>
               simp [evaluate, finishWith, argumentResult] at successful
@@ -567,7 +577,8 @@ theorem ordered_ledger_preservation
     LedgerOrderPreserved (evaluate environment interpretation term).2 effects := by
   induction termType with
   | @var name type found =>
-      exact ⟨[], by simp [evaluate, evaluateVariable, ledgerAtoms]⟩
+      simp only [evaluate, evaluateVariable]
+      split <;> exact ⟨[], rfl⟩
   | @strictApp mapName argument argumentEffects declared argumentType inductionHypothesis =>
       cases argumentResult : evaluate environment interpretation argument with
       | mk argumentOutcome argumentLedger =>
@@ -576,8 +587,10 @@ theorem ordered_ledger_preservation
               have childExact := successful_ledger_exact
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               exact ⟨[], by simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]⟩
+                List.map_append, ledgerEntry, childExact']⟩
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
@@ -600,8 +613,10 @@ theorem ordered_ledger_preservation
               have childExact := successful_ledger_exact
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               exact ⟨[], by simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]⟩
+                List.map_append, ledgerEntry, childExact']⟩
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
@@ -624,8 +639,10 @@ theorem ordered_ledger_preservation
               have childExact := successful_ledger_exact
                 (environment := environment) (interpretation := interpretation)
                 argumentType (output := input) (by simp [argumentResult])
+              have childExact' : ledgerAtoms argumentLedger = argumentEffects := by
+                simpa [argumentResult] using childExact
               exact ⟨[], by simp [evaluate, finishWith, argumentResult, ledgerAtoms,
-                List.map_append, ledgerEntry, childExact]⟩
+                List.map_append, ledgerEntry, childExact']⟩
           | domainError =>
               have childOrdered : LedgerOrderPreserved argumentLedger argumentEffects := by
                 simpa [argumentResult] using inductionHypothesis
@@ -644,7 +661,8 @@ theorem ledger_effect_soundness
     LedgerBounded (evaluate environment interpretation term).2 effects := by
   induction termType with
   | @var name type found =>
-      simp [evaluate, evaluateVariable, LedgerBounded]
+      simp only [evaluate, evaluateVariable]
+      split <;> simp [LedgerBounded]
   | @strictApp mapName argument argumentEffects declared argumentType inductionHypothesis =>
       cases argumentResult : evaluate environment interpretation argument with
       | mk argumentOutcome argumentLedger =>
