@@ -701,7 +701,7 @@ theorem ledgerAtom_is_emitted (member : entry ∈ ledger) :
   induction ledger with
   | nil => cases member
   | cons head tail inductionHypothesis =>
-      simp only [List.mem_cons] at member ⊢
+      simp only [ledgerAtoms, List.mem_cons] at member ⊢
       cases member with
       | inl equality =>
           subst entry
