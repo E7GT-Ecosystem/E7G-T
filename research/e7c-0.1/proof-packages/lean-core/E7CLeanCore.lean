@@ -543,7 +543,7 @@ def LedgerBounded (ledger : Ledger) (effects : EffectRow) : Prop :=
 def TraceBounded (ledger : Ledger) (trace : List EffectAtom) : Prop :=
   ∀ entry, entry ∈ ledger → entry.atom ∈ trace
 
-def ledgerAtoms : Ledger → EffectRow
+def ledgerAtoms : Ledger → List EffectAtom
   | [] => []
   | entry :: rest => entry.atom :: ledgerAtoms rest
 
@@ -732,19 +732,19 @@ theorem trace_member_is_static (term : Term) (atom : EffectAtom)
   | var name => simp [staticTrace] at member
   | strictApp mapName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
+      simp only [staticEffects, effectUnion, effectAtoms]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
   | sourceView viewName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
+      simp only [staticEffects, effectUnion, effectAtoms]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
   | restrict policyName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
+      simp only [staticEffects, effectUnion, effectAtoms]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
