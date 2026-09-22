@@ -329,3 +329,102 @@ theorem missing_interpretation_table_is_not_well_formed :
   simp [lookupTable] at tableFound
 
 end E7CProofSpike
+
+/-!
+WP4 continuation: an ordered ledger for the already admitted unary strict-map
+spike. This is a deliberately smaller model than the WP3-S ledger: it records
+only the order of a map's evidence and partiality attempts, with no resource
+charges, policy editions, payloads, or reconstruction. The outcome projection
+must agree with the previously reviewed evaluator.
+-/
+namespace E7CProofSpike
+
+inductive SpikeLedgerAtom where
+  | evidence (mapName : String)
+  | partiality (mapName : String)
+  deriving DecidableEq, Repr
+
+abbrev SpikeTrace := Outcome × List SpikeLedgerAtom
+
+def evaluateWithLedger (environment : Environment)
+    (interpretation : Interpretation) : Term → SpikeTrace
+  | .var name =>
+      (evaluate environment interpretation (.var name), [])
+  | .strictApp mapName argument =>
+      let (argumentOutcome, argumentLedger) :=
+        evaluateWithLedger environment interpretation argument
+      match argumentOutcome with
+      | .success value =>
+          let ledger := argumentLedger ++
+            [.evidence mapName, .partiality mapName]
+          let outcome :=
+            match lookupTable interpretation mapName with
+            | none => .unsupported mapName
+            | some table => applyStrict table value
+          (outcome, ledger)
+      | .domainError => (.domainError, argumentLedger)
+      | .unsupported capability => (.unsupported capability, argumentLedger)
+
+theorem traced_outcome_agrees_with_spike
+    (environment : Environment) (interpretation : Interpretation)
+    (term : Term) :
+    (evaluateWithLedger environment interpretation term).1 =
+      evaluate environment interpretation term := by
+  induction term with
+  | var name => rfl
+  | strictApp mapName argument inductionHypothesis =>
+      cases h : evaluateWithLedger environment interpretation argument with
+      | mk argumentOutcome argumentLedger =>
+          have sameOutcome : argumentOutcome =
+              evaluate environment interpretation argument := by
+            simpa [h] using inductionHypothesis
+          cases argumentOutcome <;>
+            simp [evaluateWithLedger, evaluate, h, ← sameOutcome]
+
+theorem strict_child_domain_error_keeps_ledger
+    (environment : Environment) (interpretation : Interpretation)
+    (mapName : String) (argument : Term)
+    (failed : (evaluateWithLedger environment interpretation argument).1 =
+      .domainError) :
+    evaluateWithLedger environment interpretation (.strictApp mapName argument) =
+      (.domainError, (evaluateWithLedger environment interpretation argument).2) := by
+  simp [evaluateWithLedger, failed]
+
+theorem strict_child_unsupported_keeps_ledger
+    (environment : Environment) (interpretation : Interpretation)
+    (mapName : String) (argument : Term) (capability : String)
+    (failed : (evaluateWithLedger environment interpretation argument).1 =
+      .unsupported capability) :
+    evaluateWithLedger environment interpretation (.strictApp mapName argument) =
+      (.unsupported capability,
+        (evaluateWithLedger environment interpretation argument).2) := by
+  simp [evaluateWithLedger, failed]
+
+theorem strict_success_appends_ordered_attempt
+    (environment : Environment) (interpretation : Interpretation)
+    (mapName : String) (argument : Term) (value : Value)
+    (succeeded : (evaluateWithLedger environment interpretation argument).1 =
+      .success value) :
+    (evaluateWithLedger environment interpretation (.strictApp mapName argument)).2 =
+      (evaluateWithLedger environment interpretation argument).2 ++
+        [.evidence mapName, .partiality mapName] := by
+  simp [evaluateWithLedger, succeeded]
+
+private def swapEnvironment : Environment :=
+  [("x", .plain (.config 0))]
+
+private def swapInterpretation : Interpretation :=
+  [{ mapName := "f", table := [{ input := 0, output := 0 }] },
+   { mapName := "g", table := [{ input := 0, output := 0 }] }]
+
+private def fgTerm : Term := .strictApp "f" (.strictApp "g" (.var "x"))
+private def gfTerm : Term := .strictApp "g" (.strictApp "f" (.var "x"))
+
+theorem same_success_can_have_distinct_ordered_ledgers :
+    (evaluateWithLedger swapEnvironment swapInterpretation fgTerm).1 =
+      (evaluateWithLedger swapEnvironment swapInterpretation gfTerm).1 ∧
+    (evaluateWithLedger swapEnvironment swapInterpretation fgTerm).2 ≠
+      (evaluateWithLedger swapEnvironment swapInterpretation gfTerm).2 := by
+  decide
+
+end E7CProofSpike
