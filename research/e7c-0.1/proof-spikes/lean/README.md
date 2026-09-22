@@ -66,3 +66,27 @@ domain validity, production readiness, comparative superiority of Lean, or an
 independent review result. Lean remains the provisional first candidate because
 it can be exercised in the available CI environment; Rocq and Isabelle have not
 been compared here.
+
+## WP4 ordered-ledger continuation (draft)
+
+The `SpikeLedgerAtom` and `evaluateWithLedger` extension exercises the first
+observable-history distinction on the existing binder-free strict-map nucleus.
+Each successful operand causes the enclosing strict map to append its evidence
+attempt followed by its partiality attempt. A failed operand propagates its
+terminal outcome and its complete ordered ledger without running the enclosing
+map. A missing interpretation is `unsupported` after the map's attempted ledger
+entries; a presented config outside a strict table's domain is `domainError`.
+
+The new candidate theorems state that the traced evaluator's outcome projection
+agrees with the previously reviewed spike, that `domainError` and `unsupported`
+from a child retain their ledger exactly, and that a successful child appends
+the enclosing attempt in order. The `f(g(x))` / `g(f(x))` counterexample has the
+same successful config on both sides but distinct ordered ledgers. This guards
+against replacing observable history by a set of effect names.
+
+This ledger uses only map names and two atom tags. It is **not** the WP2
+editioned effect row or WP3-S ledger: it lacks declaration payloads, charge
+precedence, resource progress, view/restriction/reconstruction/classification
+entries, and witness correspondence. The next formal step must introduce those
+rules against the external specifications, with explicit premises and
+counterexamples. No E7C-T006, T008 or T017 discharge is claimed by this draft.
