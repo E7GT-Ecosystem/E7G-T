@@ -26,6 +26,11 @@ inductive EffectAtom where
 
 abbrev EffectRow := List EffectAtom
 
+/- WP2 rows are extensional finite sets. `eraseDups` supplies a canonical
+duplicate-free representative; runtime order is tracked separately below. -/
+def effectUnion (left right : EffectRow) : EffectRow :=
+  (left ++ right).eraseDups
+
 structure LedgerEntry where
   atom : EffectAtom
   detail : Nat
@@ -43,14 +48,23 @@ inductive Term where
   | restrict (policyName : Nat) (argument : Term)
   deriving DecidableEq, Repr
 
+def staticTrace : Term → List EffectAtom
+  | .var _ => []
+  | .strictApp mapName argument =>
+      staticTrace argument ++ [.evidence mapName, .partiality mapName]
+  | .sourceView viewName argument =>
+      staticTrace argument ++ [.inquiry viewName, .alternatives viewName]
+  | .restrict policyName argument =>
+      staticTrace argument ++ [.alternatives policyName]
+
 def staticEffects : Term → EffectRow
   | .var _ => []
   | .strictApp mapName argument =>
-      staticEffects argument ++ [.evidence mapName, .partiality mapName]
+      effectUnion (staticEffects argument) [.evidence mapName, .partiality mapName]
   | .sourceView viewName argument =>
-      staticEffects argument ++ [.inquiry viewName, .alternatives viewName]
+      effectUnion (staticEffects argument) [.inquiry viewName, .alternatives viewName]
   | .restrict policyName argument =>
-      staticEffects argument ++ [.alternatives policyName]
+      effectUnion (staticEffects argument) [.alternatives policyName]
 
 abbrev Context := List (Nat × CoreType)
 
@@ -76,18 +90,18 @@ inductive HasType (declarations : Declarations) (context : Context) :
       (declared : mapName ∈ declarations.strictMaps)
       (argumentType : HasType declarations context argument .config argumentEffects) :
       HasType declarations context (.strictApp mapName argument) .outcomeConfig
-        (argumentEffects ++ [.evidence mapName, .partiality mapName])
+        (effectUnion argumentEffects [.evidence mapName, .partiality mapName])
   | sourceView
       (declared : viewName ∈ declarations.sourceViews)
       (argumentType : HasType declarations context argument .config argumentEffects) :
       HasType declarations context (.sourceView viewName argument) .viewConfig
-        (argumentEffects ++ [.inquiry viewName, .alternatives viewName])
+        (effectUnion argumentEffects [.inquiry viewName, .alternatives viewName])
   | restrict
       (declared : policyName ∈ declarations.restrictions)
       (argumentType :
         HasType declarations context argument .familyConfig argumentEffects) :
       HasType declarations context (.restrict policyName argument)
-        .outcomeFamilyConfig (argumentEffects ++ [.alternatives policyName])
+        .outcomeFamilyConfig (effectUnion argumentEffects [.alternatives policyName])
 
 theorem typing_effects_are_static
     (termType : HasType declarations context term type effects) :
@@ -530,12 +544,9 @@ theorem ledgerAtoms_append (left right : Ledger) :
   | cons entry rest inductionHypothesis =>
       simp only [List.cons_append, ledgerAtoms, inductionHypothesis]
 
-/- This is the ordered counterpart of `LedgerBounded`: the runtime atoms must
-be an initial segment of the statically ordered fragment row. The external WP2
-row remains a set; the list order here records the WP3 constructor order used
-by this bounded projection. -/
-def LedgerOrderPreserved (ledger : Ledger) (effects : EffectRow) : Prop :=
-  ∃ remaining, effects = ledgerAtoms ledger ++ remaining
+/- The trace is syntax-derived and ordered; it is distinct from the WP2 set. -/
+def LedgerOrderPreserved (ledger : Ledger) (trace : List EffectAtom) : Prop :=
+  ∃ remaining, trace = ledgerAtoms ledger ++ remaining
 
 theorem ledgerBounded_weaken
     (bounded : LedgerBounded ledger effects) :
@@ -564,7 +575,7 @@ theorem ledgerOrder_weaken
 theorem successful_ledger_exact
     (term : Term)
     (successful : (evaluate environment interpretation term).1 = .success output) :
-    ledgerAtoms (evaluate environment interpretation term).2 = staticEffects term := by
+    ledgerAtoms (evaluate environment interpretation term).2 = staticTrace term := by
   induction term generalizing output with
   | var name =>
       simp only [evaluate, evaluateVariable]
@@ -577,7 +588,7 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry]
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
@@ -591,7 +602,7 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry]
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
@@ -605,7 +616,7 @@ theorem successful_ledger_exact
               have childExact := inductionHypothesis (output := input) (by
                 simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry]
           | domainError => simp [evaluate, finishWith, argumentResult] at successful
@@ -614,10 +625,10 @@ theorem successful_ledger_exact
 
 theorem ordered_ledger_preservation (term : Term) :
     LedgerOrderPreserved (evaluate environment interpretation term).2
-      (staticEffects term) := by
+      (staticTrace term) := by
   induction term with
   | var name =>
-      simp only [evaluate, evaluateVariable, staticEffects]
+      simp only [evaluate, evaluateVariable, staticTrace]
       split <;> exact ⟨[], rfl⟩
   | strictApp mapName argument inductionHypothesis =>
       cases argumentResult : evaluate environment interpretation argument with
@@ -628,20 +639,20 @@ theorem ordered_ledger_preservation (term : Term) :
                 (environment := environment) (interpretation := interpretation)
                 argument (output := input) (by simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects,
+              simp only [evaluate, argumentResult, finishWith, staticTrace,
                 LedgerOrderPreserved]
               refine ⟨[], ?_⟩
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry, List.append_nil]
           | domainError =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.evidence mapName, .partiality mapName])
                 inductionHypothesis
           | unsupported capability =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.evidence mapName, .partiality mapName])
                 inductionHypothesis
@@ -654,20 +665,20 @@ theorem ordered_ledger_preservation (term : Term) :
                 (environment := environment) (interpretation := interpretation)
                 argument (output := input) (by simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects,
+              simp only [evaluate, argumentResult, finishWith, staticTrace,
                 LedgerOrderPreserved]
               refine ⟨[], ?_⟩
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry, List.append_nil]
           | domainError =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.inquiry viewName, .alternatives viewName])
                 inductionHypothesis
           | unsupported capability =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.inquiry viewName, .alternatives viewName])
                 inductionHypothesis
@@ -680,19 +691,19 @@ theorem ordered_ledger_preservation (term : Term) :
                 (environment := environment) (interpretation := interpretation)
                 argument (output := input) (by simp [argumentResult])
               rw [argumentResult] at childExact
-              simp only [evaluate, argumentResult, finishWith, staticEffects,
+              simp only [evaluate, argumentResult, finishWith, staticTrace,
                 LedgerOrderPreserved]
               refine ⟨[], ?_⟩
               rw [ledgerAtoms_append, childExact]
               simp only [ledgerAtoms, ledgerEntry, List.append_nil]
           | domainError =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.alternatives policyName]) inductionHypothesis
           | unsupported capability =>
               rw [argumentResult] at inductionHypothesis
-              simp only [evaluate, argumentResult, finishWith, staticEffects]
+              simp only [evaluate, argumentResult, finishWith, staticTrace]
               exact ledgerOrder_weaken
                 (additionalEffects := [.alternatives policyName]) inductionHypothesis
 
@@ -719,20 +730,44 @@ theorem ordered_ledger_is_bounded
 
 theorem ledger_effect_soundness (term : Term) :
     LedgerBounded (evaluate environment interpretation term).2
-      (staticEffects term) :=
+      (staticTrace term) :=
   ordered_ledger_is_bounded (ordered_ledger_preservation term)
+
+theorem trace_member_is_static (term : Term) (atom : EffectAtom)
+    (member : atom ∈ staticTrace term) : atom ∈ staticEffects term := by
+  induction term with
+  | var name => simp [staticTrace] at member
+  | strictApp mapName argument inductionHypothesis =>
+      simp only [staticTrace, List.mem_append] at member
+      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      cases member with
+      | inl child => exact Or.inl (inductionHypothesis child)
+      | inr own => exact Or.inr own
+  | sourceView viewName argument inductionHypothesis =>
+      simp only [staticTrace, List.mem_append] at member
+      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      cases member with
+      | inl child => exact Or.inl (inductionHypothesis child)
+      | inr own => exact Or.inr own
+  | restrict policyName argument inductionHypothesis =>
+      simp only [staticTrace, List.mem_append] at member
+      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      cases member with
+      | inl child => exact Or.inl (inductionHypothesis child)
+      | inr own => exact Or.inr own
 
 theorem typed_ordered_ledger_preservation
     (termType : HasType declarations context term type effects) :
-    LedgerOrderPreserved (evaluate environment interpretation term).2 effects := by
-  rw [typing_effects_are_static termType]
+    LedgerOrderPreserved (evaluate environment interpretation term).2
+      (staticTrace term) := by
   exact ordered_ledger_preservation term
 
 theorem typed_ledger_effect_soundness
     (termType : HasType declarations context term type effects) :
     LedgerBounded (evaluate environment interpretation term).2 effects := by
   rw [typing_effects_are_static termType]
-  exact ledger_effect_soundness term
+  intro entry emitted
+  exact trace_member_is_static term entry.atom (ledger_effect_soundness term entry emitted)
 
 theorem outcome_variable_is_direct :
     evaluate [(0, .terminal .domainError)]
@@ -768,7 +803,9 @@ theorem restriction_ledger_and_result_are_exact :
       (.success (.familyConfig [1, 3]), [ledgerEntry (.alternatives 3)]) := by
   rfl
 
-theorem prior_failure_preserves_ledger_prefix :
+/- Internal evaluator invariant only: sourceView consumes an Outcome Config here,
+which is rejected by HasType and is not an admitted WP3-S term. -/
+theorem raw_prior_failure_preserves_ledger_prefix :
     let interpretation : Interpretation :=
       { strictMaps := [{ name := 1, table := [] }],
         sourceViews := [], restrictions := [] }
@@ -777,5 +814,22 @@ theorem prior_failure_preserves_ledger_prefix :
       (.domainError,
         [ledgerEntry (.evidence 1), ledgerEntry (.partiality 1)]) := by
   rfl
+
+theorem typed_strict_domain_failure_has_ledger_prefix :
+    let declarations : Declarations :=
+      { strictMaps := [1], sourceViews := [], restrictions := [] }
+    let context : Context := [(0, .config)]
+    HasType declarations context (.strictApp 1 (.var 0)) .outcomeConfig
+      (effectUnion [] [.evidence 1, .partiality 1]) ∧
+    evaluate [(0, .plain (.config 1))]
+      { strictMaps := [{ name := 1, table := [] }],
+        sourceViews := [], restrictions := [] } (.strictApp 1 (.var 0)) =
+      (.domainError, [ledgerEntry (.evidence 1), ledgerEntry (.partiality 1)]) := by
+  constructor
+  · apply HasType.strictApp
+    · simp
+    · apply HasType.var
+      simp [lookupType]
+  · rfl
 
 end E7CLeanCore
