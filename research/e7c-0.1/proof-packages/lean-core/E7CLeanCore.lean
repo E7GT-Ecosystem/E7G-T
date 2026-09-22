@@ -24,12 +24,14 @@ inductive EffectAtom where
   | alternatives (declaration : Nat)
   deriving DecidableEq, Repr
 
-abbrev EffectRow := List EffectAtom
+/- WP2 rows are extensional sets of atoms. All rows produced by typing are
+finite unions of constructor atoms; order and multiplicity are absent here. -/
+abbrev EffectRow := EffectAtom → Prop
 
-/- WP2 rows are extensional finite sets. `eraseDups` supplies a canonical
-duplicate-free representative; runtime order is tracked separately below. -/
+def emptyEffect : EffectRow := fun _ => False
+def effectAtoms (atoms : List EffectAtom) : EffectRow := fun atom => atom ∈ atoms
 def effectUnion (left right : EffectRow) : EffectRow :=
-  (left ++ right).eraseDups
+  fun atom => left atom ∨ right atom
 
 structure LedgerEntry where
   atom : EffectAtom
@@ -58,13 +60,15 @@ def staticTrace : Term → List EffectAtom
       staticTrace argument ++ [.alternatives policyName]
 
 def staticEffects : Term → EffectRow
-  | .var _ => []
+  | .var _ => emptyEffect
   | .strictApp mapName argument =>
-      effectUnion (staticEffects argument) [.evidence mapName, .partiality mapName]
+      effectUnion (staticEffects argument)
+        (effectAtoms [.evidence mapName, .partiality mapName])
   | .sourceView viewName argument =>
-      effectUnion (staticEffects argument) [.inquiry viewName, .alternatives viewName]
+      effectUnion (staticEffects argument)
+        (effectAtoms [.inquiry viewName, .alternatives viewName])
   | .restrict policyName argument =>
-      effectUnion (staticEffects argument) [.alternatives policyName]
+      effectUnion (staticEffects argument) (effectAtoms [.alternatives policyName])
 
 abbrev Context := List (Nat × CoreType)
 
@@ -85,23 +89,26 @@ def lookupType : Context → Nat → Option CoreType
 inductive HasType (declarations : Declarations) (context : Context) :
     Term → CoreType → EffectRow → Prop where
   | var (found : lookupType context name = some type) :
-      HasType declarations context (.var name) type []
+      HasType declarations context (.var name) type emptyEffect
   | strictApp
       (declared : mapName ∈ declarations.strictMaps)
       (argumentType : HasType declarations context argument .config argumentEffects) :
       HasType declarations context (.strictApp mapName argument) .outcomeConfig
-        (effectUnion argumentEffects [.evidence mapName, .partiality mapName])
+        (effectUnion argumentEffects
+          (effectAtoms [.evidence mapName, .partiality mapName]))
   | sourceView
       (declared : viewName ∈ declarations.sourceViews)
       (argumentType : HasType declarations context argument .config argumentEffects) :
       HasType declarations context (.sourceView viewName argument) .viewConfig
-        (effectUnion argumentEffects [.inquiry viewName, .alternatives viewName])
+        (effectUnion argumentEffects
+          (effectAtoms [.inquiry viewName, .alternatives viewName]))
   | restrict
       (declared : policyName ∈ declarations.restrictions)
       (argumentType :
         HasType declarations context argument .familyConfig argumentEffects) :
       HasType declarations context (.restrict policyName argument)
-        .outcomeFamilyConfig (effectUnion argumentEffects [.alternatives policyName])
+        .outcomeFamilyConfig
+          (effectUnion argumentEffects (effectAtoms [.alternatives policyName]))
 
 theorem typing_effects_are_static
     (termType : HasType declarations context term type effects) :
@@ -531,7 +538,10 @@ theorem successful_type_preservation
               | text content => simp [ValueHasType] at inputType
 
 def LedgerBounded (ledger : Ledger) (effects : EffectRow) : Prop :=
-  ∀ entry, entry ∈ ledger → entry.atom ∈ effects
+  ∀ entry, entry ∈ ledger → effects entry.atom
+
+def TraceBounded (ledger : Ledger) (trace : List EffectAtom) : Prop :=
+  ∀ entry, entry ∈ ledger → entry.atom ∈ trace
 
 def ledgerAtoms : Ledger → EffectRow
   | [] => []
@@ -547,23 +557,6 @@ theorem ledgerAtoms_append (left right : Ledger) :
 /- The trace is syntax-derived and ordered; it is distinct from the WP2 set. -/
 def LedgerOrderPreserved (ledger : Ledger) (trace : List EffectAtom) : Prop :=
   ∃ remaining, trace = ledgerAtoms ledger ++ remaining
-
-theorem ledgerBounded_weaken
-    (bounded : LedgerBounded ledger effects) :
-    LedgerBounded ledger (effects ++ additionalEffects) := by
-  intro entry member
-  simp only [List.mem_append]
-  exact Or.inl (bounded entry member)
-
-theorem ledgerBounded_append
-    (leftBounded : LedgerBounded leftLedger leftEffects)
-    (rightBounded : LedgerBounded rightLedger rightEffects) :
-    LedgerBounded (leftLedger ++ rightLedger) (leftEffects ++ rightEffects) := by
-  intro entry member
-  simp only [List.mem_append] at member ⊢
-  cases member with
-  | inl leftMember => exact Or.inl (leftBounded entry leftMember)
-  | inr rightMember => exact Or.inr (rightBounded entry rightMember)
 
 theorem ledgerOrder_weaken
     (ordered : LedgerOrderPreserved ledger effects) :
@@ -721,7 +714,7 @@ theorem ledgerAtom_is_emitted (member : entry ∈ ledger) :
 
 theorem ordered_ledger_is_bounded
     (ordered : LedgerOrderPreserved ledger effects) :
-    LedgerBounded ledger effects := by
+    TraceBounded ledger effects := by
   obtain ⟨remaining, equality⟩ := ordered
   intro entry member
   rw [equality]
@@ -729,29 +722,29 @@ theorem ordered_ledger_is_bounded
   exact Or.inl (ledgerAtom_is_emitted member)
 
 theorem ledger_effect_soundness (term : Term) :
-    LedgerBounded (evaluate environment interpretation term).2
+    TraceBounded (evaluate environment interpretation term).2
       (staticTrace term) :=
   ordered_ledger_is_bounded (ordered_ledger_preservation term)
 
 theorem trace_member_is_static (term : Term) (atom : EffectAtom)
-    (member : atom ∈ staticTrace term) : atom ∈ staticEffects term := by
+    (member : atom ∈ staticTrace term) : staticEffects term atom := by
   induction term with
   | var name => simp [staticTrace] at member
   | strictApp mapName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
   | sourceView viewName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
   | restrict policyName argument inductionHypothesis =>
       simp only [staticTrace, List.mem_append] at member
-      simp only [staticEffects, effectUnion, List.mem_eraseDups, List.mem_append]
+      simp only [staticEffects, effectUnion, effectAtoms, List.mem_cons]
       cases member with
       | inl child => exact Or.inl (inductionHypothesis child)
       | inr own => exact Or.inr own
@@ -820,7 +813,7 @@ theorem typed_strict_domain_failure_has_ledger_prefix :
       { strictMaps := [1], sourceViews := [], restrictions := [] }
     let context : Context := [(0, .config)]
     HasType declarations context (.strictApp 1 (.var 0)) .outcomeConfig
-      (effectUnion [] [.evidence 1, .partiality 1]) ∧
+      (effectUnion emptyEffect (effectAtoms [.evidence 1, .partiality 1])) ∧
     evaluate [(0, .plain (.config 1))]
       { strictMaps := [{ name := 1, table := [] }],
         sourceViews := [], restrictions := [] } (.strictApp 1 (.var 0)) =
