@@ -67,7 +67,9 @@ class WP4SpecificationControlTests(unittest.TestCase):
             "theorem missing_strict_interpretation_is_unsupported_with_ordered_ledger",
             "theorem source_view_ledger_order_is_exact",
             "theorem restriction_ledger_and_result_are_exact",
-            "theorem prior_failure_preserves_ledger_prefix",
+            "theorem raw_prior_failure_preserves_ledger_prefix",
+            "theorem typed_strict_domain_failure_has_ledger_prefix",
+            "theorem trace_member_is_static",
         ):
             self.assertIn(marker, lean_core)
         for rule in (
