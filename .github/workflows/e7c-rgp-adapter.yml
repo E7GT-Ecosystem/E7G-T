@@ -1,0 +1,39 @@
+name: E7C RGP finite structural differential
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/adapters/rgp_finite_b1.py"
+      - "research/e7c-0.1/adapters/test_rgp_finite_b1.py"
+      - "research/e7c-0.1/E7C_0.1_WP5_RGP_FINITE_GATE.md"
+      - "E7G-T_RGP_v0.1.py"
+      - "test_e7gt_rgp_v0_1.py"
+      - ".github/workflows/e7c-rgp-adapter.yml"
+  push:
+    branches:
+      - "codex/e7c-rgp-finite"
+    paths:
+      - "research/e7c-0.1/adapters/rgp_finite_b1.py"
+      - "research/e7c-0.1/adapters/test_rgp_finite_b1.py"
+      - "research/e7c-0.1/E7C_0.1_WP5_RGP_FINITE_GATE.md"
+      - "E7G-T_RGP_v0.1.py"
+      - "test_e7gt_rgp_v0_1.py"
+      - ".github/workflows/e7c-rgp-adapter.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  differential:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Pinned RGP companion checks
+        run: python -m unittest -v test_e7gt_rgp_v0_1.py
+      - name: Independent finite differential
+        run: python -m unittest discover -s research/e7c-0.1/adapters -p 'test_rgp_finite_b1.py' -v
+      - name: Compile selected adapter
+        run: python -m compileall -q research/e7c-0.1/adapters/rgp_finite_b1.py
