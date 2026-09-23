@@ -44,7 +44,7 @@ class EECQGraphDifferential(unittest.TestCase):
 
     def test_positive_and_negative_differential_fixtures(self):
         cases = json.loads((HERE / "fixtures/fg3_graph_differential.json").read_text())
-        self.assertEqual(len(cases), 11)
+        self.assertEqual(len(cases), 15)
         for case in cases:
             with self.subTest(case=case["id"]):
                 rows = case["rows"]
