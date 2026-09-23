@@ -44,7 +44,6 @@ class Assessment:
     component_views: tuple[tuple[str, str], ...]
     outcome: str
     compatible: tuple[Config, ...]
-    representative: Config | None
     material_witness: tuple[Config, Config] | None
     reason: str
     lost_relations: tuple[str, ...]
@@ -72,27 +71,26 @@ def assess(source: Config, carrier: FiniteCarrier, budget: int,
                 lost_relations=("exact_edge_identity",))
     if fibre.tag != "success":
         return Assessment(**base, outcome="undetermined", compatible=(),
-                          representative=None, material_witness=None,
+                          material_witness=None,
                           reason="resource_limit")
     if carrier.candidates != complete.candidates:
         return Assessment(**base, outcome="undetermined", compatible=(),
-                          representative=None, material_witness=None,
+                          material_witness=None,
                           reason="candidate_carrier_not_complete_fixed_basis")
     graphs = tuple(candidate.terms[0][0] for candidate in fibre.candidates)
     if source not in graphs:
         return Assessment(**base, outcome="undetermined", compatible=graphs,
-                          representative=None, material_witness=None,
+                          material_witness=None,
                           reason="source_not_in_declared_fibre")
     different = next((graph for graph in graphs
                       if _protected(graph, protected_criterion) !=
                       _protected(source, protected_criterion)), None)
     if different is not None:
         return Assessment(**base, outcome="non_separable", compatible=graphs,
-                          representative=None, material_witness=(source, different),
+                          material_witness=(source, different),
                           reason="hidden_relation_changes_protected_property")
-    # This representative is equivalent only under the stated protected test.
-    # Its exact edges are never claimed to be the original source relations.
+    # Return the whole compatible class; selecting one graph would invent
+    # an unsupported exact relation among the isolated components.
     return Assessment(**base, outcome="separable", compatible=graphs,
-                      representative=min(graphs, key=Config.identity),
                       material_witness=None,
                       reason="all_complete_fibre_candidates_preserve_protected_property")
