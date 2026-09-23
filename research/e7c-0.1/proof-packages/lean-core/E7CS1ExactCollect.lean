@@ -30,7 +30,9 @@ def isZero (value : Fraction) : Bool := value.numerator == 0
 
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
-  simp [add, opposite, Int.neg_mul, Int.add_neg_cancel]
+  simpa [add, opposite, Int.neg_mul] using
+    (Int.add_neg_cancel_right 0
+      (value.numerator * (value.denominator : Int)))
 
 theorem opposite_sum_is_zero (value : Fraction) :
     isZero (add value (opposite value)) = true := by
@@ -54,7 +56,8 @@ def collect (rows : List (Graph × Fraction)) : Collected :=
 theorem same_graph_opposites_cancel (graph : Graph) (amount : Fraction)
     (nonzero : amount.numerator ≠ 0) :
     collect [(graph, amount), (graph, opposite amount)] = [] := by
-  simp [collect, insert, isZero, nonzero, opposite_sum_is_zero]
+  simp [collect, insert, isZero, nonzero,
+    opposite_sum_has_zero_numerator]
 
 theorem colliding_nonzero_pair (graph : Graph) (left right : Fraction)
     (leftNonzero : left.numerator ≠ 0)
