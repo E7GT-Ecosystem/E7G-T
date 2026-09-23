@@ -9,7 +9,7 @@ lean_lib E7CS1FG3Single
 lean_lib E7CS1FG3Rows
 lean_lib E7CS1ExactCollect
 lean_lib E7CS1FG3Codec
-lean_lib E7CS1RatArithmetic
+lean_lib E7CS1RowsCollect
 
 @[default_target]
 lean_lib E7CLeanCore
