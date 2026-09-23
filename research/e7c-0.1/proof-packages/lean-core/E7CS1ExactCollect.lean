@@ -65,6 +65,38 @@ theorem add_comm_equivalent (left right : Fraction) :
     Equivalent (add left right) (add right left) := by
   simp [Equivalent, add, Int.add_comm, Int.mul_comm, Nat.mul_comm]
 
+private theorem add_congr_left_int
+    (an ad bn bd cn cd : Int) (hab : an * bd = bn * ad) :
+    (an * cd + cn * ad) * (bd * cd) =
+      (bn * cd + cn * bd) * (ad * cd) := by
+  have first : (an * cd) * (bd * cd) = (an * bd) * (cd * cd) := by ac_rfl
+  have second : (cn * ad) * (bd * cd) = cn * (ad * bd * cd) := by ac_rfl
+  have third : (bn * cd) * (ad * cd) = (bn * ad) * (cd * cd) := by ac_rfl
+  have fourth : (cn * bd) * (ad * cd) = cn * (ad * bd * cd) := by ac_rfl
+  simp only [Int.add_mul, first, second, third, fourth, hab]
+
+theorem add_congr_left {left alternate : Fraction}
+    (h : Equivalent left alternate) (right : Fraction) :
+    Equivalent (add left right) (add alternate right) := by
+  unfold Equivalent add at *
+  simp only [Int.natCast_mul]
+  exact add_congr_left_int left.numerator (left.denominator : Int)
+    alternate.numerator (alternate.denominator : Int)
+    right.numerator (right.denominator : Int) h
+
+theorem add_congr_right (left : Fraction) {right alternate : Fraction}
+    (h : Equivalent right alternate) :
+    Equivalent (add left right) (add left alternate) :=
+  equivalent_trans (add_comm_equivalent left right)
+    (equivalent_trans (add_congr_left h left)
+      (equivalent_symm (add_comm_equivalent left alternate)))
+
+theorem add_congr {left alternate right replacement : Fraction}
+    (hl : Equivalent left alternate) (hr : Equivalent right replacement) :
+    Equivalent (add left right) (add alternate replacement) :=
+  equivalent_trans (add_congr_left hl right)
+    (add_congr_right alternate hr)
+
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
   simpa [add, opposite, Int.neg_mul] using
