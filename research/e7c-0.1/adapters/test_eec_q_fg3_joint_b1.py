@@ -88,10 +88,11 @@ class JointDifferential(unittest.TestCase):
             joint([(Fraction(1), (p, p)), (Fraction(-1), (p, object()))])
         with self.assertRaises(AdmissionError):
             joint([(Fraction(1), (p, p)), (Fraction(1), (p,))])
-        with self.assertRaises(source.InvalidInput):
-            source.independent(source.state(), source.unit(original(p)))
+        self.assertEqual(source.independent(source.state(), source.unit(original(p))), ())
         zero = independent(collect([]), collect([(p, Fraction(1))]))
         self.assertEqual((zero.arity, zero.terms), (2, ()))
+        self.assertEqual(joint_signature(zero), original_joint_signature(
+            source.independent(source.state(), source.unit(original(p)))))
         self.assertEqual(signature(marginal(zero, 1)), ())
         with self.assertRaises(AdmissionError):
             marginal(zero, 2)
