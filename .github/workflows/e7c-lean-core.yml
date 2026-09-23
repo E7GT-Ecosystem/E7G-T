@@ -92,5 +92,5 @@ jobs:
           build: false
           axiom-audit: true
           axiom-audit-allow: "propext,Quot.sound"
-          axiom-audit-root: E7CS1RatArithmetic
+          axiom-audit-root: E7CS1RowsCollect
           use-mathlib-cache: false
