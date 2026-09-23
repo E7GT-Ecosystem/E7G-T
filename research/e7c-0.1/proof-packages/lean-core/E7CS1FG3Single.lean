@@ -18,9 +18,9 @@ def unionGraph (left right : Graph) : Graph :=
   ⟨left.ab || right.ab, left.ac || right.ac,
    left.bc || right.bc, left.tag⟩
 
-/- The nominal S1 type indices are fixed by this carrier: both coordinates
-are FG3 graphs in the same module/signature edition. Canonical support has
-already been admitted, so its one coefficient is nonzero. -/
+/- Both coordinates are fixed-edge FG3 graphs. The nominal S1 module and
+signature edition remains an external premise. Canonical support has already
+been admitted, so its one coefficient is nonzero. -/
 structure AdmittedRow where
   left : Graph
   right : Graph
