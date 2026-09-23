@@ -1,3 +1,5 @@
+import E7CS1StrictCore
+
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
 
