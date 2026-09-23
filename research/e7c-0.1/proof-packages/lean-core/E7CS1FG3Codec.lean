@@ -91,9 +91,11 @@ theorem registered_graph_roundtrip (value : RegisteredGraph) :
     decodeGraph (encodeGraph value) = some value.graph := by
   rcases value with ⟨⟨ab, ac, bc, tag⟩, allowed⟩
   rcases allowed with h | h
-  · subst tag
+  · change tag = none at h
+    subst tag
     cases ab <;> cases ac <;> cases bc <;> decide
-  · subst tag
+  · change tag = some 0 at h
+    subst tag
     cases ab <;> cases ac <;> cases bc <;> decide
 
 example : decodeGraph ⟨["BC", "AB", "AB"], some "marked"⟩ =
