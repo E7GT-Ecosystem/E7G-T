@@ -39,7 +39,8 @@ theorem encoded_edges (graph : Graph) :
     (encodeEdges graph).contains "AC" = graph.ac ∧
     (encodeEdges graph).contains "BC" = graph.bc := by
   rcases graph with ⟨ab, ac, bc, tag⟩
-  cases ab <;> cases ac <;> cases bc <;> decide
+  cases ab <;> cases ac <;> cases bc <;>
+    simp [encodeEdges, validEdges]
 
 theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
     (wire : WireGraph) (admitted : encodeGraph codec graph = some wire) :
