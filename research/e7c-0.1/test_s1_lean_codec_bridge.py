@@ -13,6 +13,14 @@ from e7c_s1_values import (RuntimeAdmissionError, canonical, coeff,
 
 
 class SelectedLeanCodecBridge(unittest.TestCase):
+    def test_arbitrary_python_tag_remains_distinct(self):
+        for tag in ("marked", "phase-x", "reviewed"):
+            with self.subTest(tag=tag):
+                key = graph({"edges": ["AC"], "tag": tag})
+                self.assertEqual(key, (("AC",), tag))
+                self.assertEqual(encode_value(1, canonical([((key,), Fraction(1))], 1))
+                                 ["rows"][0]["configs"][0]["tag"], tag)
+
     def test_registered_graph_edges_and_tags(self):
         labels = ("AB", "AC", "BC")
         for bits, tag in itertools.product(itertools.product((False, True), repeat=3),
