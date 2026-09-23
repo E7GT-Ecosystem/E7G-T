@@ -96,7 +96,7 @@ def fixtureCodec : TagCodec where
         have hn := Option.some.inj admitted
         subst name
         rfl
-      · change none = some name at admitted
+      · rw [if_neg zero, if_neg one] at admitted
         cases admitted
 
 example : decodeGraph fixtureCodec ⟨["AC"], some "phase-x"⟩ =
