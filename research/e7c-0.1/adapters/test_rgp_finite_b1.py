@@ -64,6 +64,9 @@ class RGPFiniteDifferential(unittest.TestCase):
             project(layer, role="operator", fields=("unknown",), edition="1")
         full = project(layer, role="operator", fields=tuple(layer.record()), edition="1")
         self.assertEqual(reconstruct(full), layer.record())
+        with self.assertRaises(AdmissionError):
+            reconstruct(replace(view, preserved=("carrier", "unknown")),
+                        encode_sr4(layer, portion_index="A", codec_edition="json/1"))
 
     def test_sr4_round_trip_and_invalid_claims(self):
         layer, old = layers()
