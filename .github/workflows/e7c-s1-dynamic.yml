@@ -6,19 +6,24 @@ on:
       - "research/e7c-0.1/e7c_s1_*.py"
       - "research/e7c-0.1/test_s1_dynamic_replay.py"
       - "research/e7c-0.1/test_s1_strict_union.py"
+      - "research/e7c-0.1/test_s1_source_correspondence.py"
       - "research/e7c-0.1/E7C_0.1_S1_DYNAMIC_REPLAY.md"
       - "research/e7c-0.1/E7C_0.1_S1_STRICT_JOINT.md"
+      - "research/e7c-0.1/E7C_0.1_S1_CORRESPONDENCE_GATE.md"
       - ".github/workflows/e7c-s1-dynamic.yml"
   push:
     branches:
       - "codex/e7c-s1-dynamic-replay"
       - "codex/e7c-s1-strict-joint"
+      - "codex/e7c-s1-correspondence"
     paths:
       - "research/e7c-0.1/e7c_s1_*.py"
       - "research/e7c-0.1/test_s1_dynamic_replay.py"
       - "research/e7c-0.1/test_s1_strict_union.py"
+      - "research/e7c-0.1/test_s1_source_correspondence.py"
       - "research/e7c-0.1/E7C_0.1_S1_DYNAMIC_REPLAY.md"
       - "research/e7c-0.1/E7C_0.1_S1_STRICT_JOINT.md"
+      - "research/e7c-0.1/E7C_0.1_S1_CORRESPONDENCE_GATE.md"
       - ".github/workflows/e7c-s1-dynamic.yml"
 
 permissions:
