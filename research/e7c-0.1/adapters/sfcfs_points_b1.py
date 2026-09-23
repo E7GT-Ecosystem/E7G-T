@@ -21,7 +21,10 @@ MAX_DEGREE = 2
 def _q(value):
     if type(value) not in (int, Fraction):
         raise AdmissionError("exact rational required")
-    return Fraction(value)
+    result = Fraction(value)
+    if max(result.numerator.bit_length(), result.denominator.bit_length()) > 4096:
+        raise AdmissionError("rational representation limit")
+    return result
 
 
 @dataclass(frozen=True)
@@ -85,6 +88,7 @@ class Family:
 
     def __post_init__(self):
         if (self.edition != EDITION or type(self.context) is not str or not self.context or
+                len(self.context) > 256 or
                 type(self.domain) is not Points or type(self.terms) is not tuple):
             raise AdmissionError("invalid family edition context or domain")
         keys = []
