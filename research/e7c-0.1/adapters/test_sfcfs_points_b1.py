@@ -92,6 +92,10 @@ class SFCFSPointsDifferential(unittest.TestCase):
             Points((Fraction(1), Fraction(0)))
         with self.assertRaises(AdmissionError):
             family(self.points, ((Config(("AB",), "tagged"), Poly((1,))),), "CG3/0.1")
+        with self.assertRaises(AdmissionError):
+            family(self.points, (), "x" * 257)
+        with self.assertRaises(AdmissionError):
+            Poly((1 << 4100,))
 
 
 if __name__ == "__main__":
