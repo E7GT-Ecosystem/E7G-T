@@ -3,7 +3,7 @@
 from dataclasses import replace
 import unittest
 
-from rgp_finite_b1 import (AdmissionError, HostBoundary, contextual_view,
+from rgp_finite_b1 import (AdmissionError, HostBoundary, canonical, sha, contextual_view,
                            hosts, quote, reconstruct, unquote)
 from test_rgp_finite_b1 import layers
 
@@ -34,6 +34,12 @@ class RGPHostQuotation(unittest.TestCase):
             unquote(replace(quoted, payload=quoted.payload[:-1]))
         with self.assertRaises(AdmissionError):
             unquote(replace(quoted, quotation_rank=quoted.source_rank))
+        forged = canonical({"placement": {"rank": quoted.source_rank},
+                            "kernel": "0.12.1-experimental", "profile": "RGP/0.1",
+                            "model": "RGP-B1/0.1"})
+        with self.assertRaises(AdmissionError):
+            hosts(layer, replace(quoted, payload=forged, source_identity=sha(forged)),
+                  HostBoundary("messages", "v1", layer.signature))
         local = contextual_view(layer, role="operator", temporal_locality="t0",
                                 fields=("carrier",), edition="project/1")
         self.assertEqual(local.source.source_identity, local.view.source_identity)
