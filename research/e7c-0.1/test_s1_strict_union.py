@@ -7,8 +7,8 @@ from fractions import Fraction
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "adapters"))
-from eec_q_fg3_b1 import Config, signature
-from eec_q_fg3_joint_b1 import joint, join_union
+from eec_q_fg3_b1 import Config, collect
+from eec_q_fg3_joint_b1 import independent, joint, join_union
 from e7c_s1_evaluator import evaluate
 from e7c_s1_replay_checker import ReplayError, check_witness
 from e7c_s1_state_joint_static import EDITION, STRICT_EDITION, STRICT_EXTENSION, check_document
@@ -77,6 +77,23 @@ class StrictUnionTests(unittest.TestCase):
                 self.assertEqual(witness["terminal"], {"tag": "success", "value": {"kind": "state", "rows": []}})
                 self.assertEqual(witness["ledger"][-1]["visits"], 0)
                 self.assertTrue(check_witness(witness))
+
+    def test_product_then_strict_union_multiplies_only_at_product(self):
+        state = {"tag": "state", "args": [MODULE, SIGNATURE]}
+        left, right = graph(["AB"], "same"), graph(["BC"], "same")
+        term = {"tag": "strict_union", "arg": {"tag": "independent",
+                                                  "left": {"tag": "var", "name": "a"},
+                                                  "right": {"tag": "var", "name": "b"}}}
+        doc = {"edition": STRICT_EDITION, "variables": {"a": state, "b": state}, "term": term}
+        values = {"a": {"kind": "state", "rows": [{"configs": [left], "coefficient": {"numerator": 2, "denominator": 1}}]},
+                  "b": {"kind": "state", "rows": [{"configs": [right], "coefficient": {"numerator": 3, "denominator": 1}}]}}
+        witness = evaluate(doc, values, policy())
+        self.assertTrue(check_witness(witness))
+        self.assertEqual([e["rule"] for e in witness["ledger"]], ["independent", "strict_union"])
+        self.assertEqual(witness["terminal"]["value"]["rows"][0]["coefficient"], {"numerator": 6, "denominator": 1})
+        model = join_union(independent(collect([(Config(("AB",), "same"), Fraction(2))]),
+                                       collect([(Config(("BC",), "same"), Fraction(3))])))
+        self.assertEqual(model.value.terms[0][1], Fraction(6))
 
     def test_resource_exhaustion_precedes_unexamined_domain_failure(self):
         a, b = graph(["AB"], "same"), graph(["BC"], "same")
