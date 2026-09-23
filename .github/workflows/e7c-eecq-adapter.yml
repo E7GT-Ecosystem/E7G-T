@@ -8,6 +8,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_JOINT_RESTRICT.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_PHASE_VIEW.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_QUOTE.md"
+      - "research/e7c-0.1/E7C_0.1_WP5_FINITE_FIBRE.md"
       - "E7G-T_v0.12_Executable_Examples.py"
       - ".github/workflows/e7c-eecq-adapter.yml"
   push:
@@ -16,12 +17,14 @@ on:
       - "codex/e7c-wp5-eecq-joint-restrict"
       - "codex/e7c-wp5-phase-view"
       - "codex/e7c-wp5-quote"
+      - "codex/e7c-wp5-finite-fibre"
     paths:
       - "research/e7c-0.1/adapters/**"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_FG3_ADAPTER.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_JOINT_RESTRICT.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_PHASE_VIEW.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_QUOTE.md"
+      - "research/e7c-0.1/E7C_0.1_WP5_FINITE_FIBRE.md"
       - ".github/workflows/e7c-eecq-adapter.yml"
 
 permissions:
