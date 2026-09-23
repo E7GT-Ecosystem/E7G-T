@@ -40,7 +40,7 @@ theorem encoded_edges (graph : Graph) :
     decide ("BC" ∈ encodeEdges graph) = graph.bc := by
   rcases graph with ⟨ab, ac, bc, tag⟩
   cases ab <;> cases ac <;> cases bc <;>
-    simp [encodeEdges, validEdges]
+    exact ⟨rfl, rfl, rfl, rfl⟩
 
 theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
     (wire : WireGraph) (admitted : encodeGraph codec graph = some wire) :
