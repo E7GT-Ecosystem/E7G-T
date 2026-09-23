@@ -1,0 +1,34 @@
+name: E7C EEC-Q FG3 adapter differential
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/adapters/**"
+      - "research/e7c-0.1/E7C_0.1_WP5_EECQ_FG3_ADAPTER.md"
+      - "E7G-T_v0.12_Executable_Examples.py"
+      - ".github/workflows/e7c-eecq-adapter.yml"
+  push:
+    branches:
+      - "codex/e7c-wp5-eecq-bounded-adapter"
+    paths:
+      - "research/e7c-0.1/adapters/**"
+      - "research/e7c-0.1/E7C_0.1_WP5_EECQ_FG3_ADAPTER.md"
+      - ".github/workflows/e7c-eecq-adapter.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  differential:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Source FG3 example checks
+        run: python E7G-T_v0.12_Executable_Examples.py
+      - name: WP5 differential fixtures
+        run: python -m unittest discover -s research/e7c-0.1/adapters -p 'test_*.py' -v
+      - name: Compile adapter
+        run: python -m compileall -q research/e7c-0.1/adapters
