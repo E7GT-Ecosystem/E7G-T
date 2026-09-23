@@ -2,6 +2,7 @@ import E7CS1StrictCore
 import E7CS1FG3Single
 import E7CS1FG3Rows
 import E7CS1ExactCollect
+import E7CS1FG3Codec
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
