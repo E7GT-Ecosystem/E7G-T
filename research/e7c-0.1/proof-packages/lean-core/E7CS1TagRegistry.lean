@@ -35,9 +35,9 @@ def decodeGraph (codec : TagCodec) (wire : WireGraph) : Option Graph :=
 
 theorem encoded_edges (graph : Graph) :
     validEdges (encodeEdges graph) = true ∧
-    (encodeEdges graph).contains "AB" = graph.ab ∧
-    (encodeEdges graph).contains "AC" = graph.ac ∧
-    (encodeEdges graph).contains "BC" = graph.bc := by
+    decide ("AB" ∈ encodeEdges graph) = graph.ab ∧
+    decide ("AC" ∈ encodeEdges graph) = graph.ac ∧
+    decide ("BC" ∈ encodeEdges graph) = graph.bc := by
   rcases graph with ⟨ab, ac, bc, tag⟩
   cases ab <;> cases ac <;> cases bc <;>
     simp [encodeEdges, validEdges]
