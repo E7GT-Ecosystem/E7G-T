@@ -10,6 +10,9 @@ import json
 EDITION = "E7C-RGP-FINITE-B1/0.1-provisional"
 KERNEL, PROFILE, MODEL = "0.12.1-experimental", "RGP/0.1", "RGP-B1/0.1"
 MAX_RECORD_BYTES = 16384
+RECORD_KEYS = frozenset(("kernel", "profile", "model", "signature", "edition",
+                         "carrier", "rules", "interface", "access_policy",
+                         "invariants", "provenance", "placement"))
 
 
 class AdmissionError(ValueError):
@@ -215,6 +218,14 @@ def decode_sr4(encoded: Encoded, *, codec_edition: str) -> dict:
 def reconstruct(view: View, retained: Encoded | None = None) -> dict:
     if type(view) is not View:
         raise AdmissionError("typed view required")
+    if (type(view.fields) is not dict or
+            any(type(f) is not str for f in view.fields) or
+            type(view.preserved) is not tuple or
+            any(type(f) is not str for f in view.preserved) or
+            view.preserved != tuple(sorted(view.fields)) or
+            type(view.lost) is not tuple or
+            view.lost != tuple(sorted(RECORD_KEYS - set(view.preserved)))):
+        raise AdmissionError("inconsistent projection field account")
     if retained is None:
         if not view.exact or sha(canonical(view.fields)) != view.source_identity:
             raise AdmissionError("lossy projection requires complete retained source")
