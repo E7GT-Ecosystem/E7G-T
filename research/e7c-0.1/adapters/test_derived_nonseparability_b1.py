@@ -20,13 +20,14 @@ class DerivedSeparationTests(unittest.TestCase):
             with self.subTest(edges=graph.edges):
                 assessment = self.check(graph, "edge_count")
                 self.assertEqual(assessment.outcome, "separable")
-                self.assertEqual(len(assessment.representative.edges), len(graph.edges))
+                self.assertTrue(all(len(candidate.edges) == len(graph.edges)
+                                    for candidate in assessment.compatible))
                 self.assertEqual(assessment.component_views,
                                  (("A", "present"), ("B", "present"), ("C", "present")))
                 self.assertIn("exact_edge_identity", assessment.lost_relations)
-        # A criterion-relative representative need not equal the exact source.
+        # An equivalent class does not name the exact source relation.
         graph = Config(("AC",), None)
-        self.assertNotEqual(self.check(graph, "edge_count").representative, graph)
+        self.assertGreater(len(self.check(graph, "edge_count").compatible), 1)
 
     def test_hidden_connection_changes_protected_adjacency(self):
         for graph in BASIS:
