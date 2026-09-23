@@ -18,9 +18,9 @@ def unionGraph (left right : Graph) : Graph :=
   ⟨left.ab || right.ab, left.ac || right.ac,
    left.bc || right.bc, left.tag⟩
 
-/- Both coordinates are fixed-edge FG3 graphs. The nominal S1 module and
-signature edition remains an external premise. Canonical support has already
-been admitted, so its one coefficient is nonzero. -/
+/- The nominal S1 type indices are fixed by this carrier: both coordinates
+are FG3 graphs in the same module/signature edition. Canonical support has
+already been admitted, so its one coefficient is nonzero. -/
 structure AdmittedRow where
   left : Graph
   right : Graph
@@ -113,7 +113,11 @@ theorem incompatible_observation (row : AdmittedRow) (maxSteps maxVisits : Nat)
 /- Exact collision arithmetic needed by the following multi-row package.
 The zero output has empty support, not a zero-weight row. -/
 def collectSame (graph : Graph) (first second : Rat) : State :=
-  if first + second = 0 then [] else [(graph, first + second)]
+  if (first + second).num = 0 then [] else [(graph, first + second)]
+
+theorem collected_zero_iff (graph : Graph) (first second : Rat) :
+    collectSame graph first second = [] ↔ first + second = 0 := by
+  simp [collectSame, Rat.num_eq_zero]
 
 theorem opposite_coefficients_cancel (graph : Graph) (amount : Rat) :
     collectSame graph amount (-amount) = [] := by
