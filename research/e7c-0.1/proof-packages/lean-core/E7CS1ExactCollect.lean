@@ -317,9 +317,9 @@ theorem observed_insert (target key : Graph) (amount : Fraction)
         | false =>
             simpa [observed, lookup, insert, contribution, hz] using
               (equivalent_symm (add_zero_left amount))
-      · simpa [observed, lookup, insert, contribution, hkey,
-          add_zero_right] using
-          (equivalent_symm (add_zero_right zero))
+      · cases hz : isZero amount <;>
+          simpa [observed, lookup, insert, contribution, hkey, hz] using
+            (equivalent_symm (add_zero_right zero))
   | cons head rest ih =>
       rcases head with ⟨existing, coefficient⟩
       change keyAbsent existing rest ∧ uniqueKeys rest at h
