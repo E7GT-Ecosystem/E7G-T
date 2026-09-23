@@ -403,14 +403,14 @@ theorem foldValue_perm (target : Graph)
   | @swap first second rest =>
       change Equivalent
         (foldValue target rest
-          (add (add initial (contribution target first))
-            (contribution target second)))
-        (foldValue target rest
           (add (add initial (contribution target second))
             (contribution target first)))
+        (foldValue target rest
+          (add (add initial (contribution target first))
+            (contribution target second)))
       exact foldValue_congr target rest
-        (foldValue_swap initial (contribution target first)
-          (contribution target second))
+        (foldValue_swap initial (contribution target second)
+          (contribution target first))
   | @trans before middle after first second ihFirst ihSecond =>
       exact equivalent_trans (ihFirst initial) (ihSecond initial)
 
