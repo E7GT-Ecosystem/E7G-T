@@ -62,6 +62,8 @@ class TypedBridgeTests(unittest.TestCase):
                          ("domain_error", None, (STEP, STRICT)))
         with self.assertRaises(BridgeError):
             BridgeOutcome("add_ab", "domain_error", None, (STEP, STRICT))
+        with self.assertRaises(BridgeError):
+            BridgeOutcome("add_ab", "success", state, ())
         valid, bad = Config((), "uses"), Config(("AB",), "contains")
         rows = joint([(Fraction(1), (p, q, valid)), (Fraction(1), (p, q, bad))])
         failure = execute("join_wire_choice", admit("graph_joint3", rows))
