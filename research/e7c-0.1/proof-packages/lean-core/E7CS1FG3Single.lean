@@ -117,6 +117,6 @@ def collectSame (graph : Graph) (first second : Rat) : State :=
 
 theorem opposite_coefficients_cancel (graph : Graph) (amount : Rat) :
     collectSame graph amount (-amount) = [] := by
-  simp [collectSame]
+  simp [collectSame, Rat.add_neg_cancel]
 
 end E7CS1FG3Single
