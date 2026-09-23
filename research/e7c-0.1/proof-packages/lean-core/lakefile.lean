@@ -7,6 +7,7 @@ package "e7cLeanCore" where
 lean_lib E7CS1StrictCore
 lean_lib E7CS1FG3Single
 lean_lib E7CS1FG3Rows
+lean_lib E7CS1ExactCollect
 
 @[default_target]
 lean_lib E7CLeanCore
