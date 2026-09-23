@@ -26,7 +26,7 @@ def add (left right : Fraction) : Fraction :=
    left.denominator * right.denominator,
    Nat.mul_pos left.positive right.positive⟩
 
-def isZero (value : Fraction) : Bool := value.numerator == 0
+def isZero (value : Fraction) : Bool := decide (value.numerator = 0)
 
 /- Equality of values is cross multiplication, independent of the particular
 positive denominator chosen for an internal fraction. -/
@@ -96,6 +96,50 @@ theorem add_congr {left alternate right replacement : Fraction}
     Equivalent (add left right) (add alternate replacement) :=
   equivalent_trans (add_congr_left hl right)
     (add_congr_right alternate hr)
+
+theorem add_assoc_numerator (left middle right : Fraction) :
+    (add (add left middle) right).numerator =
+      (add left (add middle right)).numerator := by
+  simp [add, Int.natCast_mul, Int.add_mul, Int.mul_add,
+    Int.mul_assoc, Int.mul_comm, Int.mul_left_comm,
+    Int.add_assoc, Int.add_comm, Int.add_left_comm]
+
+theorem add_assoc_denominator (left middle right : Fraction) :
+    (add (add left middle) right).denominator =
+      (add left (add middle right)).denominator := by
+  simp [add, Nat.mul_assoc]
+
+theorem add_assoc_equivalent (left middle right : Fraction) :
+    Equivalent (add (add left middle) right)
+      (add left (add middle right)) := by
+  unfold Equivalent
+  rw [add_assoc_numerator, add_assoc_denominator]
+
+theorem equivalent_numerator_zero {left right : Fraction}
+    (h : Equivalent left right) :
+    left.numerator = 0 ↔ right.numerator = 0 := by
+  have leftDenominatorNonzero : (left.denominator : Int) ≠ 0 :=
+    Int.ofNat_ne_zero.mpr (Nat.ne_of_gt left.positive)
+  have rightDenominatorNonzero : (right.denominator : Int) ≠ 0 :=
+    Int.ofNat_ne_zero.mpr (Nat.ne_of_gt right.positive)
+  constructor
+  · intro hl
+    have hp : right.numerator * (left.denominator : Int) = 0 := by
+      rw [← h, hl, Int.zero_mul]
+    exact (Int.mul_eq_zero.mp hp).resolve_right leftDenominatorNonzero
+  · intro hr
+    have hp : left.numerator * (right.denominator : Int) = 0 := by
+      rw [h, hr, Int.zero_mul]
+    exact (Int.mul_eq_zero.mp hp).resolve_right rightDenominatorNonzero
+
+theorem equivalent_isZero {left right : Fraction}
+    (h : Equivalent left right) : isZero left = isZero right := by
+  by_cases hl : left.numerator = 0
+  · have hr := (equivalent_numerator_zero h).mp hl
+    simp [isZero, hl, hr]
+  · have hr : right.numerator ≠ 0 :=
+      fun hzero => hl ((equivalent_numerator_zero h).mpr hzero)
+    simp [isZero, hl, hr]
 
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
