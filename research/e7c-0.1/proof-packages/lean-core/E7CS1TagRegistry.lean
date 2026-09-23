@@ -61,4 +61,34 @@ theorem unknown_tag_rejected (codec : TagCodec) (wire : WireGraph)
   subst wireTag
   simp [decodeGraph, unknown]
 
+/- The named fixture registry is deliberately small and edition-bound. The
+generic law above applies to any separately admitted codec. -/
+def fixtureCodec : TagCodec where
+  encode := fun token =>
+    if token = 0 then some "marked"
+    else if token = 1 then some "phase-x"
+    else none
+  decode := fun name =>
+    if name = "marked" then some 0
+    else if name = "phase-x" then some 1
+    else none
+  roundtrip := by
+    intro token name admitted
+    by_cases zero : token = 0
+    · subst token
+      simp at admitted
+      subst name
+      simp
+    · by_cases one : token = 1
+      · subst token
+        simp at admitted
+        subst name
+        simp
+      · simp [zero, one] at admitted
+
+example : decodeGraph fixtureCodec ⟨["AC"], some "phase-x"⟩ =
+    some ⟨false, true, false, some 1⟩ := by decide
+
+example : decodeGraph fixtureCodec ⟨["AC"], some "other"⟩ = none := by decide
+
 end E7CS1TagRegistry
