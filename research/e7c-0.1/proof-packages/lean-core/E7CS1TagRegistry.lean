@@ -113,6 +113,9 @@ def fixtureCodec : TagCodec where
 example : decodeGraph fixtureCodec ⟨["AC"], some "phase-x"⟩ =
     some ⟨false, true, false, some 1⟩ := by decide
 
+example : encodeGraph fixtureCodec ⟨false, true, false, some 1⟩ =
+    some ⟨["AC"], some "phase-x"⟩ := by decide
+
 example : decodeGraph fixtureCodec ⟨["AC"], some "other"⟩ = none := by decide
 
 end E7CS1TagRegistry
