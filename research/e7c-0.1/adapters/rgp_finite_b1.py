@@ -275,7 +275,10 @@ def unquote(quoted: QuotedLayer) -> dict:
         raise AdmissionError("whole quoted layer required")
     try:
         record = json.loads(quoted.payload.decode("utf-8"))
-        if (type(record) is not dict or canonical(record) != quoted.payload or
+        if (type(record) is not dict or set(record) != RECORD_KEYS or
+                type(record.get("signature")) is not str or
+                type(record.get("placement")) is not dict or
+                canonical(record) != quoted.payload or
                 sha(quoted.payload) != quoted.source_identity or
                 record.get("kernel") != KERNEL or record.get("profile") != PROFILE or
                 record.get("model") != MODEL or
