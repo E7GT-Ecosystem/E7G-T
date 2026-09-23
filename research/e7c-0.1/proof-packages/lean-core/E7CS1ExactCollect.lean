@@ -139,7 +139,8 @@ theorem equivalent_isZero {left right : Fraction}
     simp [isZero, hl, hr]
   · have hr : right.numerator ≠ 0 :=
       fun hzero => hl ((equivalent_numerator_zero h).mpr hzero)
-    simp [isZero, hl, hr]
+    exact (beq_eq_false_iff_ne.mpr hl).trans
+      (beq_eq_false_iff_ne.mpr hr).symm
 
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
