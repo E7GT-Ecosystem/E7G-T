@@ -71,6 +71,8 @@ class MSCDifferential(unittest.TestCase):
             scope_fibre(diagram, result, "local", "G1")
         with self.assertRaisesRegex(AdmissionError, "observation_sort_mismatch"):
             observation_fibre(diagram, result, "local", "project-global", "0")
+        with self.assertRaisesRegex(AdmissionError, "result_diagram_mismatch"):
+            scope_fibre(admit(selected(self.obstruction)), result, "r", "0")
 
     def test_access_quotient_and_missingness_policy(self):
         diagram = admit(selected(self.unique))
