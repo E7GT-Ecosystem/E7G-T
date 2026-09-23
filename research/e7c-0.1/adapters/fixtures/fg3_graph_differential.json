@@ -1,13 +1,341 @@
 [
-  {"id":"zero_state", "kind":"state", "rows":[]},
-  {"id":"empty_graph_is_basis", "kind":"state", "rows":[{"config":{"edges":[],"tag":null},"coefficient":{"numerator":1,"denominator":1}}]},
-  {"id":"negative_cancellation", "kind":"state", "rows":[{"config":{"edges":["AB"],"tag":null},"coefficient":{"numerator":1,"denominator":1}},{"config":{"edges":["AB"],"tag":null},"coefficient":{"numerator":-1,"denominator":1}}]},
-  {"id":"rational_collection", "kind":"state", "rows":[{"config":{"edges":["BC","AB"],"tag":null},"coefficient":{"numerator":1,"denominator":3}},{"config":{"edges":["AB","BC"],"tag":null},"coefficient":{"numerator":2,"denominator":3}}]},
-  {"id":"total_collision", "kind":"push", "rows":[{"config":{"edges":[],"tag":null},"coefficient":{"numerator":2,"denominator":3}},{"config":{"edges":["AB"],"tag":null},"coefficient":{"numerator":-2,"denominator":3}}], "rule":{"name":"add","edge":"AB"}},
-  {"id":"tag_identification", "kind":"push", "rows":[{"config":{"edges":["AB"],"tag":"first"},"coefficient":{"numerator":1,"denominator":1}},{"config":{"edges":["AB"],"tag":"second"},"coefficient":{"numerator":-1,"denominator":1}}], "rule":{"name":"forget_tag","edge":null}},
-  {"id":"strict_supported_domain", "kind":"push", "rows":[{"config":{"edges":[],"tag":null},"coefficient":{"numerator":1,"denominator":1}},{"config":{"edges":["AB"],"tag":null},"coefficient":{"numerator":1,"denominator":1}}], "rule":{"name":"require_absent","edge":"AB"}},
-  {"id":"strict_zero_support", "kind":"push", "rows":[], "rule":{"name":"require_absent","edge":"AB"}},
-  {"id":"reject_invalid_cancelled_pair", "kind":"invalid_input", "rows":[{"config":{"edges":["AD"],"tag":null},"coefficient":{"numerator":1,"denominator":1}},{"config":{"edges":["AD"],"tag":null},"coefficient":{"numerator":-1,"denominator":1}}]},
-  {"id":"reject_invalid_zero_row", "kind":"invalid_input", "rows":[{"config":{"edges":["AD"],"tag":null},"coefficient":{"numerator":0,"denominator":1}}]},
-  {"id":"reject_float_coefficient", "kind":"invalid_input", "rows":[{"config":{"edges":[],"tag":null},"coefficient":{"numerator":0.1,"denominator":1}}]}
+  {
+    "id": "zero_state",
+    "kind": "state",
+    "rows": []
+  },
+  {
+    "id": "empty_graph_is_basis",
+    "kind": "state",
+    "rows": [
+      {
+        "config": {
+          "edges": [],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "negative_cancellation",
+    "kind": "state",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": -1,
+          "denominator": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "rational_collection",
+    "kind": "state",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "BC",
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 3
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AB",
+            "BC"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 2,
+          "denominator": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "valid_zero_row",
+    "kind": "state",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 0,
+          "denominator": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "total_remove",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AB",
+            "BC"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 2
+        }
+      }
+    ],
+    "rule": {
+      "name": "remove",
+      "edge": "AB"
+    }
+  },
+  {
+    "id": "total_empty_preserves_tag",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": "kept"
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      }
+    ],
+    "rule": {
+      "name": "empty",
+      "edge": null
+    }
+  },
+  {
+    "id": "strict_success",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "BC"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": -1,
+          "denominator": 2
+        }
+      }
+    ],
+    "rule": {
+      "name": "require_absent",
+      "edge": "AB"
+    }
+  },
+  {
+    "id": "total_collision",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 2,
+          "denominator": 3
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": -2,
+          "denominator": 3
+        }
+      }
+    ],
+    "rule": {
+      "name": "add",
+      "edge": "AB"
+    }
+  },
+  {
+    "id": "tag_identification",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": "first"
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": "second"
+        },
+        "coefficient": {
+          "numerator": -1,
+          "denominator": 1
+        }
+      }
+    ],
+    "rule": {
+      "name": "forget_tag",
+      "edge": null
+    }
+  },
+  {
+    "id": "strict_supported_domain",
+    "kind": "push",
+    "rows": [
+      {
+        "config": {
+          "edges": [],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AB"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      }
+    ],
+    "rule": {
+      "name": "require_absent",
+      "edge": "AB"
+    }
+  },
+  {
+    "id": "strict_zero_support",
+    "kind": "push",
+    "rows": [],
+    "rule": {
+      "name": "require_absent",
+      "edge": "AB"
+    }
+  },
+  {
+    "id": "reject_invalid_cancelled_pair",
+    "kind": "invalid_input",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AD"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      {
+        "config": {
+          "edges": [
+            "AD"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": -1,
+          "denominator": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "reject_invalid_zero_row",
+    "kind": "invalid_input",
+    "rows": [
+      {
+        "config": {
+          "edges": [
+            "AD"
+          ],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 0,
+          "denominator": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "reject_float_coefficient",
+    "kind": "invalid_input",
+    "rows": [
+      {
+        "config": {
+          "edges": [],
+          "tag": null
+        },
+        "coefficient": {
+          "numerator": 0.1,
+          "denominator": 1
+        }
+      }
+    ]
+  }
 ]
