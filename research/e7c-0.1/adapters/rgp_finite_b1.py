@@ -252,3 +252,90 @@ def compose(layers: tuple[Layer, ...], *, interface_edition: str) -> Composite:
     if len(set(identities)) != len(identities):
         raise AdmissionError("duplicate component occurrence requires explicit identity")
     return Composite(interface_edition, identities)
+
+
+@dataclass(frozen=True)
+class QuotedLayer:
+    """Whole-layer payload; quotation does not run its rules or authorise access."""
+    source_identity: str
+    source_rank: int
+    quotation_rank: int
+    payload: bytes
+
+
+def quote(layer: Layer) -> QuotedLayer:
+    if type(layer) is not Layer or layer.placement.rank >= 1024:
+        raise AdmissionError("finite layer quotation required")
+    return QuotedLayer(layer.identity, layer.placement.rank,
+                       layer.placement.rank + 1, canonical(layer.record()))
+
+
+def unquote(quoted: QuotedLayer) -> dict:
+    if type(quoted) is not QuotedLayer or type(quoted.payload) is not bytes:
+        raise AdmissionError("whole quoted layer required")
+    try:
+        record = json.loads(quoted.payload.decode("utf-8"))
+        if (type(record) is not dict or set(record) != RECORD_KEYS or
+                type(record.get("signature")) is not str or
+                type(record.get("placement")) is not dict or
+                canonical(record) != quoted.payload or
+                sha(quoted.payload) != quoted.source_identity or
+                record.get("kernel") != KERNEL or record.get("profile") != PROFILE or
+                record.get("model") != MODEL or
+                type(quoted.source_rank) is not int or
+                record.get("placement", {}).get("rank") != quoted.source_rank or
+                quoted.quotation_rank != quoted.source_rank + 1):
+            raise AdmissionError("quoted source or rank mismatch")
+    except (UnicodeDecodeError, TypeError, ValueError, AttributeError) as exc:
+        raise AdmissionError("invalid quoted payload") from exc
+    return record
+
+
+@dataclass(frozen=True)
+class HostBoundary:
+    interface_position: str
+    interface_contract: str
+    admitted_signature: str
+
+
+@dataclass(frozen=True)
+class HostRelation:
+    host_identity: str
+    quoted_source_identity: str
+    interface_position: str
+    interface_contract: str
+
+
+def hosts(host_layer: Layer, component: QuotedLayer,
+          boundary: HostBoundary) -> HostRelation:
+    """Local finite §R.2 relation; does not execute the quoted component."""
+    if (type(host_layer) is not Layer or type(component) is not QuotedLayer or
+            type(boundary) is not HostBoundary or
+            any(type(x) is not str or not x for x in
+                (boundary.interface_position, boundary.interface_contract,
+                 boundary.admitted_signature))):
+        raise AdmissionError("typed host, component and boundary required")
+    record = unquote(component)
+    if (host_layer.interface.get(boundary.interface_position) !=
+            boundary.interface_contract or
+            record["signature"] != boundary.admitted_signature):
+        raise AdmissionError("host boundary contract does not admit component")
+    return HostRelation(host_layer.identity, component.source_identity,
+                        boundary.interface_position, boundary.interface_contract)
+
+
+@dataclass(frozen=True)
+class LocalAccess:
+    """Source is retained for the model; the role receives only `view`."""
+    source: QuotedLayer
+    role: str
+    temporal_locality: str
+    view: View
+
+
+def contextual_view(layer: Layer, *, role: str, temporal_locality: str,
+                    fields: tuple[str, ...], edition: str) -> LocalAccess:
+    if type(temporal_locality) is not str or not temporal_locality:
+        raise AdmissionError("explicit temporal locality required")
+    view = project(layer, role=role, fields=fields, edition=edition)
+    return LocalAccess(quote(layer), role, temporal_locality, view)
