@@ -92,6 +92,25 @@ def runRows (rows : List AdmittedRow) (maxSteps maxVisits : Nat) : Observation :
     | .resourceLimit =>
         ⟨.resourceLimit, 2, result.visits, []⟩
 
+def expectedObservation (rows : List AdmittedRow) : Observation :=
+  match firstBad rows with
+  | none =>
+      ⟨.success (rows.map image), 2, rows.length,
+       [.strictSuccess rows.length rows.length]⟩
+  | some index =>
+      ⟨.domainError, 2, index + 1,
+       [.strictDomain (index + 1) index]⟩
+
+theorem sufficient_budget_matches_observation (rows : List AdmittedRow) :
+    runRows rows 2 rows.length = expectedObservation rows := by
+  cases sourceIndex : firstBad rows with
+  | none =>
+      simp [runRows, sufficient_visits_match_source rows, expected,
+        expectedObservation, sourceIndex]
+  | some index =>
+      simp [runRows, sufficient_visits_match_source rows, expected,
+        expectedObservation, sourceIndex]
+
 theorem term_step_bound_precedes_scan (rows : List AdmittedRow)
     (maxSteps maxVisits : Nat) (short : maxSteps < 2) :
     runRows rows maxSteps maxVisits =
