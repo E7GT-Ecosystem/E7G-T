@@ -5,6 +5,7 @@ on:
     paths:
       - "research/e7c-0.1/proof-packages/lean-core/**"
       - "research/e7c-0.1/E7C_0.1_WP4_LEAN_CORE.md"
+      - "research/e7c-0.1/E7C_0.1_S1_LEAN_STRICT_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
@@ -12,9 +13,11 @@ on:
   push:
     branches:
       - "codex/e7c-01-wp4-lean-core"
+      - "codex/e7c-s1-lean-strict"
     paths:
       - "research/e7c-0.1/proof-packages/lean-core/**"
       - "research/e7c-0.1/E7C_0.1_WP4_LEAN_CORE.md"
+      - "research/e7c-0.1/E7C_0.1_S1_LEAN_STRICT_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
