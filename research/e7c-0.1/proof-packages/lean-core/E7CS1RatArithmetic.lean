@@ -10,6 +10,13 @@ namespace E7CS1RatArithmetic
 
 open E7CS1ExactCollect E7CS1FG3Codec
 
+#print axioms Rat.add_def
+#print axioms Rat.normalize_eq_iff
+#print axioms Rat.normalize_self
+#print axioms Rat.eq_iff_mul_eq_mul
+#print axioms Rat.zero_num
+#print axioms Rat.num_eq_zero
+
 theorem fromRat_add (left right : Rat) :
     Equivalent (fromRat (left + right))
       (add (fromRat left) (fromRat right)) := by
