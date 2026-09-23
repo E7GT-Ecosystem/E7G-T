@@ -39,17 +39,27 @@ theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
   rcases graph with ⟨ab, ac, bc, tag⟩
   cases tag with
   | none =>
-      simp [encodeGraph] at admitted
-      subst wire
+      change some ⟨encodeEdges ⟨ab, ac, bc, none⟩, none⟩ = some wire at admitted
+      have hwire := Option.some.inj admitted
+      rw [← hwire]
       cases ab <;> cases ac <;> cases bc <;>
         simp [decodeGraph, encodeEdges, validEdges]
   | some token =>
       cases nameResult : codec.encode token with
-      | none => simp [encodeGraph, nameResult] at admitted
+      | none =>
+          change (codec.encode token).map
+            (fun name => ⟨encodeEdges ⟨ab, ac, bc, some token⟩, some name⟩) =
+            some wire at admitted
+          rw [nameResult] at admitted
+          cases admitted
       | some name =>
           have decoded := codec.roundtrip token name nameResult
-          simp [encodeGraph, nameResult] at admitted
-          subst wire
+          change (codec.encode token).map
+            (fun name => ⟨encodeEdges ⟨ab, ac, bc, some token⟩, some name⟩) =
+            some wire at admitted
+          rw [nameResult] at admitted
+          have hwire := Option.some.inj admitted
+          rw [← hwire]
           cases ab <;> cases ac <;> cases bc <;>
             simp [decodeGraph, encodeEdges, validEdges, decoded]
 
@@ -76,15 +86,18 @@ def fixtureCodec : TagCodec where
     intro token name admitted
     by_cases zero : token = 0
     · subst token
-      simp at admitted
+      change some "marked" = some name at admitted
+      have hn := Option.some.inj admitted
       subst name
-      simp
+      rfl
     · by_cases one : token = 1
       · subst token
-        simp at admitted
+        change some "phase-x" = some name at admitted
+        have hn := Option.some.inj admitted
         subst name
-        simp
-      · simp [zero, one] at admitted
+        rfl
+      · change none = some name at admitted
+        cases admitted
 
 example : decodeGraph fixtureCodec ⟨["AC"], some "phase-x"⟩ =
     some ⟨false, true, false, some 1⟩ := by decide
