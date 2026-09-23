@@ -348,6 +348,87 @@ theorem observed_insert (target key : Graph) (amount : Fraction)
         · simpa [observed, lookup, insert, hkey, htarget]
             using ih hrest
 
+theorem foldValue_congr (target : Graph) (rows : List (Graph × Fraction))
+    {left right : Fraction} (h : Equivalent left right) :
+    Equivalent (foldValue target rows left) (foldValue target rows right) := by
+  induction rows generalizing left right with
+  | nil => simpa [foldValue] using h
+  | cons row rest ih =>
+      change Equivalent
+        (foldValue target rest (add left (contribution target row)))
+        (foldValue target rest (add right (contribution target row)))
+      exact ih (add_congr_left h (contribution target row))
+
+theorem foldl_observed (target : Graph) (rows : List (Graph × Fraction))
+    (state : Collected) (h : uniqueKeys state) :
+    Equivalent
+      (observed target
+        (rows.foldl (fun acc row => insert row.1 row.2 acc) state))
+      (foldValue target rows (observed target state)) := by
+  induction rows generalizing state with
+  | nil => exact equivalent_refl _
+  | cons row rest ih =>
+      let next := insert row.1 row.2 state
+      have hn : uniqueKeys next := insert_uniqueKeys row.1 row.2 state h
+      have hs : Equivalent (observed target next)
+          (add (observed target state) (contribution target row)) :=
+        observed_insert target row.1 row.2 state h
+      change Equivalent
+        (observed target
+          (rest.foldl (fun acc item => insert item.1 item.2 acc) next))
+        (foldValue target rest
+          (add (observed target state) (contribution target row)))
+      exact equivalent_trans (ih next hn) (foldValue_congr target rest hs)
+
+theorem foldValue_swap (initial first second : Fraction) :
+    Equivalent (add (add initial first) second)
+      (add (add initial second) first) :=
+  equivalent_trans (add_assoc_equivalent initial first second)
+    (equivalent_trans
+      (add_congr_right initial (add_comm_equivalent first second))
+      (equivalent_symm (add_assoc_equivalent initial second first)))
+
+theorem foldValue_perm (target : Graph)
+    {rows reordered : List (Graph × Fraction)}
+    (h : rows.Perm reordered) (initial : Fraction) :
+    Equivalent (foldValue target rows initial)
+      (foldValue target reordered initial) := by
+  induction h generalizing initial with
+  | nil => exact equivalent_refl _
+  | @cons row before after perm ih =>
+      change Equivalent
+        (foldValue target before (add initial (contribution target row)))
+        (foldValue target after (add initial (contribution target row)))
+      exact ih _
+  | @swap first second rest =>
+      change Equivalent
+        (foldValue target rest
+          (add (add initial (contribution target first))
+            (contribution target second)))
+        (foldValue target rest
+          (add (add initial (contribution target second))
+            (contribution target first)))
+      exact foldValue_congr target rest
+        (foldValue_swap initial (contribution target first)
+          (contribution target second))
+  | @trans before middle after first second ihFirst ihSecond =>
+      exact equivalent_trans (ihFirst initial) (ihSecond initial)
+
+theorem collect_perm_observed (target : Graph)
+    {rows reordered : List (Graph × Fraction)}
+    (h : rows.Perm reordered) :
+    Equivalent (observed target (collect rows))
+      (observed target (collect reordered)) := by
+  have first : Equivalent (observed target (collect rows))
+      (foldValue target rows zero) :=
+    foldl_observed target rows [] trivial
+  have second : Equivalent (observed target (collect reordered))
+      (foldValue target reordered zero) :=
+    foldl_observed target reordered [] trivial
+  exact equivalent_trans first
+    (equivalent_trans (foldValue_perm target h zero)
+      (equivalent_symm second))
+
 theorem same_graph_opposites_cancel (graph : Graph) (amount : Fraction)
     (nonzero : isZero amount = false) :
     collect [(graph, amount), (graph, opposite amount)] = [] := by
