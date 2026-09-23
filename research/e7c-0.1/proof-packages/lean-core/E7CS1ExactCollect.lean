@@ -60,6 +60,14 @@ theorem same_graph_opposites_cancel (graph : Graph) (amount : Fraction)
     collect [(graph, amount), (graph, opposite amount)] = [] := by
   simp [collect, insert, nonzero, opposite_sum_is_zero]
 
+/- The same rational value can arrive with different unreduced denominators. -/
+def half : Fraction := ⟨1, 2, by decide⟩
+def negativeHalfUnreduced : Fraction := ⟨-2, 4, by decide⟩
+
+theorem cross_denominator_cancellation (graph : Graph) :
+    collect [(graph, half), (graph, negativeHalfUnreduced)] = [] := by
+  simp [collect, insert, half, negativeHalfUnreduced, isZero, add]
+
 theorem colliding_nonzero_pair (graph : Graph) (left right : Fraction)
     (leftNonzero : left.numerator ≠ 0)
     (sumNonzero : (add left right).numerator ≠ 0) :
