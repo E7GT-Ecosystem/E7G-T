@@ -1,10 +1,10 @@
+import E7CS1FG3Single
+
 /-!
 Finite ordered traversal of admitted FG3 support rows before collision
 collection. This retains rational coefficients without performing rational
 arithmetic. It does not prove a canonical State or Python correspondence.
 -/
-
-import E7CS1FG3Single
 
 namespace E7CS1FG3Rows
 
