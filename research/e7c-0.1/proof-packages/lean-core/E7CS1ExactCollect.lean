@@ -39,6 +39,32 @@ theorem equivalent_refl (value : Fraction) : Equivalent value value := rfl
 theorem equivalent_symm {left right : Fraction}
     (h : Equivalent left right) : Equivalent right left := h.symm
 
+theorem equivalent_trans {left middle right : Fraction}
+    (first : Equivalent left middle)
+    (second : Equivalent middle right) : Equivalent left right := by
+  have middleDenominatorNonzero : (middle.denominator : Int) ≠ 0 :=
+    Int.ofNat_ne_zero.mpr (Nat.ne_of_gt middle.positive)
+  apply Int.eq_of_mul_eq_mul_left middleDenominatorNonzero
+  calc
+    (middle.denominator : Int) *
+        (left.numerator * (right.denominator : Int)) =
+        (left.numerator * (middle.denominator : Int)) *
+          (right.denominator : Int) := by ac_rfl
+    _ = (middle.numerator * (left.denominator : Int)) *
+          (right.denominator : Int) :=
+            congrArg (fun x : Int => x * (right.denominator : Int)) first
+    _ = (middle.numerator * (right.denominator : Int)) *
+          (left.denominator : Int) := by ac_rfl
+    _ = (right.numerator * (middle.denominator : Int)) *
+          (left.denominator : Int) :=
+            congrArg (fun x : Int => x * (left.denominator : Int)) second
+    _ = (middle.denominator : Int) *
+          (right.numerator * (left.denominator : Int)) := by ac_rfl
+
+theorem add_comm_equivalent (left right : Fraction) :
+    Equivalent (add left right) (add right left) := by
+  simp [Equivalent, add, Int.add_comm, Int.mul_comm, Nat.mul_comm]
+
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
   simpa [add, opposite, Int.neg_mul] using
