@@ -3,7 +3,7 @@ import E7CS1FG3Single
 import E7CS1FG3Rows
 import E7CS1ExactCollect
 import E7CS1FG3Codec
-import E7CS1RatArithmetic
+import E7CS1RowsCollect
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
