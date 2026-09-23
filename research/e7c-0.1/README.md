@@ -1,6 +1,6 @@
 # E7C/0.1 research control surface
 
-Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_ACCEPTED; LEAN_BOUNDED_SPIKE_ACCEPTED; WP4_LEAN_CORE_CORRECTIONS_INTEGRATED_PENDING_REREVIEW`
+Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_ACCEPTED; LEAN_BOUNDED_SPIKE_ACCEPTED; WP4_LEAN_CORE_ACCEPTED_AND_MERGED; WP5_EECQ_GRAPH_ADAPTER_DRAFT`
 
 Direction: `E7-ECO-DIR-2026-09-15.1`
 
@@ -10,7 +10,7 @@ Source-freeze cutoff: `2026-09-15T19:52:58Z`
 
 This directory contains the WP0 source freeze, accepted WP1–WP3-S specifications,
 the integrated disposable WP3-I implementation and the merged WP4-S
-metatheory and bounded Lean spike, plus the draft WP4 Lean core extension. E7G-T
+metatheory and bounded Lean core, plus the draft WP5 EEC-Q graph adapter. E7G-T
 v0.12.1-experimental, profile `RGP/0.1`, revision `RGP2`, remains the published
 experimental canonical reference.
 
@@ -51,6 +51,9 @@ found three corrections required: separate WP2 effects from WP3 order, fix the
 ill-typed regression claim and pin workflow actions. Those corrections were
 accepted for integration at PR #45 head `9b2c636288150c33a55d2d76348cad5352eb99ca`
 and merged into PR #43 as `35ecbc1bfc54376aa48de5b160ab4533c5c7aba4`.
-The combined PR #43 remains draft pending a fresh exact-head review. Lean
-selection remains deferred. Stable IR, runtime, schemas
+PR #43 passed bounded internal exact-head review at
+`4dab1a8a12c64f23cf91dfff6b56c566d9dd301f` and merged as
+`64758c6cd9b177b196f2cf786ee88253626b7dca`. The new WP5 EEC-Q FG3
+partial adapter candidate is documented in `E7C_0.1_WP5_EECQ_FG3_ADAPTER.md`.
+Lean selection remains deferred. Stable IR, runtime, schemas
 and APIs remain out of scope.
