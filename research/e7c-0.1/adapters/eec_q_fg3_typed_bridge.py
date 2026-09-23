@@ -159,8 +159,10 @@ class BridgeOutcome:
         if self.tag == "success":
             if type(self.value) is not TypedValue or self.value.sort.tag != decl.output_tag:
                 raise BridgeError("success has wrong result sort")
+            if self.ledger != tuple(effect for effect in decl.effects if effect != STRICT):
+                raise BridgeError("success must retain its exact module ledger")
         elif self.tag == "domain_error":
-            if decl.domain != "strict" or self.value is not None:
+            if decl.domain != "strict" or self.value is not None or self.ledger != (STEP, STRICT):
                 raise BridgeError("domain failure must be strict and whole")
         else:
             raise BridgeError("undeclared module outcome")
