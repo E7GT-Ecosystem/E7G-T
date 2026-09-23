@@ -42,7 +42,7 @@ theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
       simp [encodeGraph] at admitted
       subst wire
       cases ab <;> cases ac <;> cases bc <;>
-        decide
+        simp [decodeGraph, encodeEdges, validEdges]
   | some token =>
       cases nameResult : codec.encode token with
       | none => simp [encodeGraph, nameResult] at admitted
