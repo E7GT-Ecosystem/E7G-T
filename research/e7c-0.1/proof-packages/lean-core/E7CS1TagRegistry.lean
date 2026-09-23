@@ -33,6 +33,14 @@ def decodeGraph (codec : TagCodec) (wire : WireGraph) : Option Graph :=
            wire.edges.contains "BC", some token⟩)
   else none
 
+theorem encoded_edges (graph : Graph) :
+    validEdges (encodeEdges graph) = true ∧
+    (encodeEdges graph).contains "AB" = graph.ab ∧
+    (encodeEdges graph).contains "AC" = graph.ac ∧
+    (encodeEdges graph).contains "BC" = graph.bc := by
+  rcases graph with ⟨ab, ac, bc, tag⟩
+  cases ab <;> cases ac <;> cases bc <;> decide
+
 theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
     (wire : WireGraph) (admitted : encodeGraph codec graph = some wire) :
     decodeGraph codec wire = some graph := by
@@ -42,8 +50,9 @@ theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
       change some ⟨encodeEdges ⟨ab, ac, bc, none⟩, none⟩ = some wire at admitted
       have hwire := Option.some.inj admitted
       rw [← hwire]
-      cases ab <;> cases ac <;> cases bc <;>
-        simp [decodeGraph, encodeEdges, validEdges]
+      obtain ⟨valid, hab, hac, hbc⟩ :=
+        encoded_edges (⟨ab, ac, bc, none⟩ : Graph)
+      simp [decodeGraph, valid, hab, hac, hbc]
   | some token =>
       cases nameResult : codec.encode token with
       | none =>
@@ -60,8 +69,9 @@ theorem graph_roundtrip (codec : TagCodec) (graph : Graph)
           rw [nameResult] at admitted
           have hwire := Option.some.inj admitted
           rw [← hwire]
-          cases ab <;> cases ac <;> cases bc <;>
-            simp [decodeGraph, encodeEdges, validEdges, decoded]
+          obtain ⟨valid, hab, hac, hbc⟩ :=
+            encoded_edges (⟨ab, ac, bc, some token⟩ : Graph)
+          simp [decodeGraph, valid, hab, hac, hbc, decoded]
 
 theorem unknown_tag_rejected (codec : TagCodec) (wire : WireGraph)
     (name : String) (unknown : codec.decode name = none)
