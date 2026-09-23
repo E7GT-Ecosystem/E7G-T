@@ -66,7 +66,7 @@ def negativeHalfUnreduced : Fraction := ⟨-2, 4, by decide⟩
 
 theorem cross_denominator_cancellation (graph : Graph) :
     collect [(graph, half), (graph, negativeHalfUnreduced)] = [] := by
-  simp [collect, insert, half, negativeHalfUnreduced, isZero, add]
+  rfl
 
 theorem colliding_nonzero_pair (graph : Graph) (left right : Fraction)
     (leftNonzero : left.numerator ≠ 0)
