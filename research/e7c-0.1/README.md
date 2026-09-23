@@ -1,6 +1,6 @@
 # E7C/0.1 research control surface
 
-Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_ACCEPTED; LEAN_BOUNDED_SPIKE_ACCEPTED; WP4_LEAN_CORE_REVISION_REQUIRED`
+Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_ACCEPTED; LEAN_BOUNDED_SPIKE_ACCEPTED; WP4_LEAN_CORE_CORRECTIONS_INTEGRATED_PENDING_REREVIEW`
 
 Direction: `E7-ECO-DIR-2026-09-15.1`
 
@@ -46,9 +46,11 @@ merged as `c13d77dc5b…`. The witness contract was accepted at PR #38 head
 recorded independent acceptance verdict; no conformance or correctness claim
 follows from that integration. WP4-S states the first bounded metatheorems, proof sketches and
 counterexamples. PR #40 and the bounded PR #42 Lean feasibility spike merged.
-PR #43 is draft at `01f7087bbe6dfd0022033c442b922df366ad7814`;
-its exact-head review found three corrections required: separate WP2 effects
-from WP3 order, fix the ill-typed regression claim and pin workflow actions.
-A follow-up review of a corrected head is required. Proof-assistant selection
-remains deferred. Stable IR, runtime, schemas
+Review of PR #43 at `01f7087bbe6dfd0022033c442b922df366ad7814`
+found three corrections required: separate WP2 effects from WP3 order, fix the
+ill-typed regression claim and pin workflow actions. Those corrections were
+accepted for integration at PR #45 head `9b2c636288150c33a55d2d76348cad5352eb99ca`
+and merged into PR #43 as `35ecbc1bfc54376aa48de5b160ab4533c5c7aba4`.
+The combined PR #43 remains draft pending a fresh exact-head review. Lean
+selection remains deferred. Stable IR, runtime, schemas
 and APIs remain out of scope.
