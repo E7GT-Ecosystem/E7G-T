@@ -1,6 +1,6 @@
 # E7C/0.1 research control surface
 
-Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_IN_REVIEW`
+Status: `WP0_ACCEPTED; WP1_ACCEPTED; WP2_ACCEPTED; WP3_S_ACCEPTED; WITNESS_CONTRACT_ACCEPTED; WP3_I_MERGED_WITHOUT_INDEPENDENT_ACCEPTANCE; WP4_S_ACCEPTED; LEAN_BOUNDED_SPIKE_ACCEPTED; WP4_LEAN_CORE_REVISION_REQUIRED`
 
 Direction: `E7-ECO-DIR-2026-09-15.1`
 
@@ -9,8 +9,8 @@ Baseline: `9f997801eba3ff526f7caa83b6a4a1980a713bcb`
 Source-freeze cutoff: `2026-09-15T19:52:58Z`
 
 This directory contains the WP0 source freeze, accepted WP1–WP3-S specifications,
-the integrated disposable WP3-I implementation and the initial WP4-S
-metatheory review package. E7G-T
+the integrated disposable WP3-I implementation and the merged WP4-S
+metatheory and bounded Lean spike, plus the draft WP4 Lean core extension. E7G-T
 v0.12.1-experimental, profile `RGP/0.1`, revision `RGP2`, remains the published
 experimental canonical reference.
 
@@ -44,7 +44,11 @@ merged as `c13d77dc5b…`. The witness contract was accepted at PR #38 head
 `eea2c88290ee…` and merged as `a6c562108450…`. WP3-I was merged from exact head
 `fe7ed454fa28…` as `9f997801eba3…` by explicit owner direction, without a
 recorded independent acceptance verdict; no conformance or correctness claim
-follows from that integration. WP4-S states the first bounded metatheorems,
-proof sketches and counterexamples. Proof-assistant selection remains deferred
-until an executable comparison spike is reviewed. Stable IR, runtime, schemas
+follows from that integration. WP4-S states the first bounded metatheorems, proof sketches and
+counterexamples. PR #40 and the bounded PR #42 Lean feasibility spike merged.
+PR #43 is draft at `01f7087bbe6dfd0022033c442b922df366ad7814`;
+its exact-head review found three corrections required: separate WP2 effects
+from WP3 order, fix the ill-typed regression claim and pin workflow actions.
+A follow-up review of a corrected head is required. Proof-assistant selection
+remains deferred. Stable IR, runtime, schemas
 and APIs remain out of scope.
