@@ -10,6 +10,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_QUOTE.md"
       - "research/e7c-0.1/E7C_0.1_WP5_FINITE_FIBRE.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_ASSEMBLY.md"
+      - "research/e7c-0.1/E7C_0.1_WP5_TYPED_BRIDGE_GATE.md"
       - "E7G-T_v0.12_Executable_Examples.py"
       - ".github/workflows/e7c-eecq-adapter.yml"
   push:
@@ -20,6 +21,7 @@ on:
       - "codex/e7c-wp5-quote"
       - "codex/e7c-wp5-finite-fibre"
       - "codex/e7c-wp5-fg3-assembly"
+      - "codex/e7c-wp5-typed-bridge"
     paths:
       - "research/e7c-0.1/adapters/**"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_FG3_ADAPTER.md"
@@ -28,6 +30,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_QUOTE.md"
       - "research/e7c-0.1/E7C_0.1_WP5_FINITE_FIBRE.md"
       - "research/e7c-0.1/E7C_0.1_WP5_EECQ_ASSEMBLY.md"
+      - "research/e7c-0.1/E7C_0.1_WP5_TYPED_BRIDGE_GATE.md"
       - ".github/workflows/e7c-eecq-adapter.yml"
 
 permissions:
