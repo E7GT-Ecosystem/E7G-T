@@ -65,6 +65,7 @@ class Diagram:
 
 @dataclass(frozen=True)
 class Result:
+    diagram: Diagram
     outcome: str
     candidate_count: int
     compatible: tuple[tuple[tuple[str, str], ...], ...]
@@ -179,14 +180,14 @@ def evaluate(diagram: Diagram) -> Result:
         for map_id in (link.projection, link.comparison):
             mapping = ms[map_id]
             if set(dict(mapping.table)) != set(cs[mapping.source].values):
-                return Result("unsupported", 0, (), ())
+                return Result(diagram, "unsupported", 0, (), ())
     scopes = sorted(ss)
     domains = [cs[ss[s].carrier].values for s in scopes]
     count = 1
     for domain in domains:
         count *= len(domain)
     if count > diagram.limit:
-        return Result("resource_limit", count, (), ())
+        return Result(diagram, "resource_limit", count, (), ())
     linkwise = []
     for link in diagram.links:
         lowers = cs[ss[link.lower].carrier].values
@@ -203,11 +204,13 @@ def evaluate(diagram: Diagram) -> Result:
             compatible.append(tuple(sorted(assignment.items())))
     outcome = "unique" if len(compatible) == 1 else (
         "ambiguous" if compatible else "incompatible")
-    return Result(outcome, count, tuple(compatible), tuple(linkwise))
+    return Result(diagram, outcome, count, tuple(compatible), tuple(linkwise))
 
 
 def scope_fibre(diagram: Diagram, result: Result, scope: str, value: str):
     """Finite candidate family; defined only after complete compatibility scan."""
+    if type(result) is not Result or result.diagram != diagram:
+        raise AdmissionError("result_diagram_mismatch")
     if result.outcome not in {"unique", "ambiguous", "incompatible"}:
         raise AdmissionError("incomplete_carrier")
     scopes = {s.identity: s for s in diagram.scopes}
@@ -219,6 +222,8 @@ def scope_fibre(diagram: Diagram, result: Result, scope: str, value: str):
 
 def observation_fibre(diagram: Diagram, result: Result, scope: str,
                       observation_map: str, value: str):
+    if type(result) is not Result or result.diagram != diagram:
+        raise AdmissionError("result_diagram_mismatch")
     if result.outcome not in {"unique", "ambiguous", "incompatible"}:
         raise AdmissionError("incomplete_carrier")
     scopes = {s.identity: s for s in diagram.scopes}
