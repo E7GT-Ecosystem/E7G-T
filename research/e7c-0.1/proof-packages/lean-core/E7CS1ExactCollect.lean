@@ -36,7 +36,9 @@ theorem opposite_sum_has_zero_numerator (value : Fraction) :
 
 theorem opposite_sum_is_zero (value : Fraction) :
     isZero (add value (opposite value)) = true := by
-  simp [isZero, opposite_sum_has_zero_numerator]
+  unfold isZero
+  rw [opposite_sum_has_zero_numerator]
+  rfl
 
 abbrev Collected := List (Graph × Fraction)
 
@@ -54,10 +56,9 @@ def collect (rows : List (Graph × Fraction)) : Collected :=
   rows.foldl (fun state row => insert row.1 row.2 state) []
 
 theorem same_graph_opposites_cancel (graph : Graph) (amount : Fraction)
-    (nonzero : amount.numerator ≠ 0) :
+    (nonzero : isZero amount = false) :
     collect [(graph, amount), (graph, opposite amount)] = [] := by
-  simp [collect, insert, isZero, nonzero,
-    opposite_sum_has_zero_numerator]
+  simp [collect, insert, nonzero, opposite_sum_is_zero]
 
 theorem colliding_nonzero_pair (graph : Graph) (left right : Fraction)
     (leftNonzero : left.numerator ≠ 0)
