@@ -1,20 +1,24 @@
-name: E7C Lean proof spike
+name: E7C Lean core extension
 
 on:
   pull_request:
     paths:
-      - "research/e7c-0.1/proof-spikes/lean/**"
+      - "research/e7c-0.1/proof-packages/lean-core/**"
+      - "research/e7c-0.1/E7C_0.1_WP4_LEAN_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
+      - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
-      - ".github/workflows/e7c-proof-spike.yml"
+      - ".github/workflows/e7c-lean-core.yml"
   push:
     branches:
-      - "codex/e7c-01-wp4-proof-spike"
+      - "codex/e7c-01-wp4-lean-core"
     paths:
-      - "research/e7c-0.1/proof-spikes/lean/**"
+      - "research/e7c-0.1/proof-packages/lean-core/**"
+      - "research/e7c-0.1/E7C_0.1_WP4_LEAN_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
+      - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
-      - ".github/workflows/e7c-proof-spike.yml"
+      - ".github/workflows/e7c-lean-core.yml"
 
 permissions:
   contents: read
@@ -26,9 +30,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
-          lake-package-directory: research/e7c-0.1/proof-spikes/lean
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
           auto-config: false
           build: true
           axiom-audit: true
-          axiom-audit-allow: "propext"
+          axiom-audit-allow: "propext,Quot.sound"
           use-mathlib-cache: false

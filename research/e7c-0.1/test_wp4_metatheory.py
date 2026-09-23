@@ -28,10 +28,11 @@ class WP4SpecificationControlTests(unittest.TestCase):
         for counterexample in range(1, 28):
             self.assertIn(f"CE-{counterexample:03d}", catalogue)
         self.assertIn(
-            "selection_deferred; lean_revision_addressed_exact_head_rereview_pending",
+            "selection_deferred; lean_bounded_spike_accepted; lean_core_extension_draft",
             selection,
         )
-        self.assertIn("not an acceptance verdict", selection)
+        self.assertIn("does not prove that the model adequately", selection)
+        self.assertIn("represents E7C", selection)
         for marker in (
             "structure EnvironmentWellFormed",
             "structure InterpretationWellFormed",
@@ -44,6 +45,49 @@ class WP4SpecificationControlTests(unittest.TestCase):
             self.assertIn(marker, lean_spike)
         self.assertIn("does not establish", obligations)
         self.assertNotIn("Status: `mechanised`", obligations)
+
+    def test_lean_core_extension_has_review_boundaries_and_theorems(self):
+        specification = (HERE / "E7C_0.1_WP4_LEAN_CORE.md").read_text(encoding="utf-8")
+        readme = (HERE / "proof-packages/lean-core/README.md").read_text(encoding="utf-8")
+        lean_core = (HERE / "proof-packages/lean-core/E7CLeanCore.lean").read_text(
+            encoding="utf-8"
+        )
+        for marker in (
+            "structure EnvironmentWellFormed",
+            "structure InterpretationWellFormed",
+            "theorem spec_evaluation_deterministic",
+            "theorem successful_type_preservation",
+            "theorem typing_effects_are_static",
+            "theorem successful_ledger_exact",
+            "theorem ordered_ledger_preservation",
+            "theorem ledger_effect_soundness",
+            "theorem typed_ordered_ledger_preservation",
+            "theorem typed_ledger_effect_soundness",
+            "theorem outcome_variable_is_direct",
+            "theorem missing_strict_interpretation_is_unsupported_with_ordered_ledger",
+            "theorem source_view_ledger_order_is_exact",
+            "theorem restriction_ledger_and_result_are_exact",
+            "theorem raw_prior_failure_preserves_ledger_prefix",
+            "theorem typed_strict_domain_failure_has_ledger_prefix",
+            "theorem trace_member_is_static",
+        ):
+            self.assertIn(marker, lean_core)
+        for rule in (
+            "HasType.var",
+            "HasType.strictApp",
+            "HasType.sourceView",
+            "HasType.restrict",
+            "SpecEval.wp3Variable",
+            "SpecEval.wp3Strict",
+            "SpecEval.wp3SourceView",
+            "SpecEval.wp3Restriction",
+        ):
+            self.assertIn(rule, specification)
+        self.assertIn("do **not** prove", specification)
+        self.assertIn("Lean remains the provisional implementation vehicle", readme)
+        self.assertIn("final proof-assistant selection", readme)
+        self.assertIn("`propext` and `Quot.sound` only", readme)
+        self.assertIn("does not permit a user axiom or `Classical.choice`", readme)
 
     def test_progress_and_replay_claims_are_explicitly_split(self):
         obligations = (HERE / "E7C_0.1_PROOF_OBLIGATIONS.md").read_text(encoding="utf-8")
