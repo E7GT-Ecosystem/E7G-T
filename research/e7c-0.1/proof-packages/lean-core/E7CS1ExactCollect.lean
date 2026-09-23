@@ -259,6 +259,95 @@ theorem collect_uniqueKeys (rows : List (Graph × Fraction)) :
     uniqueKeys (collect rows) := by
   exact foldl_uniqueKeys rows [] trivial
 
+/- A graph is observed by its first retained coefficient, or exact zero
+when absent. The collector invariants make that observation unambiguous. -/
+def zero : Fraction := ⟨0, 1, by decide⟩
+
+def lookup (graph : Graph) : Collected → Option Fraction
+  | [] => none
+  | (existing, amount) :: rest =>
+      if existing = graph then some amount else lookup graph rest
+
+def observed (graph : Graph) (state : Collected) : Fraction :=
+  (lookup graph state).getD zero
+
+def contribution (graph : Graph) (row : Graph × Fraction) : Fraction :=
+  if row.1 = graph then row.2 else zero
+
+def foldValue (graph : Graph) (rows : List (Graph × Fraction))
+    (initial : Fraction) : Fraction :=
+  rows.foldl (fun acc row => add acc (contribution graph row)) initial
+
+theorem add_zero_right (value : Fraction) :
+    Equivalent (add value zero) value := by
+  simp [Equivalent, add, zero]
+
+theorem add_zero_left (value : Fraction) :
+    Equivalent (add zero value) value := by
+  simp [Equivalent, add, zero]
+
+theorem zero_of_isZero (value : Fraction) (h : isZero value = true) :
+    Equivalent value zero := by
+  have hn : value.numerator = 0 := by simpa [isZero] using h
+  simp [Equivalent, zero, hn]
+
+theorem lookup_none_of_absent (graph : Graph) (state : Collected)
+    (h : keyAbsent graph state) : lookup graph state = none := by
+  induction state with
+  | nil => rfl
+  | cons head rest ih =>
+      rcases head with ⟨existing, amount⟩
+      change existing ≠ graph ∧ keyAbsent graph rest at h
+      simp [lookup, h.1, ih h.2]
+
+theorem observed_insert (target key : Graph) (amount : Fraction)
+    (state : Collected) (h : uniqueKeys state) :
+    Equivalent (observed target (insert key amount state))
+      (add (observed target state) (contribution target (key, amount))) := by
+  induction state with
+  | nil =>
+      by_cases hkey : key = target
+      · subst target
+        cases hz : isZero amount with
+        | true =>
+            have hzero := zero_of_isZero amount hz
+            simpa [observed, lookup, insert, contribution, hz] using
+              (equivalent_symm
+                (equivalent_trans (add_zero_left amount) hzero))
+        | false =>
+            simpa [observed, lookup, insert, contribution, hz] using
+              (equivalent_symm (add_zero_left amount))
+      · simpa [observed, lookup, insert, contribution, hkey,
+          add_zero_right] using
+          (equivalent_symm (add_zero_right zero))
+  | cons head rest ih =>
+      rcases head with ⟨existing, coefficient⟩
+      change keyAbsent existing rest ∧ uniqueKeys rest at h
+      obtain ⟨habsent, hrest⟩ := h
+      by_cases hkey : key = existing
+      · subst key
+        by_cases htarget : existing = target
+        · subst target
+          have hnone := lookup_none_of_absent existing rest habsent
+          cases hz : isZero (add coefficient amount) with
+          | true =>
+              simpa [observed, lookup, insert, contribution, hnone, hz] using
+                (equivalent_symm (zero_of_isZero (add coefficient amount) hz))
+          | false =>
+              simp [observed, lookup, insert, contribution, hz,
+                Equivalent]
+        · cases hz : isZero (add coefficient amount) <;>
+            simpa [observed, lookup, insert, contribution, htarget, hz]
+              using (equivalent_symm (add_zero_right (observed target rest)))
+      · by_cases htarget : existing = target
+        · subst target
+          have hdistinct : key ≠ existing := hkey
+          simpa [observed, lookup, insert, contribution, hkey,
+            hdistinct] using
+            (equivalent_symm (add_zero_right coefficient))
+        · simpa [observed, lookup, insert, hkey, htarget]
+            using ih hrest
+
 theorem same_graph_opposites_cancel (graph : Graph) (amount : Fraction)
     (nonzero : isZero amount = false) :
     collect [(graph, amount), (graph, opposite amount)] = [] := by
