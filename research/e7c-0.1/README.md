@@ -10,8 +10,9 @@ Source-freeze cutoff: `2026-09-15T19:52:58Z`
 
 This directory contains the WP0 source freeze, accepted WP1–WP3-S specifications,
 the integrated disposable WP3-I implementation and the merged WP4-S
-metatheory and bounded Lean core, plus two integrated provisional WP5 EEC-Q
-adapters for graph states and joint/restriction operations. E7G-T
+metatheory and bounded Lean core, plus four integrated provisional WP5 EEC-Q
+adapter slices covering graph states, joint/restriction, finite phase/view and
+rank-one whole-state quotation. E7G-T
 v0.12.1-experimental, profile `RGP/0.1`, revision `RGP2`, remains the published
 experimental canonical reference.
 
@@ -56,8 +57,10 @@ PR #43 passed bounded internal exact-head review at
 `4dab1a8a12c64f23cf91dfff6b56c566d9dd301f` and merged as
 `64758c6cd9b177b196f2cf786ee88253626b7dca`. WP5 PR #47 merged as
 `30d94c24abb8559fb5ef9e4c9ecb7ffad2723b97` and PR #48 as
-`0b3ff687bb30a5d9ba5ad1c6b0f8efd4ff4c83e9`. Their bounded source
-fragments are documented in `E7C_0.1_WP5_EECQ_FG3_ADAPTER.md` and
-`E7C_0.1_WP5_EECQ_JOINT_RESTRICT.md`; WP5 remains open.
+`0b3ff687bb30a5d9ba5ad1c6b0f8efd4ff4c83e9`. PR #50 merged as
+`d2a4d139f40a211d8a6fa9005a72477e8b078182` and PR #51 as
+`fcb7eb6cc14f2f720790379db343e8fae16b01a5`. Their bounded source
+fragments are recorded in the four `E7C_0.1_WP5_EECQ_*.md` notes; WP5
+remains open and general E7C adequacy is not claimed.
 Lean selection remains deferred. Stable IR, runtime, schemas
 and APIs remain out of scope.
