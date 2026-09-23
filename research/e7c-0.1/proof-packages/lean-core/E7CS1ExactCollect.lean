@@ -26,7 +26,7 @@ def add (left right : Fraction) : Fraction :=
    left.denominator * right.denominator,
    Nat.mul_pos left.positive right.positive⟩
 
-def isZero (value : Fraction) : Bool := value.numerator == 0
+def isZero (value : Fraction) : Bool := decide (value.numerator = 0)
 
 /- Equality of values is cross multiplication, independent of the particular
 positive denominator chosen for an internal fraction. -/
@@ -139,8 +139,7 @@ theorem equivalent_isZero {left right : Fraction}
     simp [isZero, hl, hr]
   · have hr : right.numerator ≠ 0 :=
       fun hzero => hl ((equivalent_numerator_zero h).mpr hzero)
-    exact (beq_eq_false_iff_ne.mpr hl).trans
-      (beq_eq_false_iff_ne.mpr hr).symm
+    simp [isZero, hl, hr]
 
 theorem opposite_sum_has_zero_numerator (value : Fraction) :
     (add value (opposite value)).numerator = 0 := by
