@@ -13,6 +13,8 @@ from typing import Any
 from e7c_b1_static import Diagnostic, Effect, MAX_INPUT_DEPTH, MAX_INPUT_NODES, TYPE_ARITY, NESTED_TYPE_POSITIONS, DOMAIN_POLICIES
 
 EDITION = "E7C-S1-STATE-JOINT/0.1-provisional"
+STRICT_EDITION = "E7C-S1-STATE-JOINT-STRICT/0.1-provisional"
+STRICT_EXTENSION = "E7C-S1-FG3-STRICT/0.1-provisional"
 MAX_JOINT_ARITY = 8
 REGISTERED_MODULES = {
     "E7C-EECQ-FG3-BRIDGE/0.1-provisional": frozenset({"FG3-graph"}),
@@ -106,7 +108,7 @@ def check_document(document: Any) -> dict[str, Any]:
                 stack.extend((v, depth + 1) for v in item)
         if type(document) is not dict or set(document) != {"edition", "variables", "term"}:
             _fail("E7C-S1-001", "document requires edition, variables, term", "$")
-        if document["edition"] != EDITION:
+        if document["edition"] not in (EDITION, STRICT_EDITION):
             _fail("E7C-S1-004", "wrong successor edition", "$.edition")
         variables = document["variables"]
         if type(variables) is not dict:
@@ -134,6 +136,13 @@ def check_document(document: Any) -> dict[str, Any]:
                 if source.tag != "joint" or type(index) is not int or not 0 <= index < len(source.args):
                     raise Diagnostic("type_error", "E7C-S1-T03", "in-range Joint coordinate required", path)
                 return source.args[index], effects | {Effect("resources", "finite_marginal")}
+            if tag == "strict_union" and set(term) == {"tag", "arg"} and document["edition"] == STRICT_EDITION:
+                source, effects = infer(term["arg"], f"{path}.arg", depth + 1)
+                if source.tag != "joint" or len(source.args) != 2 or source.args[0] != source.args[1]:
+                    raise Diagnostic("type_error", "E7C-S1-T04", "strict FG3 union requires a binary same-signature Joint", path)
+                return (S1Type("outcome", (source.args[0], STRICT_EXTENSION)),
+                        effects | {Effect("resources", "finite_strict_union"),
+                                   Effect("partiality", STRICT_EXTENSION)})
             _fail("E7C-S1-001", "unknown or malformed term", path)
 
         result, effects = infer(document["term"], "$.term", 0)

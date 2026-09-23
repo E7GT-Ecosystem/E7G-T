@@ -5,11 +5,12 @@ from __future__ import annotations
 from fractions import Fraction
 from typing import Any
 
-from e7c_s1_state_joint_static import EDITION, check_document
+from e7c_s1_state_joint_static import EDITION, STRICT_EDITION, check_document
 from e7c_s1_values import (CANONICAL_BLOB, FG3_BLOB, RuntimeAdmissionError,
                            admit_values, encode_value, key, resource_policy)
 
 WITNESS_EDITION = "E7C-S1-FG3-REPLAY/0.1-provisional"
+STRICT_WITNESS_EDITION = "E7C-S1-FG3-STRICT-REPLAY/0.1-provisional"
 
 
 class ReplayError(ValueError):
@@ -17,6 +18,10 @@ class ReplayError(ValueError):
 
 
 class _Limit(Exception):
+    pass
+
+
+class _Domain(Exception):
     pass
 
 
@@ -49,10 +54,13 @@ def check_witness(witness: Any) -> bool:
               "document", "values", "resource_policy", "static", "terminal", "ledger", "progress"}
     if type(witness) is not dict or set(witness) != fields:
         raise ReplayError("wrong witness shape")
-    if (witness["witness_edition"] != WITNESS_EDITION or witness["calculus_edition"] != EDITION
+    permitted = ((EDITION, WITNESS_EDITION), (STRICT_EDITION, STRICT_WITNESS_EDITION))
+    if ((witness["calculus_edition"], witness["witness_edition"]) not in permitted
             or witness["canonical_blob"] != CANONICAL_BLOB or witness["fg3_blob"] != FG3_BLOB):
         raise ReplayError("wrong edition or source pins")
     doc = witness["document"]
+    if type(doc) is not dict or doc.get("edition") != witness["calculus_edition"]:
+        raise ReplayError("document and witness edition differ")
     static = check_document(doc)
     if static["status"] != "ok" or not _same(witness["static"], static):
         raise ReplayError("static typing does not replay")
@@ -91,6 +99,25 @@ def check_witness(witness: Any) -> bool:
             normalized = _reduce(rows)
             recorded.append({"rule": "independent", "visits": len(ls) * len(rs), "support": len(normalized)})
             return 2, normalized
+        if node["tag"] == "strict_union":
+            rank, source = derive(node["arg"])
+            if rank != 2:
+                raise ReplayError("strict union received wrong arity")
+            mapped = []
+            for index, (atoms, amount) in enumerate(source):
+                examine()
+                first, second = atoms
+                if first[1] != second[1]:
+                    recorded.append({"rule": "strict_union", "tag": "domain_error",
+                                     "visits": index + 1, "offending_index": index})
+                    raise _Domain()
+                edges = tuple(sorted(first[0] + second[0]))
+                merged = (tuple(dict.fromkeys(edges)), first[1])
+                mapped.append(((merged,), amount))
+            normalized = _reduce(mapped)
+            recorded.append({"rule": "strict_union", "tag": "success",
+                             "visits": len(source), "support": len(normalized)})
+            return 1, normalized
         arity, rows = derive(node["arg"])
         coordinate = node["coordinate"]
         selected = []
@@ -107,6 +134,8 @@ def check_witness(witness: Any) -> bool:
         expected = {"tag": "success", "value": encode_value(rank, result)}
     except _Limit as error:
         expected = {"tag": "resource_exhausted", "bound": str(error), "value": None}
+    except _Domain:
+        expected = {"tag": "domain_error", "value": None}
     if (not _same(witness["terminal"], expected) or not _same(witness["ledger"], recorded)
             or not _same(witness["progress"], charges)):
         raise ReplayError("terminal result, ordered ledger or progress differs from replay")

@@ -12,7 +12,10 @@ This directory contains the WP0 source freeze, accepted WP1–WP3-S specificatio
 the integrated disposable WP3-I implementation and the merged WP4-S
 metatheory and bounded Lean core, plus five integrated provisional WP5 slices
 covering EEC-Q graph states, joint/restriction, finite phase/view, rank-one
-whole-state quotation and candidate-relative phase fibres. E7G-T
+whole-state quotation and candidate-relative phase fibres. Subsequent WP5
+FG3 assembly and typed bridge modules are integrated, followed by a separate
+versioned S1 State/Joint static and finite execution/replay candidate. The
+strict union successor is separately editioned. E7G-T
 v0.12.1-experimental, profile `RGP/0.1`, revision `RGP2`, remains the published
 experimental canonical reference.
 
@@ -64,5 +67,11 @@ PR #43 passed bounded internal exact-head review at
 fragments are recorded in the four `E7C_0.1_WP5_EECQ_*.md` notes and
 `E7C_0.1_WP5_FINITE_FIBRE.md`; WP5
 remains open and general E7C adequacy is not claimed.
+PR #55 added bounded assembly joins, PR #56 a typed FG3 bridge, PR #57
+introduced the S1 State/Joint static candidate and PR #58 added finite FG3
+execution and separately implemented replay. The S1 strict joint successor
+adds a terminal whole-failure rule under its own opt-in edition; see
+`E7C_0.1_S1_STRICT_JOINT.md`. These do not complete WP5, replace accepted
+B1, establish proof, or migrate any product.
 Lean selection remains deferred. Stable IR, runtime, schemas
 and APIs remain out of scope.

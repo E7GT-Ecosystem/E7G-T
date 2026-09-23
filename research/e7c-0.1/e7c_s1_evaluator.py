@@ -6,14 +6,19 @@ import copy
 from fractions import Fraction
 from typing import Any
 
-from e7c_s1_state_joint_static import EDITION, check_document
+from e7c_s1_state_joint_static import EDITION, STRICT_EDITION, check_document
 from e7c_s1_values import (CANONICAL_BLOB, FG3_BLOB, RuntimeAdmissionError,
                            admit_values, canonical, encode_value, resource_policy)
 
 WITNESS_EDITION = "E7C-S1-FG3-REPLAY/0.1-provisional"
+STRICT_WITNESS_EDITION = "E7C-S1-FG3-STRICT-REPLAY/0.1-provisional"
 
 
 class _Bound(Exception):
+    pass
+
+
+class _Domain(Exception):
     pass
 
 
@@ -56,6 +61,22 @@ def evaluate(document: Any, values: Any, bounds: Any) -> dict[str, Any]:
             answer = canonical(images, 2)
             ledger.append({"rule": "independent", "visits": len(left) * len(right), "support": len(answer)})
             return 2, answer
+        if tag == "strict_union":
+            source_arity, source = run(term["arg"])
+            assert source_arity == 2
+            images: list[tuple[tuple, Fraction]] = []
+            for index, ((left, right), amount) in enumerate(source):
+                visit()
+                if left[1] != right[1]:
+                    ledger.append({"rule": "strict_union", "tag": "domain_error",
+                                   "visits": index + 1, "offending_index": index})
+                    raise _Domain()
+                joined = (tuple(sorted(set(left[0]) | set(right[0]))), left[1])
+                images.append(((joined,), amount))
+            answer = canonical(images, 1)
+            ledger.append({"rule": "strict_union", "tag": "success",
+                           "visits": len(source), "support": len(answer)})
+            return 1, answer
         source_arity, source = run(term["arg"])
         i = term["coordinate"]
         assert tag == "marginal" and 0 <= i < source_arity
@@ -72,9 +93,11 @@ def evaluate(document: Any, values: Any, bounds: Any) -> dict[str, Any]:
         terminal = {"tag": "success", "value": encode_value(arity, rows)}
     except _Bound as error:
         terminal = {"tag": "resource_exhausted", "bound": str(error), "value": None}
+    except _Domain:
+        terminal = {"tag": "domain_error", "value": None}
     return {
-        "witness_edition": WITNESS_EDITION,
-        "calculus_edition": EDITION,
+        "witness_edition": STRICT_WITNESS_EDITION if document["edition"] == STRICT_EDITION else WITNESS_EDITION,
+        "calculus_edition": document["edition"],
         "canonical_blob": CANONICAL_BLOB,
         "fg3_blob": FG3_BLOB,
         "document": copy.deepcopy(document),
