@@ -113,11 +113,11 @@ theorem incompatible_observation (row : AdmittedRow) (maxSteps maxVisits : Nat)
 /- Exact collision arithmetic needed by the following multi-row package.
 The zero output has empty support, not a zero-weight row. -/
 def collectSame (graph : Graph) (first second : Rat) : State :=
-  if (first + second).num = 0 then [] else [(graph, first + second)]
+  if (first + second).num == 0 then [] else [(graph, first + second)]
 
 theorem collected_zero_iff (graph : Graph) (first second : Rat) :
     collectSame graph first second = [] ↔ first + second = 0 := by
-  simp [collectSame, Rat.num_eq_zero]
+  simp [collectSame, Rat.num_eq_zero, beq_iff_eq]
 
 theorem opposite_coefficients_cancel (graph : Graph) (amount : Rat) :
     collectSame graph amount (-amount) = [] := by
