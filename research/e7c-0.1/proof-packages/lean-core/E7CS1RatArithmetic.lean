@@ -19,21 +19,25 @@ theorem fromRat_add (left right : Rat) :
   have positive : 0 < denominator :=
     Nat.mul_pos left.den_pos right.den_pos
   have nonzero : denominator ≠ 0 := Nat.ne_of_gt positive
-  obtain ⟨factor, _, hnum, hden⟩ :=
-    Rat.normalize_num_den' numerator denominator nonzero
   have normalized :
       Rat.normalize numerator denominator nonzero = left + right := by
     simpa [numerator, denominator] using (Rat.add_def left right).symm
-  rw [normalized] at hnum hden
+  have sameValue :
+      numerator * ((left + right).den : Int) =
+        (left + right).num * (denominator : Int) := by
+    exact (Rat.normalize_eq_iff nonzero
+      (Nat.ne_of_gt (left + right).den_pos)).mp
+      (normalized.trans (Rat.normalize_self (left + right)).symm)
   change (left + right).num * (denominator : Int) =
     numerator * ((left + right).den : Int)
-  rw [hden, hnum]
-  simp only [Int.natCast_mul]
-  ac_rfl
+  exact sameValue.symm
 
 theorem fromRat_zero (value : Rat) :
     isZero (fromRat value) = decide (value = 0) := by
-  simp [isZero, fromRat, Rat.num_eq_zero]
+  have h : value.num = 0 ↔ value = 0 := by
+    rw [Rat.eq_iff_mul_eq_mul]
+    simp
+  simp only [isZero, fromRat, h]
 
 theorem fromRat_add_zero (left right : Rat) :
     isZero (add (fromRat left) (fromRat right)) =
