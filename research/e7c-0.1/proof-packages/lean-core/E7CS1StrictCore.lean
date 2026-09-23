@@ -32,7 +32,8 @@ def run : Nat → List Pair → Terminal
         | .resourceLimit => .resourceLimit
       else .domainError
 
-theorem empty_succeeds (fuel : Nat) : run fuel [] = .success [] := rfl
+theorem empty_succeeds (fuel : Nat) : run fuel [] = .success [] := by
+  cases fuel <;> rfl
 
 theorem exhausted_before_first_check (pair : Pair) (rest : List Pair) :
     run 0 (pair :: rest) = .resourceLimit := rfl
