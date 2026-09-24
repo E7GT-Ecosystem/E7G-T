@@ -1,10 +1,12 @@
 """Canonical §R.2/R.4 anti-collapse cases beyond executable companion coverage."""
 
 from dataclasses import replace
+import copy
 import unittest
 
 from rgp_finite_b1 import (AdmissionError, HostBoundary, canonical, sha, contextual_view,
-                           hosts, quote, reconstruct, unquote)
+                           decode_sr4, encode_sr4, hosts, quote, reconstruct,
+                           reconstruct_layer, unquote)
 from test_rgp_finite_b1 import layers
 
 
@@ -54,6 +56,37 @@ class RGPHostQuotation(unittest.TestCase):
         with self.assertRaises(AdmissionError):
             contextual_view(layer, role="operator", temporal_locality="",
                             fields=("carrier",), edition="project/1")
+
+    def test_full_key_rebound_payloads_fail_strict_layer_admission(self):
+        layer, _ = layers()
+        portion = encode_sr4(layer, portion_index="A", codec_edition="json/1")
+        self.assertEqual(reconstruct_layer(layer.record()).identity, layer.identity)
+        variants = []
+        for path, value in (("rank", True), ("temporal_scope", ""),
+                            ("access_scope", 42)):
+            row = copy.deepcopy(layer.record())
+            row["placement"][path] = value
+            variants.append(row)
+        for field, value in (("rules", "workspace.generate"),
+                             ("access_policy", {"operator": "view"}),
+                             ("edition", ""), ("interface", [])):
+            row = copy.deepcopy(layer.record())
+            row[field] = value
+            variants.append(row)
+        for record in variants:
+            with self.subTest(record=record):
+                payload = canonical(record)
+                identity = sha(payload)
+                forged_quote = replace(quote(layer), payload=payload,
+                                       source_identity=identity)
+                forged_portion = replace(portion, payload=payload,
+                                         payload_digest=identity,
+                                         source_identity=identity,
+                                         source_edition=record["edition"])
+                with self.assertRaises(AdmissionError):
+                    unquote(forged_quote)
+                with self.assertRaises(AdmissionError):
+                    decode_sr4(forged_portion, codec_edition="json/1")
 
 
 if __name__ == "__main__":
