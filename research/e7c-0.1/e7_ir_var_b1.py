@@ -10,9 +10,11 @@ import json
 import re
 
 from e7c_b1_canonical import (CALCULUS_EDITION, DYNAMIC_RULES_ID,
-                              OUTCOME_EXTENSION_EDITION, RESOURCE_POLICY_EDITION,
+                              INTERPRETATION_EDITION, OUTCOME_EXTENSION_EDITION,
+                              RESOURCE_POLICY_EDITION, canonical_key,
                               STATIC_RULES_ID, canonical_bytes, digest,
                               require_canonical_json)
+from e7c_b1_admission import validate_typed_binding
 from e7c_b1_evaluator import Evaluator
 from e7c_b1_static import Diagnostic, parse_type, type_json
 
@@ -26,6 +28,14 @@ class IRAdmissionError(ValueError):
     pass
 
 
+def _atomic_keys(value: dict) -> set[str]:
+    keys = {canonical_key(value)} if value["tag"] in {"base", "config", "entity"} else set()
+    for arg in value["args"]:
+        if type(arg) is dict:
+            keys.update(_atomic_keys(arg))
+    return keys
+
+
 def lower(document: dict) -> dict:
     """Admission uses accepted WP2 and the disposable WP3-I input boundary."""
     source = Evaluator(document)
@@ -34,6 +44,9 @@ def lower(document: dict) -> dict:
         raise IRAdmissionError("only the closed core.var fragment is admitted")
     variable = term["name"]
     variable_type = source.environment["variables"][variable]
+    carriers = source.interpretation["carriers"]
+    binding_carriers = {key: copy.deepcopy(carriers[key])
+                        for key in sorted(_atomic_keys(variable_type))}
     instruction = {"operator": CAPABILITY, "name": variable,
                    "type": copy.deepcopy(variable_type),
                    "effects": copy.deepcopy(source.static["effects"]),
@@ -45,10 +58,12 @@ def lower(document: dict) -> dict:
             "pins": {"calculus": CALCULUS_EDITION,
                      "static_rules": STATIC_RULES_ID,
                      "dynamic_rules": DYNAMIC_RULES_ID,
+                     "interpretation": INTERPRETATION_EDITION,
                      "outcome_extension": OUTCOME_EXTENSION_EDITION,
                      "resource_policy": RESOURCE_POLICY_EDITION},
             "instruction": instruction,
             "binding": copy.deepcopy(source.values[variable]),
+            "binding_carriers": binding_carriers,
             "resource": copy.deepcopy(source.beta)}
     body["id"] = digest(body)
     return parse(serialize(body))
@@ -73,13 +88,15 @@ def parse(encoded: bytes) -> dict:
         if type(ir) is not dict or canonical_bytes(ir) != encoded:
             raise IRAdmissionError("noncanonical IR")
         if (set(ir) != {"ir_edition", "required_capabilities", "pins", "instruction",
-                        "binding", "resource", "id"} or ir["ir_edition"] != IR_EDITION or
+                        "binding", "binding_carriers", "resource", "id"} or
+                ir["ir_edition"] != IR_EDITION or
                 ir["required_capabilities"] != [CAPABILITY]):
             raise IRAdmissionError("unsupported IR edition or mandatory capability")
         pins = ir["pins"]
         if pins != {"calculus": CALCULUS_EDITION,
                     "static_rules": STATIC_RULES_ID,
                     "dynamic_rules": DYNAMIC_RULES_ID,
+                    "interpretation": INTERPRETATION_EDITION,
                     "outcome_extension": OUTCOME_EXTENSION_EDITION,
                     "resource_policy": RESOURCE_POLICY_EDITION}:
             raise IRAdmissionError("source edition mismatch")
@@ -99,6 +116,8 @@ def parse(encoded: bytes) -> dict:
             raise IRAdmissionError("invalid typed instruction or location")
         if type_json(parse_type(instruction["type"])) != instruction["type"]:
             raise IRAdmissionError("noncanonical instruction type")
+        validate_typed_binding(ir["binding"], instruction["type"],
+                               ir["binding_carriers"])
         beta = ir["resource"]
         if (type(beta) is not dict or
                 set(beta) != {"step_bound", "candidate_bound", "ledger_entry_bound", "policy_edition"} or

@@ -97,6 +97,32 @@ class Layer:
         return sha(canonical(self.record()))
 
 
+def reconstruct_layer(record: dict) -> Layer:
+    """Strict inverse of the admitted finite Layer record encoding."""
+    if (type(record) is not dict or set(record) != RECORD_KEYS or
+            (record.get("kernel"), record.get("profile"), record.get("model")) !=
+            (KERNEL, PROFILE, MODEL)):
+        raise AdmissionError("invalid layer record identity or fields")
+    place = record["placement"]
+    if (type(place) is not dict or set(place) !=
+            {"rank", "regime", "temporal_scope", "access_scope", "composition_scope"}):
+        raise AdmissionError("invalid placement record")
+    policy = record["access_policy"]
+    if (type(record["rules"]) is not list or type(policy) is not dict or
+            any(type(k) is not str or type(v) is not list for k, v in policy.items())):
+        raise AdmissionError("invalid rules or access policy encoding")
+    try:
+        layer = Layer(record["signature"], record["edition"], record["carrier"],
+                      tuple(record["rules"]), record["interface"],
+                      {k: tuple(v) for k, v in policy.items()}, record["invariants"],
+                      record["provenance"], Placement(**place))
+    except (TypeError, ValueError, KeyError) as exc:
+        raise AdmissionError("invalid typed layer record") from exc
+    if layer.record() != record or canonical(layer.record()) != canonical(record):
+        raise AdmissionError("layer record failed exact reconstruction")
+    return layer
+
+
 @dataclass(frozen=True)
 class Hosted:
     host: str
@@ -210,6 +236,8 @@ def decode_sr4(encoded: Encoded, *, codec_edition: str) -> dict:
                 (value.get("kernel"), value.get("profile"), value.get("model")) !=
                 (KERNEL, PROFILE, MODEL)):
             raise AdmissionError("invalid source identity or edition")
+        if reconstruct_layer(value).identity != encoded.source_identity:
+            raise AdmissionError("invalid typed source identity")
     except (UnicodeDecodeError, ValueError, TypeError) as exc:
         raise AdmissionError("invalid encoding") from exc
     return value
@@ -275,17 +303,14 @@ def unquote(quoted: QuotedLayer) -> dict:
         raise AdmissionError("whole quoted layer required")
     try:
         record = json.loads(quoted.payload.decode("utf-8"))
-        if (type(record) is not dict or set(record) != RECORD_KEYS or
-                type(record.get("signature")) is not str or
-                type(record.get("placement")) is not dict or
-                canonical(record) != quoted.payload or
+        if (type(record) is not dict or canonical(record) != quoted.payload or
                 sha(quoted.payload) != quoted.source_identity or
-                record.get("kernel") != KERNEL or record.get("profile") != PROFILE or
-                record.get("model") != MODEL or
                 type(quoted.source_rank) is not int or
-                record.get("placement", {}).get("rank") != quoted.source_rank or
                 quoted.quotation_rank != quoted.source_rank + 1):
             raise AdmissionError("quoted source or rank mismatch")
+        layer = reconstruct_layer(record)
+        if layer.identity != quoted.source_identity or layer.placement.rank != quoted.source_rank:
+            raise AdmissionError("quoted layer identity or rank mismatch")
     except (UnicodeDecodeError, TypeError, ValueError, AttributeError) as exc:
         raise AdmissionError("invalid quoted payload") from exc
     return record
