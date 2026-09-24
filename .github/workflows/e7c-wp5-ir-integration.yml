@@ -1,0 +1,28 @@
+name: E7C WP5 IR finite integration
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/wp5_ir_finite_case.py"
+      - "research/e7c-0.1/test_wp5_ir_finite_case.py"
+      - "research/e7c-0.1/fixtures/wp5_ir/**"
+      - "research/e7c-0.1/E7C_0.1_WP5_IR_INTEGRATION_MATRIX.md"
+      - "research/e7c-0.1/adapters/eec_q_fg3_b1.py"
+      - "research/e7c-0.1/e7_ir_var_b1.py"
+      - "research/e7c-0.1/e7c_b1_evaluator.py"
+      - "research/e7c-0.1/e7c_b1_replay_checker.py"
+      - ".github/workflows/e7c-wp5-ir-integration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  finite-case:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Replay package and bounded differential
+        run: python -m unittest discover -s research/e7c-0.1 -p 'test_wp5_ir_finite_case.py' -v
