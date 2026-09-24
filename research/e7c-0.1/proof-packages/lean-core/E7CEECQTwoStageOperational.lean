@@ -97,20 +97,20 @@ inductive Cursor where
   | firstRows (remaining keptRev excludedRev : List Row) (index : Nat)
   | secondAttempt (kept excluded : List Row)
   | secondRows (remaining retainedRev excluded secondExcludedRev : List Row) (index : Nat)
-  | stopped (terminal : Terminal)
+  | stopped (terminal : Terminal) (firstExcluded : Option (List Row))
   deriving DecidableEq, Repr
 
 def finished : Cursor → Option Terminal
   | .secondRows [] retainedRev excluded secondExcludedRev _ =>
       some (.success ⟨retainedRev.reverse, excluded, secondExcludedRev.reverse⟩)
-  | .stopped t => some t
+  | .stopped t _ => some t
   | _ => none
 
 def firstExcludedAt : Cursor → Option (List Row)
   | .firstRows [] _ excludedRev _ => some excludedRev.reverse
   | .secondAttempt _ excluded => some excluded
   | .secondRows _ _ excluded _ _ => some excluded
-  | .stopped _ => none
+  | .stopped _ excluded => excluded
   | _ => none
 
 /- `advance` is called only AFTER a step has been charged and ledger space
@@ -119,8 +119,8 @@ def advance (first second : Policy) : Cursor → Event × Cursor
   | .firstAttempt rs =>
       (.attempt .first, match first with
         | .ready => .firstRows rs [] [] 0
-        | .unsupported => .stopped (.unsupported .first)
-        | .undetermined => .stopped (.undetermined .first))
+        | .unsupported => .stopped (.unsupported .first) none
+        | .undetermined => .stopped (.undetermined .first) none)
   | .firstRows (r :: rs) keptRev excludedRev i =>
       if r.left.ab then
         (.row .first i r true, .firstRows rs keptRev (r :: excludedRev) (i + 1))
@@ -129,13 +129,13 @@ def advance (first second : Policy) : Cursor → Event × Cursor
   | .firstRows [] keptRev excludedRev _ =>
       (.attempt .second, match second with
         | .ready => .secondRows keptRev.reverse [] excludedRev.reverse [] 0
-        | .unsupported => .stopped (.unsupported .second)
-        | .undetermined => .stopped (.undetermined .second))
+        | .unsupported => .stopped (.unsupported .second) (some excludedRev.reverse)
+        | .undetermined => .stopped (.undetermined .second) (some excludedRev.reverse))
   | .secondAttempt kept excluded =>
       (.attempt .second, match second with
         | .ready => .secondRows kept [] excluded [] 0
-        | .unsupported => .stopped (.unsupported .second)
-        | .undetermined => .stopped (.undetermined .second))
+        | .unsupported => .stopped (.unsupported .second) (some excluded)
+        | .undetermined => .stopped (.undetermined .second) (some excluded))
   | .secondRows (r :: rs) retainedRev excluded secondExcludedRev i =>
       if r.right.bc then
         (.row .second i r true,
@@ -145,7 +145,7 @@ def advance (first second : Policy) : Cursor → Event × Cursor
           .secondRows rs (r :: retainedRev) excluded secondExcludedRev (i + 1))
   | .secondRows [] retainedRev excluded secondExcludedRev i =>
       (.attempt .second, .secondRows [] retainedRev excluded secondExcludedRev i)
-  | .stopped t => (.attempt .first, .stopped t)
+  | .stopped t excluded => (.attempt .first, .stopped t excluded)
 
 structure Machine where
   cursor : Cursor
