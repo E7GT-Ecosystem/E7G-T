@@ -116,4 +116,47 @@ theorem success_without_continuation_step_is_resource_limit {α β : Type}
       { exit := .resourceLimit, steps := 1 + steps, ledger := ledger } := by
   simp [sequence, nonzero, exhausted]
 
+/- Static effect union bounds every event, including failure and resource
+limits, assuming separate bounds for the child and continuation traces. -/
+theorem sequence_effect_membership {α β : Type}
+    (bound : Nat) (child : Trace α) (continuation : α → Trace β)
+    (firstEffect nextEffect : Nat → Prop)
+    (childSound : ∀ event, event ∈ child.ledger → firstEffect event)
+    (nextSound : ∀ value event,
+      event ∈ (continuation value).ledger → nextEffect event) :
+    ∀ event, event ∈ (sequence bound child continuation).ledger →
+      firstEffect event ∨ nextEffect event := by
+  intro event present
+  cases bound with
+  | zero =>
+      simp [sequence] at present
+  | succ n =>
+      cases hExit : child.exit with
+      | success value =>
+          by_cases exhausted : 1 + child.steps >= Nat.succ n
+          · have fromChild : event ∈ child.ledger := by
+              simpa [sequence, hExit, exhausted] using present
+            exact Or.inl (childSound event fromChild)
+          · have fromConcat : event ∈ child.ledger ++ (continuation value).ledger := by
+              simpa [sequence, hExit, exhausted] using present
+            rcases List.mem_append.mp fromConcat with inChild | inNext
+            · exact Or.inl (childSound event inChild)
+            · exact Or.inr (nextSound value event inNext)
+      | unsupported diagnostic =>
+          have fromChild : event ∈ child.ledger := by
+            simpa [sequence, hExit] using present
+          exact Or.inl (childSound event fromChild)
+      | undetermined diagnostic =>
+          have fromChild : event ∈ child.ledger := by
+            simpa [sequence, hExit] using present
+          exact Or.inl (childSound event fromChild)
+      | domainError diagnostic =>
+          have fromChild : event ∈ child.ledger := by
+            simpa [sequence, hExit] using present
+          exact Or.inl (childSound event fromChild)
+      | resourceLimit =>
+          have fromChild : event ∈ child.ledger := by
+            simpa [sequence, hExit] using present
+          exact Or.inl (childSound event fromChild)
+
 end E7CB2Sequence

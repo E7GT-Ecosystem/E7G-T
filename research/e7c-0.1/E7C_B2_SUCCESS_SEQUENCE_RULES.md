@@ -111,6 +111,10 @@ definition. The module does not model B1 admission,
 map interpretation, ledger capacity, a well-formed residual-budget child,
 Python witness replay or source/IR adequacy. It is therefore a bounded
 sub-lemma toward B2-T05, which remains open for the actual E7C-B2 relation.
+The abstract effect-membership lemma additionally shows that a composed
+ledger has only child or continuation events, assuming each input trace is
+sound for its respective effect predicate. This local result does not prove
+the premises for actual B1/B2 interpretation or the full B2-T04 obligation.
 The separate finite B1/B2/IR-to-Lean vector package relates 13 complete
 selected executions to this abstract model after an explicit, lossy trace
 encoding. See `E7C_B2_FINITE_LEAN_BRIDGE.md`. It supplies no universal bridge.
