@@ -13,6 +13,7 @@ on:
       - "research/e7c-0.1/fixtures/wp5_ir/success_sequence*.json"
       - "research/e7c-0.1/fixtures/wp5_ir/ir_conformance_b2_manifest.json"
       - "research/e7c-0.1/E7C_B2_SUCCESS_SEQUENCE_GATE.md"
+      - "research/e7c-0.1/E7C_B2_SUCCESS_SEQUENCE_RULES.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - ".github/workflows/e7c-b2-success-sequence.yml"
 
