@@ -2,7 +2,7 @@
 
 Status: `draft_review_candidate; selected_bounded_fragment_only`.
 Base: PR #87 merge `6fda83b3913b1d87022f556ad8f771949d5e7bcf`.
-Branch: `codex/e7c-ir-map-chain`; exact head in PR metadata.
+Branch: `codex/e7c-ir-views`; exact head in PR metadata.
 Edition: `E7-IR/0.2-view-var-B1-provisional`.
 
 The admitted terms are `view(source_preserving_inventory, var
