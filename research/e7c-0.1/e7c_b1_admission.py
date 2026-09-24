@@ -286,3 +286,21 @@ def validate_runtime_package(
         raise AdmissionError("missing_replay_material", "value environment coverage")
     for name, type_json in environment["variables"].items():
         _validate_value(values[name], type_json, package["carriers"], f"values.{name}")
+
+
+def validate_typed_binding(value: Any, type_json: Mapping[str, Any],
+                           carriers: Any) -> None:
+    """Admit one closed binding against precisely its edition-bound atomic carriers.
+
+    Reuses the WP3-I value/terminal admission rules; no evaluation control flow.
+    The caller separately pins the interpretation edition and source identity.
+    """
+    if type(carriers) is not dict:
+        raise AdmissionError("missing_replay_material", "typed binding carriers missing")
+    required: dict[str, Mapping[str, Any]] = {}
+    _collect_atomic_types(type_json, required)
+    if set(carriers) != set(required):
+        raise AdmissionError("missing_replay_material", "typed binding carrier coverage")
+    for key in sorted(required):
+        _canonical_unique(carriers[key], f"binding.carriers[{key}]")
+    _validate_value(value, type_json, carriers, "binding")
