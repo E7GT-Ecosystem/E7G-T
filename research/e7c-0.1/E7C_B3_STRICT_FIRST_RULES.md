@@ -36,3 +36,15 @@ bounds 0–3 and selected capability/obligation variations.
 This establishes only this selected, finite construction under asserted
 fixture assumptions. No general bind theorem, arbitrary continuation,
 canonical migration, profile conformance or product correctness follows.
+
+## Typed IR continuation
+
+`E7-IR/0.4-strict-first-B3-provisional` pins the source document and complete
+replayed source witness, a separately versioned typed instruction, and a
+typed variable argument IR. Its executor independently charges the parent,
+first map, variable and successful continuation, then interprets the two map
+tables and ledger atoms. A finite differential checks the entire terminal,
+ledger and resource progress against source replay for every selected input,
+small resource bound and capability/obligation variation. Parsing rejects
+rebound nominal types, source values and source witness claims. This finite
+differential is not a general compiler-correctness proof.
