@@ -134,6 +134,26 @@ theorem exhaustion_returns_prefix (rs : List Row) (first second : Policy)
       (plan rs first second).take (min budget.stepBound budget.ledgerBound) := by
   simp [run, cut, short]
 
+theorem exhaustion_exact_progress (rs : List Row) (first second : Policy)
+    (budget : Budget)
+    (short : ¬ (plan rs first second).length ≤
+      min budget.stepBound budget.ledgerBound) :
+    (run rs first second budget).progress =
+      { completedSteps := if budget.stepBound ≤ budget.ledgerBound
+                          then budget.stepBound else budget.ledgerBound + 1
+        ledgerPrefix := (plan rs first second).take
+          (min budget.stepBound budget.ledgerBound)
+        firstExcluded :=
+          if decide (first = .ready) &&
+             decide ((firstTrace rs).length ≤
+               ((plan rs first second).take
+                 (min budget.stepBound budget.ledgerBound)).length)
+          then some (source rs).firstExcluded else none
+        secondExcludedPrefix := secondExcluded
+          ((plan rs first second).take
+            (min budget.stepBound budget.ledgerBound)) } := by
+  simp [run, progress, cut, short]
+
 theorem full_success_agrees_with_recursive_partition (rs : List Row) (budget : Budget)
     (steps : (plan rs .ready .ready).length ≤ budget.stepBound)
     (ledger : (plan rs .ready .ready).length ≤ budget.ledgerBound) :
