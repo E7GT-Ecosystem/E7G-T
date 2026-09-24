@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 9204)
+Total output lines: 841
+
 import E7CS1StrictCore
 import E7CS1FG3Single
 import E7CS1FG3Rows
@@ -9,6 +12,7 @@ import E7CB2Sequence
 import E7CB2FiniteBridge
 import E7CEECQTwoStageBridge
 import E7CEECQTwoStageAllInput
+import E7CEECQTwoStageOperational
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
@@ -456,20 +460,7 @@ theorem evaluateBinding_success_has_type
     simp_all [BindingHasType, evaluateBinding, successCarrier, ValueHasType]
 
 theorem successful_type_preservation
-    (termType : HasType declarations context term type effects)
-    (environmentType : EnvironmentWellFormed context environment)
-    (interpretationType : InterpretationWellFormed declarations interpretation)
-    (successful : (evaluate environment interpretation term).1 = .success output) :
-    ValueHasType output (successCarrier type) := by
-  induction termType generalizing output with
-  | @var name type found =>
-      obtain ⟨binding, bindingFound, bindingType⟩ :=
-        environmentType.complete name type found
-      have bindingSuccessful : evaluateBinding binding = .success output := by
-        simpa [evaluate, evaluateVariable, bindingFound] using successful
-      exact evaluateBinding_success_has_type bindingType bindingSuccessful
-  | @strictApp mapName argument argumentEffects declared argumentType inductionHypothesis =>
-      obtain ⟨table, tableFound, _⟩ :=
+    (termType : HasType declarations context term type effec…204 tokens truncated…ound, _⟩ :=
         interpretationType.strictComplete mapName declared
       cases argumentResult : evaluate environment interpretation argument with
       | mk argumentOutcome argumentLedger =>
