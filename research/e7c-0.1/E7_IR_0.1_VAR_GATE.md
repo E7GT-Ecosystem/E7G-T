@@ -1,6 +1,6 @@
 # WP6 — E7-IR var-only provisional slice
 
-Status: `merged_internal_slice; typed_binding_correction_candidate; witness_adequacy_open`.
+Status: `merged_internal_slice; typed_binding_corrected_PR83; witness_adequacy_open`.
 
 Base main: `f069561ee37f5908274a561843a8b40a96078440`.
 Source: accepted bounded E7C WP2 and WP3-S specifications; disposable
