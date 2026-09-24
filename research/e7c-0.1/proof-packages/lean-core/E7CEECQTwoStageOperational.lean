@@ -198,13 +198,13 @@ theorem zero_steps_never_traverse (rs : List Row) (first second : Policy)
     (run rs first second ⟨0, capacity⟩).orderedLedger = [] ∧
     (run rs first second ⟨0, capacity⟩).terminal =
       .resourceLimit ⟨0, [], none, []⟩ := by
-  rfl
+  constructor <;> rfl
 
 theorem failed_first_append_consumes_step (rs : List Row) (first second : Policy)
     (fuel : Nat) :
     (run rs first second ⟨fuel + 1, 0⟩).orderedLedger = [] ∧
     (run rs first second ⟨fuel + 1, 0⟩).terminal =
       .resourceLimit ⟨1, [], none, []⟩ := by
-  rfl
+  constructor <;> rfl
 
 end E7CEECQTwoStageOperational
