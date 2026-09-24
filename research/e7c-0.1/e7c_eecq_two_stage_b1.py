@@ -66,9 +66,15 @@ def admit(source):
 
 
 def conserves(original, retained, first_excluded, second_excluded):
-    """Exact key-and-coefficient three-way partition; no marginal arithmetic."""
+    """Exact three-way partition with the declared predicate route for each row."""
     parts = (retained, first_excluded, second_excluded)
     if any(type(part) is not list for part in parts):
+        return False
+    if (any("AB" in row["atoms"][0]["edges"] or
+            "BC" in row["atoms"][1]["edges"] for row in retained)
+            or any("AB" not in row["atoms"][0]["edges"] for row in first_excluded)
+            or any("AB" in row["atoms"][0]["edges"] or
+                   "BC" not in row["atoms"][1]["edges"] for row in second_excluded)):
         return False
     keys = [canonical_key(row["atoms"]) for part in parts for row in part]
     return len(keys) == len(set(keys)) and {
