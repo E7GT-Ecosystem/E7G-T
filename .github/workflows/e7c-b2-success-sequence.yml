@@ -6,9 +6,12 @@ on:
       - "research/e7c-0.1/e7c_success_sequence_b2.py"
       - "research/e7c-0.1/e7c_success_sequence_checker_b2.py"
       - "research/e7c-0.1/e7_ir_success_sequence_b2.py"
+      - "research/e7c-0.1/e7_ir_conformance_b2.py"
       - "research/e7c-0.1/test_e7c_success_sequence_b2.py"
       - "research/e7c-0.1/test_e7_ir_success_sequence_b2.py"
+      - "research/e7c-0.1/test_e7_ir_conformance_b2.py"
       - "research/e7c-0.1/fixtures/wp5_ir/success_sequence*.json"
+      - "research/e7c-0.1/fixtures/wp5_ir/ir_conformance_b2_manifest.json"
       - "research/e7c-0.1/E7C_B2_SUCCESS_SEQUENCE_GATE.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - ".github/workflows/e7c-b2-success-sequence.yml"
@@ -26,3 +29,7 @@ jobs:
           python-version: '3.12'
       - name: Success sequence and complete replay
         run: python -m unittest discover -s research/e7c-0.1 -p 'test_*success_sequence_b2.py' -v
+      - name: B1 and B2 cross-slice conformance
+        run: |
+          python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_conformance_b1.py' -v
+          python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_conformance_b2.py' -v
