@@ -12,6 +12,7 @@ lean_lib E7CS1FG3Codec
 lean_lib E7CS1RowsCollect
 lean_lib E7CS1TagRegistry
 lean_lib E7CB2Sequence
+lean_lib E7CB2FiniteBridge
 
 @[default_target]
 lean_lib E7CLeanCore
