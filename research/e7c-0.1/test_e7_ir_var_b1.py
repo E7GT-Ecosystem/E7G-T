@@ -10,6 +10,11 @@ from test_wp3_i import VAR, document
 
 
 class IRVarDifferential(unittest.TestCase):
+    @staticmethod
+    def rebound(ir):
+        ir["id"] = digest({k: v for k, v in ir.items() if k != "id"})
+        return ir
+
     def test_typed_variable_and_precharge_limit_correspondence(self):
         for term in (VAR, {"tag": "var", "name": "terminal_result"}):
             for steps in (0, 1, 2):
@@ -41,6 +46,31 @@ class IRVarDifferential(unittest.TestCase):
         changed["binding"] = {"id": "b", "valid": False}
         with self.assertRaises(IRAdmissionError):
             execute(changed)
+        for bad in ({"id": "unlisted", "valid": True},
+                    {"id": "a", "valid": False, "extra": "different"}):
+            with self.subTest(rebound=bad):
+                changed = self.rebound(copy.deepcopy(ir))
+                changed["binding"] = bad
+                self.rebound(changed)
+                with self.assertRaises(IRAdmissionError):
+                    execute(changed)
+        changed = copy.deepcopy(ir)
+        changed["binding_carriers"] = {}
+        self.rebound(changed)
+        with self.assertRaises(IRAdmissionError):
+            execute(changed)
+        terminal = lower(document({"tag": "var", "name": "terminal_result"}))
+        for malformed in ({"tag": "success", "value": {"id": "unlisted"},
+                           "optional_witness": None},
+                          {"tag": "success", "value": {"id": "a", "valid": True},
+                           "optional_witness": "forged"},
+                          {"tag": "domain_error", "diagnostic": "x", "extra": True}):
+            with self.subTest(malformed=malformed):
+                changed = copy.deepcopy(terminal)
+                changed["binding"] = malformed
+                self.rebound(changed)
+                with self.assertRaises(IRAdmissionError):
+                    execute(changed)
         changed = copy.deepcopy(ir)
         changed["instruction"]["type"] = {"tag": "unknown", "args": []}
         changed["instruction"]["id"] = digest({k: v for k, v in changed["instruction"].items() if k != "id"})
