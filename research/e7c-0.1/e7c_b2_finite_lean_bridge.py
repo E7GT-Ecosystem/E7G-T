@@ -207,13 +207,15 @@ def build():
     diagnostic_codes = {key: i for i, key in enumerate(diagnostics)}
     event_codes = {key: i for i, key in enumerate(events)}
     lines = ["import E7CB2Sequence", "", "/- Generated finite vectors from complete B2/B1/IR replay.",
-             "   Equality here is for the encoded abstract traces only. -/", ""]
+             "   Equality here is for the encoded abstract traces only. -/", "",
+             "namespace E7CB2FiniteBridge", ""]
     for row in rows:
         child = _render_trace(row["child_trace"], value_codes, diagnostic_codes, event_codes)
         tail = _render_trace(row["tail_trace"], value_codes, diagnostic_codes, event_codes)
         target = _render_trace(row["target_trace"], value_codes, diagnostic_codes, event_codes)
-        lines += [f"-- {row['case']}", "example :", f"    E7CB2Sequence.sequence {row['bound']} {child}",
+        lines += [f"theorem vector_{row['case']} :", f"    E7CB2Sequence.sequence {row['bound']} {child}",
                   f"      (fun _ => {tail}) =", f"    {target} := by decide", ""]
+    lines.append("end E7CB2FiniteBridge")
     manifest = {"edition": EDITION, "seed_sha256": hashlib.sha256(raw).hexdigest(),
                 "source_authority": "E7G-T-v0.12.1/RGP2-experimental",
                 "claim": "finite encoded observations, no general Python/Lean theorem",
