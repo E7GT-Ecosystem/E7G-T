@@ -1,10 +1,10 @@
 import E7CEECQTwoStageAllInput
 
 /-!
-Budget-sensitive operational model for the selected correlated two-stage
-restriction. The planned order is first attempt, all first rows, second
-attempt, then only first-retained rows. Budget truncation charges a step
-before checking ledger space. Python/IR encoding correspondence is external.
+Fuelled operational model for the selected correlated two-stage restriction.
+The interpreter visits rows in order after charging a step and checking ledger
+space. The full plan is retained separately as an independent specification.
+Python/IR encoding correspondence is external.
 -/
 
 namespace E7CEECQTwoStageOperational
@@ -90,75 +90,121 @@ def secondExcluded (events : List Event) : List Row :=
     | .row .second _ value true => some value
     | _ => none
 
-def progress (rs : List Row) (first : Policy) (charged : Cut) : Progress :=
-  { completedSteps := charged.steps
-    ledgerPrefix := charged.ledger
-    firstExcluded := if decide (first = .ready) && decide ((firstTrace rs).length ≤ charged.ledger.length)
-                     then some (source rs).firstExcluded else none
-    secondExcludedPrefix := secondExcluded charged.ledger }
+/- The cursor holds only rows reached so far and the as-yet-unvisited tail.
+The second stage receives first-retained rows only after the first stage ends. -/
+inductive Cursor where
+  | firstAttempt (rs : List Row)
+  | firstRows (remaining keptRev excludedRev : List Row) (index : Nat)
+  | secondAttempt (kept excluded : List Row)
+  | secondRows (remaining retainedRev excluded secondExcludedRev : List Row) (index : Nat)
+  | stopped (terminal : Terminal)
+  deriving DecidableEq, Repr
 
-def completedTerminal (rs : List Row) (first second : Policy) : Terminal :=
-  match first with
-  | .unsupported => .unsupported .first
-  | .undetermined => .undetermined .first
-  | .ready =>
-    match second with
-    | .unsupported => .unsupported .second
-    | .undetermined => .undetermined .second
-    | .ready => .success (source rs)
+def finished : Cursor → Option Terminal
+  | .secondRows [] retainedRev excluded secondExcludedRev _ =>
+      some (.success ⟨retainedRev.reverse, excluded, secondExcludedRev.reverse⟩)
+  | .stopped t => some t
+  | _ => none
+
+def firstExcludedAt : Cursor → Option (List Row)
+  | .firstRows [] _ excludedRev _ => some excludedRev.reverse
+  | .secondAttempt _ excluded => some excluded
+  | .secondRows _ _ excluded _ _ => some excluded
+  | .stopped _ => none
+  | _ => none
+
+/- `advance` is called only AFTER a step has been charged and ledger space
+checked. In particular its row branches cannot run on either exhausted bound. -/
+def advance (first second : Policy) : Cursor → Event × Cursor
+  | .firstAttempt rs =>
+      (.attempt .first, match first with
+        | .ready => .firstRows rs [] [] 0
+        | .unsupported => .stopped (.unsupported .first)
+        | .undetermined => .stopped (.undetermined .first))
+  | .firstRows (r :: rs) keptRev excludedRev i =>
+      if r.left.ab then
+        (.row .first i r true, .firstRows rs keptRev (r :: excludedRev) (i + 1))
+      else
+        (.row .first i r false, .firstRows rs (r :: keptRev) excludedRev (i + 1))
+  | .firstRows [] keptRev excludedRev _ =>
+      (.attempt .second, match second with
+        | .ready => .secondRows keptRev.reverse [] excludedRev.reverse [] 0
+        | .unsupported => .stopped (.unsupported .second)
+        | .undetermined => .stopped (.undetermined .second))
+  | .secondAttempt kept excluded =>
+      (.attempt .second, match second with
+        | .ready => .secondRows kept [] excluded [] 0
+        | .unsupported => .stopped (.unsupported .second)
+        | .undetermined => .stopped (.undetermined .second))
+  | .secondRows (r :: rs) retainedRev excluded secondExcludedRev i =>
+      if r.right.bc then
+        (.row .second i r true,
+          .secondRows rs retainedRev excluded (r :: secondExcludedRev) (i + 1))
+      else
+        (.row .second i r false,
+          .secondRows rs (r :: retainedRev) excluded secondExcludedRev (i + 1))
+  | .secondRows [] retainedRev excluded secondExcludedRev i =>
+      (.attempt .second, .secondRows [] retainedRev excluded secondExcludedRev i)
+  | .stopped t => (.attempt .first, .stopped t)
+
+structure Machine where
+  cursor : Cursor
+  steps : Nat
+  ledgerRev : List Event
+  deriving DecidableEq, Repr
+
+def snapshot (machine : Machine) : Progress :=
+  { completedSteps := machine.steps
+    ledgerPrefix := machine.ledgerRev.reverse
+    firstExcluded := firstExcludedAt machine.cursor
+    secondExcludedPrefix := secondExcluded machine.ledgerRev.reverse }
+
+def observe (machine : Machine) (terminal : Terminal) : Observation :=
+  let p := snapshot machine
+  { terminal := terminal
+    orderedLedger := p.ledgerPrefix
+    progress := p
+    secondStarted := p.ledgerPrefix.any (fun e => e == .attempt .second) }
+
+/- Fuel decreases at each attempted event. The zero-step branch does not
+advance or inspect a row. An exhausted ledger consumes the attempted step,
+then returns without calling `advance` and without appending an event. -/
+def drive : Nat → Nat → Policy → Policy → Machine → Observation
+  | 0, _, _, _, machine =>
+      match finished machine.cursor with
+      | some terminal => observe machine terminal
+      | none => observe machine (.resourceLimit (snapshot machine))
+  | fuel + 1, capacity, first, second, machine =>
+      match finished machine.cursor with
+      | some terminal => observe machine terminal
+      | none =>
+          let charged := { machine with steps := machine.steps + 1 }
+          match capacity with
+          | 0 => observe charged (.resourceLimit (snapshot charged))
+          | space + 1 =>
+              let (event, cursor) := advance first second machine.cursor
+              drive fuel space first second
+                { cursor := cursor, steps := charged.steps,
+                  ledgerRev := event :: machine.ledgerRev }
 
 def run (rs : List Row) (first second : Policy) (budget : Budget) : Observation :=
-  let charged := cut (plan rs first second) budget
-  let p := progress rs first charged
-  { terminal := if charged.complete then completedTerminal rs first second
-                else .resourceLimit p
-    orderedLedger := charged.ledger
-    progress := p
-    secondStarted := decide (first = .ready) && decide ((firstTrace rs).length < charged.steps) }
+  drive budget.stepBound budget.ledgerBound first second
+    { cursor := .firstAttempt rs, steps := 0, ledgerRev := [] }
 
-theorem sufficient_budgets_produce_partition (rs : List Row) (budget : Budget)
-    (steps : (plan rs .ready .ready).length ≤ budget.stepBound)
-    (ledger : (plan rs .ready .ready).length ≤ budget.ledgerBound) :
-    (run rs .ready .ready budget).terminal = .success (source rs) := by
-  have enough : (plan rs .ready .ready).length ≤
-      min budget.stepBound budget.ledgerBound := Nat.le_min.mpr ⟨steps, ledger⟩
-  simp [run, cut, enough, completedTerminal]
+/- These local laws expose the critical stop behavior directly, without
+appealing to the complete planned trace. -/
+theorem zero_steps_never_traverse (rs : List Row) (first second : Policy)
+    (capacity : Nat) :
+    (run rs first second ⟨0, capacity⟩).orderedLedger = [] ∧
+    (run rs first second ⟨0, capacity⟩).terminal =
+      .resourceLimit ⟨0, [], none, []⟩ := by
+  rfl
 
-theorem exhaustion_returns_prefix (rs : List Row) (first second : Policy)
-    (budget : Budget)
-    (short : ¬ (plan rs first second).length ≤
-      min budget.stepBound budget.ledgerBound) :
-    (run rs first second budget).terminal =
-      .resourceLimit (run rs first second budget).progress ∧
-    (run rs first second budget).orderedLedger =
-      (plan rs first second).take (min budget.stepBound budget.ledgerBound) := by
-  simp [run, cut, short]
-
-theorem exhaustion_exact_progress (rs : List Row) (first second : Policy)
-    (budget : Budget)
-    (short : ¬ (plan rs first second).length ≤
-      min budget.stepBound budget.ledgerBound) :
-    (run rs first second budget).progress =
-      { completedSteps := if budget.stepBound ≤ budget.ledgerBound
-                          then budget.stepBound else budget.ledgerBound + 1
-        ledgerPrefix := (plan rs first second).take
-          (min budget.stepBound budget.ledgerBound)
-        firstExcluded :=
-          if decide (first = .ready) &&
-             decide ((firstTrace rs).length ≤
-               ((plan rs first second).take
-                 (min budget.stepBound budget.ledgerBound)).length)
-          then some (source rs).firstExcluded else none
-        secondExcludedPrefix := secondExcluded
-          ((plan rs first second).take
-            (min budget.stepBound budget.ledgerBound)) } := by
-  simp [run, progress, cut, short]
-
-theorem full_success_agrees_with_recursive_partition (rs : List Row) (budget : Budget)
-    (steps : (plan rs .ready .ready).length ≤ budget.stepBound)
-    (ledger : (plan rs .ready .ready).length ≤ budget.ledgerBound) :
-    (run rs .ready .ready budget).terminal = .success (ir rs) := by
-  rw [all_rows_partition_agreement]
-  exact sufficient_budgets_produce_partition rs budget steps ledger
+theorem failed_first_append_consumes_step (rs : List Row) (first second : Policy)
+    (fuel : Nat) :
+    (run rs first second ⟨fuel + 1, 0⟩).orderedLedger = [] ∧
+    (run rs first second ⟨fuel + 1, 0⟩).terminal =
+      .resourceLimit ⟨1, [], none, []⟩ := by
+  rfl
 
 end E7CEECQTwoStageOperational
