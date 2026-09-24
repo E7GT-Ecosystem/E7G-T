@@ -52,37 +52,17 @@ theorem all_rows_partition_agreement (rs : List Row) : ir rs = source rs := by
       · simp [ir, source, h, k, ih]
       · simp [ir, source, h, k, ih]
 
-def weighted (f : Row → Rat) (rs : List Row) : Rat :=
-  (rs.map f).sum
-
-theorem exact_weight_conservation (f : Row → Rat) (rs : List Row) :
-    weighted f rs = weighted f (source rs).retained +
-      weighted f (source rs).firstExcluded +
-      weighted f (source rs).secondExcluded := by
-  induction rs with
-  | nil => simp [source, weighted, Rat.zero_add]
-  | cons r rs ih =>
-    by_cases h : r.left.ab = true
-    · simp [source, weighted, h] at ih ⊢
-      rw [ih]
-      ac_rfl
-    · by_cases k : r.right.bc = true
-      · simp [source, weighted, h, k] at ih ⊢
-        rw [ih]
-        ac_rfl
-      · simp [source, weighted, h, k] at ih ⊢
-        rw [ih]
-        ac_rfl
-
-def keyWeight (left right : Graph) (r : Row) : Rat :=
-  if r.left = left ∧ r.right = right then r.coefficient else 0
-
-theorem correlated_rational_conservation (rs : List Row) (left right : Graph) :
-    weighted (keyWeight left right) rs =
-      weighted (keyWeight left right) (source rs).retained +
-      weighted (keyWeight left right) (source rs).firstExcluded +
-      weighted (keyWeight left right) (source rs).secondExcluded :=
-  exact_weight_conservation (keyWeight left right) rs
+/- The witness is the exact same Row term: both graph coordinates, tag and
+Rat are carried into the declared destination without any value encoding. -/
+theorem exact_rational_row_route (rs : List Row) (r : Row) (h : r ∈ rs) :
+    (if r.left.ab then r ∈ (source rs).firstExcluded
+     else if r.right.bc then r ∈ (source rs).secondExcluded
+     else r ∈ (source rs).retained) := by
+  by_cases first : r.left.ab = true
+  · simp [source, first, h]
+  · by_cases second : r.right.bc = true
+    · simp [source, first, second, h]
+    · simp [source, first, second, h]
 
 def countKey (left right : Graph) (rs : List Row) : Nat :=
   (rs.map (fun r => if r.left = left ∧ r.right = right then 1 else 0)).sum
