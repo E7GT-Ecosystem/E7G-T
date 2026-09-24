@@ -207,4 +207,26 @@ theorem failed_first_append_consumes_step (rs : List Row) (first second : Policy
       .resourceLimit ⟨1, [], none, []⟩ := by
   constructor <;> rfl
 
+/- Adversarial executable controls exercise stops on both stages. These are
+finite checks, not the missing all-list refinement theorem. -/
+private def sampleGraph (ab bc : Bool) : Graph :=
+  ⟨ab, false, bc, none⟩
+
+private def sampleRow : Row :=
+  ⟨sampleGraph false false, sampleGraph false false, 1⟩
+
+example : (run [sampleRow] .ready .ready ⟨10, 1⟩).terminal =
+    .resourceLimit ⟨2, [.attempt .first], none, []⟩ := by decide
+
+example : (run [sampleRow] .ready .ready ⟨10, 3⟩).terminal =
+    .resourceLimit ⟨4,
+      [.attempt .first, .row .first 0 sampleRow false, .attempt .second],
+      some [], []⟩ := by decide
+
+example : (run [sampleRow] .ready .ready ⟨4, 4⟩).terminal =
+    .success (source [sampleRow]) := by decide
+
+example : (run [sampleRow] .ready .unsupported ⟨3, 3⟩).progress.firstExcluded =
+    some [] := by decide
+
 end E7CEECQTwoStageOperational
