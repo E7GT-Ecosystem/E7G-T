@@ -1,8 +1,9 @@
 # E7C-B2/0.1 — explicit success-only sequence candidate
 
-Status: `draft_review_candidate; owner_authorized_for_research_implementation`.
+Status: `merged_provisional_research; owner_authorized_for_research_implementation`.
 Base: PR #90 merge `5ecd397a07c8ca940d803cdb03f570b6dd7a4530`.
-Branch: `codex/e7c-success-sequence`; exact review head in PR metadata.
+PR #91 merged as `a1f253e1dd4841adff3c8442a1629e1cf704708e`;
+exact reviewed head in PR metadata.
 Source edition: `E7C-B2/0.1-success-sequence-provisional`.
 IR edition: `E7-IR/0.3-success-sequence-B2-provisional`.
 
@@ -56,6 +57,13 @@ Tests cover both continuations, three admitted input configurations, five
 step budgets, four ledger budgets and four capability/obligation conditions
 (480 comparisons in each source and IR suite), exact replay, a conventional
 finite map baseline, changed identities and a mismatched intermediate type.
+
+The subsequent cross-edition conformance manifest binds the B1 manifest and
+six selected B2 observations: success, first-map unsupported, first-map
+undetermined, continuation domain error, step limit and ledger limit. Each
+row is regenerated from complete source/IR replay and checks effects,
+ordered entries, bounds and terminal correspondence. These are finite
+observations, not a proof of all lowering or independent external review.
 
 Reproduce:
 
