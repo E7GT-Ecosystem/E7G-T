@@ -5,7 +5,9 @@ on:
     paths:
       - "research/e7c-0.1/e7c_strict_first_b3.py"
       - "research/e7c-0.1/e7c_strict_first_checker_b3.py"
+      - "research/e7c-0.1/e7_ir_strict_first_b3.py"
       - "research/e7c-0.1/test_e7c_strict_first_b3.py"
+      - "research/e7c-0.1/test_e7_ir_strict_first_b3.py"
       - "research/e7c-0.1/fixtures/wp5_ir/strict_first*.json"
       - "research/e7c-0.1/E7C_B3_STRICT_FIRST_RULES.md"
       - ".github/workflows/e7c-b3-strict-first.yml"
@@ -23,6 +25,8 @@ jobs:
           python-version: '3.12'
       - name: B3 finite construction and independent replay
         run: python -m unittest discover -s research/e7c-0.1 -p 'test_e7c_strict_first_b3.py' -v
+      - name: B3 typed IR differential
+        run: python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_strict_first_b3.py' -v
       - name: B1 and B2 regression
         run: |
           python -m unittest discover -s research/e7c-0.1 -p 'test_e7c_success_sequence_b2.py' -v
