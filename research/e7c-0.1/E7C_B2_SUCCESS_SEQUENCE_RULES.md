@@ -111,6 +111,9 @@ definition. The module does not model B1 admission,
 map interpretation, ledger capacity, a well-formed residual-budget child,
 Python witness replay or source/IR adequacy. It is therefore a bounded
 sub-lemma toward B2-T05, which remains open for the actual E7C-B2 relation.
+The separate finite B1/B2/IR-to-Lean vector package relates 13 complete
+selected executions to this abstract model after an explicit, lossy trace
+encoding. See `E7C_B2_FINITE_LEAN_BRIDGE.md`. It supplies no universal bridge.
 
 The admitted source and IR editions are new. B1 typing/evaluation, witness
 format and published canonical material do not migrate. All existing product

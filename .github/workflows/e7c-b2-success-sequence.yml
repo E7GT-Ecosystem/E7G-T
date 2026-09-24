@@ -7,13 +7,17 @@ on:
       - "research/e7c-0.1/e7c_success_sequence_checker_b2.py"
       - "research/e7c-0.1/e7_ir_success_sequence_b2.py"
       - "research/e7c-0.1/e7_ir_conformance_b2.py"
+      - "research/e7c-0.1/e7c_b2_finite_lean_bridge.py"
       - "research/e7c-0.1/test_e7c_success_sequence_b2.py"
       - "research/e7c-0.1/test_e7_ir_success_sequence_b2.py"
       - "research/e7c-0.1/test_e7_ir_conformance_b2.py"
+      - "research/e7c-0.1/test_e7c_b2_finite_lean_bridge.py"
       - "research/e7c-0.1/fixtures/wp5_ir/success_sequence*.json"
       - "research/e7c-0.1/fixtures/wp5_ir/ir_conformance_b2_manifest.json"
+      - "research/e7c-0.1/fixtures/wp5_ir/b2_lean_finite_bridge.json"
       - "research/e7c-0.1/E7C_B2_SUCCESS_SEQUENCE_GATE.md"
       - "research/e7c-0.1/E7C_B2_SUCCESS_SEQUENCE_RULES.md"
+      - "research/e7c-0.1/E7C_B2_FINITE_LEAN_BRIDGE.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - ".github/workflows/e7c-b2-success-sequence.yml"
 
@@ -34,3 +38,5 @@ jobs:
         run: |
           python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_conformance_b1.py' -v
           python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_conformance_b2.py' -v
+      - name: Finite B2 B1 IR Lean vector binding
+        run: python -m unittest discover -s research/e7c-0.1 -p 'test_e7c_b2_finite_lean_bridge.py' -v
