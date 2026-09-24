@@ -86,28 +86,4 @@ theorem all_key_occurrences_conserved (rs : List Row) (left right : Graph) :
         rw [ih]
         ac_rfl
 
-structure Observation where
-  partition : Partition
-  checkedRows : List Row
-  completedSteps : Nat
-  completedLedgerEntries : Nat
-  deriving DecidableEq, Repr
-
-def sourceObservation (rs : List Row) : Observation :=
-  ⟨source rs, rs, rs.length + 1, rs.length + 1⟩
-
-def irObservation (rs : List Row) : Observation :=
-  ⟨ir rs, rs, rs.length + 1, rs.length + 1⟩
-
-/- The first successful restriction has already returned its exact retained
-rows. One second attempt plus a row event for every retained row fits the
-remaining step and ledger budgets. The real first-stage resource counts and
-ledger prefix are premises of the external lowering bridge. -/
-theorem sufficient_resource_observation_agreement (rs : List Row)
-    (remainingSteps remainingLedger : Nat)
-    (_steps : rs.length + 1 ≤ remainingSteps)
-    (_ledger : rs.length + 1 ≤ remainingLedger) :
-    irObservation rs = sourceObservation rs := by
-  simp [irObservation, sourceObservation, all_rows_partition_agreement]
-
 end E7CEECQTwoStageAllInput
