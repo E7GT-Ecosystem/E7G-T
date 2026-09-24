@@ -104,6 +104,17 @@ def restrict_absent(edge: str, source: State) -> tuple[State, State]:
     return collect(retained), collect(excluded)
 
 
+def restrict_joint_absent(edge: str, coordinate: int, source: Joint) -> tuple[Joint, Joint]:
+    """Partition authoritative joint rows without factorising or renormalising."""
+    if (type(edge) is not str or edge not in {"AB", "AC", "BC"}
+            or type(source) is not Joint or type(coordinate) is not int
+            or not 0 <= coordinate < source.arity):
+        raise AdmissionError("registered edge, coordinate and typed joint required")
+    retained = [(c, atoms) for atoms, c in source.terms if edge not in atoms[coordinate].edges]
+    excluded = [(c, atoms) for atoms, c in source.terms if edge in atoms[coordinate].edges]
+    return joint(retained, arity=source.arity), joint(excluded, arity=source.arity)
+
+
 def joint_signature(source: Joint) -> tuple[tuple[tuple[Any, ...], int, int], ...]:
     return tuple((tuple(atom.identity() for atom in atoms), c.numerator, c.denominator)
                  for atoms, c in source.terms)
