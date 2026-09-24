@@ -91,6 +91,18 @@ class SuccessSequence(unittest.TestCase):
         with self.assertRaises(SequenceAdmissionError):
             admit(bad)
 
+    def test_zero_step_has_no_child_and_rejects_rebound_child(self):
+        result = evaluate_sequence(document(steps=0))
+        self.assertEqual(result["terminal_outcome"]["tag"], "resource_limit")
+        self.assertEqual(result["resource_progress"]["completed_steps"], 0)
+        self.assertEqual(result["ordered_ledger"], [])
+        self.assertIsNone(result["witness"]["child_witness"])
+        self.assertEqual(check_sequence(result["witness"])["status"], "accepted")
+        altered = copy.deepcopy(result["witness"])
+        altered["child_witness"] = json.loads(FIXTURE.read_bytes())["witness"]["child_witness"]
+        altered["id"] = digest({k: v for k, v in altered.items() if k != "id"})
+        self.assertEqual(check_sequence(altered)["status"], "rejected")
+
 
 if __name__ == "__main__":
     unittest.main()
