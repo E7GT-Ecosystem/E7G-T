@@ -10,6 +10,8 @@ IR edition: `E7-IR/0.3-success-sequence-B2-provisional`.
 The explicit selected static, charge, propagation and observation rules are
 recorded in `E7C_B2_SUCCESS_SEQUENCE_RULES.md`, with six separately named
 proof obligations. They remain provisional and are not a general binder.
+An abstract Lean trace module isolates the no-continuation-on-failure branch;
+its proof does not establish correspondence to Python or close B2-T05.
 
 ## Rule and scope
 
