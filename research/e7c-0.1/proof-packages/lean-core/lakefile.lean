@@ -13,6 +13,7 @@ lean_lib E7CS1RowsCollect
 lean_lib E7CS1TagRegistry
 lean_lib E7CB2Sequence
 lean_lib E7CB2FiniteBridge
+lean_lib E7CEECQTwoStageBridge
 
 @[default_target]
 lean_lib E7CLeanCore

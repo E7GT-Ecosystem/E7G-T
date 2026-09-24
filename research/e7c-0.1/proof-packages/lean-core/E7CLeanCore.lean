@@ -7,6 +7,7 @@ import E7CS1RowsCollect
 import E7CS1TagRegistry
 import E7CB2Sequence
 import E7CB2FiniteBridge
+import E7CEECQTwoStageBridge
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
