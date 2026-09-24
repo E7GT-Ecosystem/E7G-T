@@ -103,8 +103,11 @@ preservation, ledger soundness or lowering adequacy for all admitted inputs.
 The separate Lean module `E7CB2Sequence.lean` models an *abstract trace
 algebra* in which a B1 child trace is already available. It proves, by
 reduction of its clauses, zero-bound child independence and exact
-non-success payload/ledger preservation for selected tags. These are local
-lemmas about the Lean definition. The module does not model B1 admission,
+non-success payload/ledger preservation for selected tags. It additionally
+shows that a successful child with remaining budget appends the continuation
+trace and charges its entry step, while an exhausted bound returns a resource
+limit before the continuation. These are local lemmas about the Lean
+definition. The module does not model B1 admission,
 map interpretation, ledger capacity, a well-formed residual-budget child,
 Python witness replay or source/IR adequacy. It is therefore a bounded
 sub-lemma toward B2-T05, which remains open for the actual E7C-B2 relation.
