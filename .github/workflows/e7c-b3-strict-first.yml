@@ -1,0 +1,29 @@
+name: E7C B3 strict first success sequence
+
+on:
+  pull_request:
+    paths:
+      - "research/e7c-0.1/e7c_strict_first_b3.py"
+      - "research/e7c-0.1/e7c_strict_first_checker_b3.py"
+      - "research/e7c-0.1/test_e7c_strict_first_b3.py"
+      - "research/e7c-0.1/fixtures/wp5_ir/strict_first*.json"
+      - "research/e7c-0.1/E7C_B3_STRICT_FIRST_RULES.md"
+      - ".github/workflows/e7c-b3-strict-first.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: B3 finite construction and independent replay
+        run: python -m unittest discover -s research/e7c-0.1 -p 'test_e7c_strict_first_b3.py' -v
+      - name: B1 and B2 regression
+        run: |
+          python -m unittest discover -s research/e7c-0.1 -p 'test_e7c_success_sequence_b2.py' -v
+          python -m unittest discover -s research/e7c-0.1 -p 'test_e7_ir_conformance_b2.py' -v
