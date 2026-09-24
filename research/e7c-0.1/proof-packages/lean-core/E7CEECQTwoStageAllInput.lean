@@ -60,16 +60,19 @@ theorem exact_weight_conservation (f : Row → Rat) (rs : List Row) :
       weighted f (source rs).firstExcluded +
       weighted f (source rs).secondExcluded := by
   induction rs with
-  | nil => simp [source, weighted]
+  | nil => simp [source, weighted, Rat.zero_add]
   | cons r rs ih =>
     by_cases h : r.left.ab = true
     · simp [source, weighted, h] at ih ⊢
-      simpa [add_assoc, add_comm, add_left_comm] using ih
+      rw [ih]
+      ac_rfl
     · by_cases k : r.right.bc = true
       · simp [source, weighted, h, k] at ih ⊢
-        simpa [add_assoc, add_comm, add_left_comm] using ih
+        rw [ih]
+        ac_rfl
       · simp [source, weighted, h, k] at ih ⊢
-        simpa [add_assoc, add_comm, add_left_comm] using ih
+        rw [ih]
+        ac_rfl
 
 def keyWeight (left right : Graph) (r : Row) : Rat :=
   if r.left = left ∧ r.right = right then r.coefficient else 0
@@ -82,7 +85,7 @@ theorem correlated_rational_conservation (rs : List Row) (left right : Graph) :
   exact_weight_conservation (keyWeight left right) rs
 
 def countKey (left right : Graph) (rs : List Row) : Nat :=
-  (rs.filter (fun r => decide (r.left = left ∧ r.right = right))).length
+  (rs.map (fun r => if r.left = left ∧ r.right = right then 1 else 0)).sum
 
 theorem all_key_occurrences_conserved (rs : List Row) (left right : Graph) :
     countKey left right rs = countKey left right (source rs).retained +
@@ -93,12 +96,15 @@ theorem all_key_occurrences_conserved (rs : List Row) (left right : Graph) :
   | cons r rs ih =>
     by_cases h : r.left.ab = true
     · simp [source, countKey, h] at ih ⊢
-      simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using ih
+      rw [ih]
+      ac_rfl
     · by_cases k : r.right.bc = true
       · simp [source, countKey, h, k] at ih ⊢
-        simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using ih
+        rw [ih]
+        ac_rfl
       · simp [source, countKey, h, k] at ih ⊢
-        simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using ih
+        rw [ih]
+        ac_rfl
 
 structure Observation where
   partition : Partition
