@@ -100,6 +100,15 @@ preservation, ledger soundness or lowering adequacy for all admitted inputs.
 | B2-T05 short circuit | A non-success first outcome adds no continuation charge or entry | Bounded tests; proof open |
 | B2-T06 replay/IR adequacy | Independent checker accepts exactly valid derivations and IR preserves whole observations | Finite differential only; proof open |
 
+The separate Lean module `E7CB2Sequence.lean` models an *abstract trace
+algebra* in which a B1 child trace is already available. It proves, by
+reduction of its clauses, zero-bound child independence and exact
+non-success payload/ledger preservation for selected tags. These are local
+lemmas about the Lean definition. The module does not model B1 admission,
+map interpretation, ledger capacity, a well-formed residual-budget child,
+Python witness replay or source/IR adequacy. It is therefore a bounded
+sub-lemma toward B2-T05, which remains open for the actual E7C-B2 relation.
+
 The admitted source and IR editions are new. B1 typing/evaluation, witness
 format and published canonical material do not migrate. All existing product
 IDs, schemas, data and APIs retain their meanings. A general binder, broader
