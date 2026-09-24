@@ -69,4 +69,5 @@ theorem vector_continuation_undetermined :
     E7CB2Sequence.sequence 20 ({ exit := .success 0, steps := 2, ledger := [2] } : E7CB2Sequence.Trace Nat)
       (fun _ => ({ exit := .undetermined 0, steps := 0, ledger := [0, 1] } : E7CB2Sequence.Trace Nat)) =
     ({ exit := .undetermined 0, steps := 4, ledger := [2, 0, 1] } : E7CB2Sequence.Trace Nat) := by decide
+
 end E7CB2FiniteBridge
