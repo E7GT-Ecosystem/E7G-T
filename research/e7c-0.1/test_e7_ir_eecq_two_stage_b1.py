@@ -128,6 +128,11 @@ class TwoStageJoint(unittest.TestCase):
                     {"first_excluded": []}),
                 lambda p: p["source_witness"]["claim"]["terminal_outcome"]["value"].update(
                     {"second_excluded": []}),
+                lambda p: p["source_witness"]["claim"]["terminal_outcome"]["value"].update({
+                    "first_excluded": copy.deepcopy(
+                        p["source_witness"]["claim"]["terminal_outcome"]["value"]["second_excluded"]),
+                    "second_excluded": copy.deepcopy(
+                        p["source_witness"]["claim"]["terminal_outcome"]["value"]["first_excluded"])}),
                 lambda p: p["source_witness"]["claim"]["terminal_outcome"].update(
                     {"tag": "resource_limit"}),
                 lambda p: p["instruction"].update({"fields": ["retained"]}),
@@ -146,6 +151,8 @@ class TwoStageJoint(unittest.TestCase):
                                    result["second_excluded"]))
         self.assertFalse(conserves(original, result["retained"] + result["retained"],
                                    result["first_excluded"], result["second_excluded"]))
+        self.assertFalse(conserves(original, result["retained"], result["second_excluded"],
+                                   result["first_excluded"]))
         malformed = document(selected(), step_bound=0)
         malformed["first"]["rows"][-1]["atoms"][0]["edges"] = ["invalid"]
         with self.assertRaises(TwoStageAdmission):
