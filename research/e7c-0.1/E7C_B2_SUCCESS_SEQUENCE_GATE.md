@@ -7,6 +7,10 @@ exact reviewed head in PR metadata.
 Source edition: `E7C-B2/0.1-success-sequence-provisional`.
 IR edition: `E7-IR/0.3-success-sequence-B2-provisional`.
 
+The explicit selected static, charge, propagation and observation rules are
+recorded in `E7C_B2_SUCCESS_SEQUENCE_RULES.md`, with six separately named
+proof obligations. They remain provisional and are not a general binder.
+
 ## Rule and scope
 
 The opt-in term is `sequence_success(first, then_map)`. This first bounded
