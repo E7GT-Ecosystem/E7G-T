@@ -96,4 +96,24 @@ theorem undetermined_preserves_payload_and_prefix {α β : Type}
       { exit := .undetermined diagnostic, steps := 1 + steps, ledger := ledger } := by
   rfl
 
+theorem success_trace_appends_continuation {α β : Type}
+    (bound steps : Nat) (value : α) (ledger : List Nat)
+    (continuation : α → Trace β)
+    (nonzero : bound ≠ 0) (room : ¬ 1 + steps >= bound) :
+    sequence bound
+        { exit := .success value, steps := steps, ledger := ledger } continuation =
+      { exit := (continuation value).exit,
+        steps := 2 + steps + (continuation value).steps,
+        ledger := ledger ++ (continuation value).ledger } := by
+  simp [sequence, nonzero, room]
+
+theorem success_without_continuation_step_is_resource_limit {α β : Type}
+    (bound steps : Nat) (value : α) (ledger : List Nat)
+    (continuation : α → Trace β)
+    (nonzero : bound ≠ 0) (exhausted : 1 + steps >= bound) :
+    sequence bound
+        { exit := .success value, steps := steps, ledger := ledger } continuation =
+      { exit := .resourceLimit, steps := 1 + steps, ledger := ledger } := by
+  simp [sequence, nonzero, exhausted]
+
 end E7CB2Sequence
