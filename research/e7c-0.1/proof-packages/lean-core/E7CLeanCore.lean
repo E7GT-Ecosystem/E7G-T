@@ -5,6 +5,7 @@ import E7CS1ExactCollect
 import E7CS1FG3Codec
 import E7CS1RowsCollect
 import E7CS1TagRegistry
+import E7CB2Sequence
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.

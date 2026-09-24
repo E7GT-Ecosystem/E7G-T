@@ -11,6 +11,7 @@ lean_lib E7CS1ExactCollect
 lean_lib E7CS1FG3Codec
 lean_lib E7CS1RowsCollect
 lean_lib E7CS1TagRegistry
+lean_lib E7CB2Sequence
 
 @[default_target]
 lean_lib E7CLeanCore
