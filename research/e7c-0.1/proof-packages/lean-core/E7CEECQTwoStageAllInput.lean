@@ -1,8 +1,8 @@
 /-!
-All-list conservation and sufficient-resource agreement for the selected
-two-stage correlated Joint rule. The pair of complete FG3 graphs and exact
-rational coefficient remain in each row. This is a Lean model relation;
-Python admission, its resource machine, and IR decoding need separate bridges.
+All-list partition and exact-row conservation for the selected two-stage
+correlated Joint rule. The pair of complete FG3 graphs and exact rational
+coefficient remain in each row. This pure mathematical module contains no
+resource semantics; Python admission and IR decoding need separate bridges.
 -/
 
 namespace E7CEECQTwoStageAllInput
