@@ -18,19 +18,19 @@ def select : List WireRow → List WireRow × List WireRow
   | [] => ([], [])
   | r :: rest =>
       let portions := select rest
-      if r.left.edges.contains "AB" then
+      if decide ("AB" ∈ r.left.edges) then
         (portions.1, r :: portions.2)
       else
         (r :: portions.1, portions.2)
 
 theorem selects_exact_rows (rs : List WireRow) :
     select rs =
-      (rs.filter (fun r => !r.left.edges.contains "AB"),
-       rs.filter (fun r => r.left.edges.contains "AB")) := by
+      (rs.filter (fun r => !decide ("AB" ∈ r.left.edges)),
+       rs.filter (fun r => decide ("AB" ∈ r.left.edges))) := by
   induction rs with
   | nil => rfl
   | cons r rest ih =>
-      cases h : r.left.edges.contains "AB" <;>
+      cases h : decide ("AB" ∈ r.left.edges) <;>
         simp [select, h, ih]
 
 theorem selection_transport (rs : List WireRow) :
