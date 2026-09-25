@@ -132,7 +132,7 @@ theorem wire_plan_simulation (rs : List WireRow) (first second : Policy) :
     wirePlan rs first second = plan (rs.map toRow) first second := by
   cases first <;> cases second <;>
     simp [wirePlan, plan, firstTrace, secondTrace, wire_first_step,
-      wire_second_step, first_predicate_preserved, List.filter_map]
+      wire_second_step, List.filter_map, Function.comp_def]
 
 theorem wire_budgeted_event_simulation (rs : List WireRow)
     (first second : Policy) (budget : Budget) :
