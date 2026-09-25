@@ -13,6 +13,7 @@ import E7CEECQTwoStageOperational
 import E7CEECQTwoStageExactCodec
 import E7CEECQTwoStageImplementationPath
 import E7CMSCObstruction
+import E7CMSCFiniteClosure
 import E7CJointFirstCodeSkeleton
 import E7CJointFirstExecutionRelation
 import E7CJointFirstHelperSelection
