@@ -73,14 +73,14 @@ inductive EvalFirst : List Row → Policy → Nat → Nat → ChildObservation �
 
 theorem first_sound {rs : List Row} {policy : Policy} {fuel capacity : Nat}
     {out : ChildObservation} (h : EvalFirst rs policy fuel capacity out) :
-    run rs policy fuel capacity = out := by
+    E7CJointFirstCodeSkeleton.run rs policy fuel capacity = out := by
   cases h with
   | noStep => rfl
   | noLedger => rfl
   | unsupported => rfl
   | undetermined => rfl
-  | ready _ _ _ _ hrows =>
-      simpa [run] using rows_sound hrows
+  | ready _ _ _ hrows =>
+      simpa [E7CJointFirstCodeSkeleton.run] using rows_sound hrows
 
 /- The explicit helper premise is a statement about a proposed code-to-model
 translation. Nothing here derives it from Python admission or execution. -/
@@ -92,7 +92,7 @@ theorem under_helper_contract {rs : List Row} {policy : Policy}
     {fuel capacity : Nat} {out : ChildObservation}
     (helpers : HelperContract rs)
     (execution : EvalFirst helpers.admittedRows policy fuel capacity out) :
-    run rs policy fuel capacity = out := by
+    E7CJointFirstCodeSkeleton.run rs policy fuel capacity = out := by
   rw [← helpers.preservesOrderAndRationals]
   exact first_sound execution
 
