@@ -99,4 +99,28 @@ theorem sufficient_exact_budget (rs : List Row) :
         (rs.filter (fun r => r.left.ab)) := by
   simpa [run, child] using visit_all rs [] [] 0 1 [.attempt .first]
 
+theorem visit_all_observation (rs keptRev excludedRev : List Row)
+    (index steps : Nat) (ledgerRev : List Event) :
+    visit rs keptRev excludedRev index steps rs.length rs.length ledgerRev =
+      ⟨.complete
+         (keptRev.reverse ++ rs.filter (fun r => !r.left.ab))
+         (excludedRev.reverse ++ rs.filter (fun r => r.left.ab)),
+       ledgerRev.reverse ++ firstRows rs index,
+       steps + rs.length⟩ := by
+  induction rs generalizing keptRev excludedRev index steps ledgerRev with
+  | nil => simp [visit, child, firstRows]
+  | cons r rest ih =>
+      cases h : r.left.ab <;>
+        simp [visit, h, ih, firstRows, List.reverse_cons,
+          List.append_assoc, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
+
+theorem sufficient_exact_observation (rs : List Row) :
+    run rs .ready (rs.length + 1) (rs.length + 1) =
+      ⟨.complete (rs.filter (fun r => !r.left.ab))
+         (rs.filter (fun r => r.left.ab)),
+       .attempt .first :: firstRows rs 0,
+       rs.length + 1⟩ := by
+  simpa [run, child, Nat.add_comm] using
+    visit_all_observation rs [] [] 0 1 [.attempt .first]
+
 end E7CJointFirstCodeSkeleton
