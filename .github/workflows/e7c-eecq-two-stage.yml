@@ -19,6 +19,8 @@ on:
       - "research/e7c-0.1/e7c_eecq_two_stage_transition_site_audit.py"
       - "research/e7c-0.1/test_e7c_eecq_two_stage_transition_site_audit.py"
       - "research/e7c-0.1/e7c_joint_control_flow_pin.py"
+      - "research/e7c-0.1/e7c_joint_first_control_translation.py"
+      - "research/e7c-0.1/test_e7c_joint_first_control_translation.py"
       - "research/e7c-0.1/test_e7c_joint_control_flow_pin.py"
       - "research/e7c-0.1/test_e7c_joint_first_code_boundary.py"
       - "research/e7c-0.1/E7C_0.1_JOINT_ACTUAL_CODE_PROOF_GATE.md"
@@ -51,6 +53,6 @@ jobs:
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_exact_codec -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_transition_certificate -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_transition_site_audit -v
-          PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_joint_control_flow_pin test_e7c_joint_first_code_boundary -v
+          PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_joint_control_flow_pin test_e7c_joint_first_code_boundary test_e7c_joint_first_control_translation -v
       - name: First stage regression
         run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7_ir_eecq_joint_restrict_b1 -v
