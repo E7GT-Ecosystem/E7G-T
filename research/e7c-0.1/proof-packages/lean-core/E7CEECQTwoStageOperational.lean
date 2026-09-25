@@ -768,6 +768,15 @@ theorem run_first_exclusions_exact_when_complete (rs : List Row)
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
         secondStarted := false } (rs.filter (fun r => r.left.ab)) rfl
 
+theorem drive_stopped_no_first (fuel capacity : Nat) (first second : Policy)
+    (terminal : Terminal) (steps : Nat) (ledgerRev : List Event)
+    (started : Bool) :
+    (drive fuel capacity first second
+      { cursor := .stopped terminal none, steps := steps,
+        ledgerRev := ledgerRev, secondStarted := started }).progress.firstExcluded =
+      none := by
+  cases fuel <;> simp [drive, finished, observe, snapshot, firstExcludedAt]
+
 theorem nonready_first_progress (rs : List Row) (first second : Policy)
     (budget : Budget) (h : first ≠ .ready) :
     (run rs first second budget).progress.firstExcluded = none := by
@@ -775,14 +784,28 @@ theorem nonready_first_progress (rs : List Row) (first second : Policy)
   | ready => contradiction
   | unsupported =>
       cases budget with
-      | mk steps ledger => cases steps <;> cases ledger <;>
-        simp [run, drive, finished, advance, observe, snapshot,
-          firstExcludedAt, attemptingSecond]
+      | mk steps ledger =>
+          cases steps with
+          | zero => rfl
+          | succ steps =>
+              cases ledger with
+              | zero => rfl
+              | succ ledger =>
+                  simpa [run, drive, finished, advance, attemptingSecond] using
+                    drive_stopped_no_first steps ledger .unsupported second
+                      (.unsupported .first) 1 [.attempt .first] false
   | undetermined =>
       cases budget with
-      | mk steps ledger => cases steps <;> cases ledger <;>
-        simp [run, drive, finished, advance, observe, snapshot,
-          firstExcludedAt, attemptingSecond]
+      | mk steps ledger =>
+          cases steps with
+          | zero => rfl
+          | succ steps =>
+              cases ledger with
+              | zero => rfl
+              | succ ledger =>
+                  simpa [run, drive, finished, advance, attemptingSecond] using
+                    drive_stopped_no_first steps ledger .undetermined second
+                      (.undetermined .first) 1 [.attempt .first] false
 
 theorem all_stage_first_progress (rs : List Row) (first second : Policy)
     (budget : Budget) :
