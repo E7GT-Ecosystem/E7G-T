@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from e7c_eecq_two_stage_exact_codec import (
     CodecAdmission, LeanEvent, budget, events, observation, policy, rows,
+    staged_spec,
 )
 
 
@@ -38,6 +39,12 @@ def check(source, result, transcript):
     try:
         encoded = rows(source)
         projected = observation(source, result)
+        # A transcript and its terminal claim can be internally consistent
+        # while falsely asserting that stage one finished. Require the entire
+        # typed observation to match the separately traversed rule, including
+        # the cursor, three exact portions, and second-attempt start bit.
+        if projected != staged_spec(source):
+            raise TransitionAdmission("observation does not refine staged rule")
         ledger = events(result, encoded)
         full = expected_events(source)
         step_bound, ledger_bound = budget(source)
@@ -113,3 +120,31 @@ def check(source, result, transcript):
         return projected
     except (CodecAdmission, KeyError, IndexError, TypeError) as exc:
         raise TransitionAdmission("invalid external transition certificate") from exc
+
+
+def certify_both(source):
+    """Build a replayable *instance* certificate for both actual Python paths.
+
+    This executes source and IR separately and preserves each complete
+    transcript. It is not a universal proof about Python control flow or a
+    Lean proof-term checker: those links remain explicit obligations.
+    """
+    from e7c_b1_canonical import digest
+    from e7c_eecq_two_stage_b1 import evaluate
+    from e7_ir_eecq_two_stage_b1 import compare_replay, execute, lower
+
+    source_trace, ir_trace = [], []
+    source_result = evaluate(source, _transition_sink=source_trace.append)
+    package = lower(source)
+    ir_result = execute(package, _transition_sink=ir_trace.append)
+    replayed = compare_replay(package)["ir_result"]
+    source_projection = check(source, source_result, source_trace)
+    ir_projection = check(source, ir_result, ir_trace)
+    if (source_projection != ir_projection or source_trace != ir_trace
+            or source_result["witness"]["claim"] != ir_result
+            or replayed != ir_result):
+        raise TransitionAdmission("source, IR and independent replay disagree")
+    return {"source_digest": digest(source), "source": source,
+            "ir_package": package, "source_result": source_result,
+            "ir_result": ir_result, "source_transcript": source_trace,
+            "ir_transcript": ir_trace, "exact_observation": source_projection}
