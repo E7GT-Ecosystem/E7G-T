@@ -7,8 +7,11 @@ on:
       - 'E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md'
       - 'E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md'
       - 'research/e7c-0.1/E7C_0.1_RGP02_SUCCESSOR_SEMANTIC_GATE.md'
+      - 'research/e7c-0.1/E7C_0.1_RGP02_EXPRESSION_GATE.md'
       - 'research/e7c-0.1/e7c_rgp_successor_audit.py'
       - 'research/e7c-0.1/test_e7c_rgp_successor_audit.py'
+      - 'research/e7c-0.1/adapters/rgp02_expression_b1.py'
+      - 'research/e7c-0.1/adapters/test_rgp02_expression_b1.py'
       - '.github/workflows/e7c-rgp-successor.yml'
   workflow_dispatch:
 
@@ -25,3 +28,4 @@ jobs:
           python-version: '3.12'
       - run: python3 research/e7c-0.1/e7c_rgp_successor_audit.py
       - run: python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_rgp_successor_audit.py' -v
+      - run: python3 -m unittest discover -s research/e7c-0.1/adapters -p 'test_rgp02_expression_b1.py' -v
