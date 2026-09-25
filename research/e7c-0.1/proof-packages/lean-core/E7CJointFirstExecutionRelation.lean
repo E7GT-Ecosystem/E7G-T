@@ -56,6 +56,33 @@ theorem rows_sound {rs kept excluded : List Row} {i steps fuel capacity : Nat}
   | retained _ _ _ _ _ _ _ _ _ _ hp _ ih =>
       simp [visit, hp, ih]
 
+theorem rows_complete (rs kept excluded : List Row)
+    (i steps fuel capacity : Nat) (ledger : List Event) :
+    ∃ out, EvalRows rs kept excluded i steps fuel capacity ledger out := by
+  induction rs generalizing kept excluded i steps fuel capacity ledger with
+  | nil =>
+      exact ⟨_, .done kept excluded i steps fuel capacity ledger⟩
+  | cons r rest ih =>
+      cases fuel with
+      | zero =>
+          exact ⟨_, .noStep r rest kept excluded i steps capacity ledger⟩
+      | succ fuel =>
+          cases capacity with
+          | zero =>
+              exact ⟨_, .noLedger r rest kept excluded i steps fuel ledger⟩
+          | succ capacity =>
+              cases hp : r.left.ab with
+              | true =>
+                  obtain ⟨out, next⟩ := ih kept (r :: excluded) (i + 1)
+                    (steps + 1) fuel capacity (.row .first i r true :: ledger)
+                  exact ⟨out, .excluded r rest kept excluded i steps fuel capacity
+                    ledger out hp next⟩
+              | false =>
+                  obtain ⟨out, next⟩ := ih (r :: kept) excluded (i + 1)
+                    (steps + 1) fuel capacity (.row .first i r false :: ledger)
+                  exact ⟨out, .retained r rest kept excluded i steps fuel capacity
+                    ledger out hp next⟩
+
 inductive EvalFirst : List Row → Policy → Nat → Nat → ChildObservation → Prop where
   | noStep (rs : List Row) (policy : Policy) (capacity : Nat) :
       EvalFirst rs policy 0 capacity (child .resourceLimit [] 0)
@@ -81,6 +108,22 @@ theorem first_sound {rs : List Row} {policy : Policy} {fuel capacity : Nat}
   | undetermined => rfl
   | ready _ _ _ hrows =>
       simpa [E7CJointFirstCodeSkeleton.run] using rows_sound hrows
+
+theorem first_complete (rs : List Row) (policy : Policy)
+    (fuel capacity : Nat) : ∃ out, EvalFirst rs policy fuel capacity out := by
+  cases fuel with
+  | zero => exact ⟨_, .noStep rs policy capacity⟩
+  | succ fuel =>
+      cases capacity with
+      | zero => exact ⟨_, .noLedger rs policy fuel⟩
+      | succ capacity =>
+          cases policy with
+          | unsupported => exact ⟨_, .unsupported rs fuel capacity⟩
+          | undetermined => exact ⟨_, .undetermined rs fuel capacity⟩
+          | ready =>
+              obtain ⟨out, hrows⟩ := rows_complete rs [] [] 0 1 fuel capacity
+                [.attempt .first]
+              exact ⟨out, .ready rs fuel capacity out hrows⟩
 
 /- The explicit helper premise is a statement about a proposed code-to-model
 translation. Nothing here derives it from Python admission or execution. -/
