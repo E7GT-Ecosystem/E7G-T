@@ -63,6 +63,8 @@ theorem signed_null_empty_changed_coefficient_rejected :
       toGraph signedNullEmpty.right, (1 / 7 : Rat)⟩])
       [signedNullEmpty] = none := by
   apply changed_serialized_rows_rejected
-  simp [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph, toGraph]
+  have differentCoefficient : (1 / 7 : Rat) ≠ (-2 / 3 : Rat) := by decide
+  simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
+    toGraph] using differentCoefficient
 
 end E7CJointAdmissionSemantics
