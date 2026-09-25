@@ -10,6 +10,9 @@ on:
       - "research/e7c-0.1/test_e7c_eecq_two_stage_lean_bridge.py"
       - "research/e7c-0.1/test_e7c_eecq_two_stage_all_input.py"
       - "research/e7c-0.1/test_e7c_eecq_two_stage_operational.py"
+      - "research/e7c-0.1/e7c_eecq_two_stage_exact_codec.py"
+      - "research/e7c-0.1/test_e7c_eecq_two_stage_exact_codec.py"
+      - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_EXACT_CODEC_GATE.md"
       - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_ALL_INPUT_GATE.md"
       - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_OPERATIONAL_GATE.md"
       - "research/e7c-0.1/fixtures/wp5_ir/eecq_two_stage*.json"
@@ -33,5 +36,6 @@ jobs:
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_lean_bridge -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_all_input -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_operational -v
+          PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_exact_codec -v
       - name: First stage regression
         run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7_ir_eecq_joint_restrict_b1 -v
