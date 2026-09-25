@@ -40,7 +40,7 @@ def firstTrace (rs : List Row) : List Event :=
   .attempt .first :: firstRows rs 0
 
 def secondTrace (rs : List Row) : List Event :=
-  .attempt .second :: secondRows (source rs).retained 0
+  .attempt .second :: secondRows (rs.filter (fun r => !r.left.ab)) 0
 
 def plan (rs : List Row) (first second : Policy) : List Event :=
   if first ≠ .ready then [.attempt .first]
@@ -199,6 +199,23 @@ theorem future_advance (first second : Policy) (cursor : Cursor)
       | cons r rs => cases h_bc : r.right.bc <;>
           simp [future, secondRows, advance, h_bc]
   | stopped t excluded => simp [finished] at h
+
+theorem futureFirst_agrees_with_plan (second : Policy) (rs keptRev : List Row)
+    (i : Nat) :
+    futureFirst second rs keptRev i = firstRows rs i ++
+      (.attempt .second :: if second = .ready then
+        secondRows (keptRev.reverse ++ rs.filter (fun r => !r.left.ab)) 0
+      else []) := by
+  induction rs generalizing keptRev i with
+  | nil => cases second <;> simp [futureFirst, firstRows]
+  | cons r rs ih =>
+      cases h : r.left.ab <;>
+        simp [futureFirst, firstRows, ih, h, List.reverse_cons, List.append_assoc]
+
+theorem future_start_is_plan (rs : List Row) (first second : Policy) :
+    future first second (.firstAttempt rs) = plan rs first second := by
+  cases first <;> cases second <;>
+    simp [future, plan, firstTrace, secondTrace, futureFirst_agrees_with_plan]
 
 structure Machine where
   cursor : Cursor
