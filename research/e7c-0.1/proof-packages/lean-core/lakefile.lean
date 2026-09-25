@@ -20,6 +20,7 @@ lean_lib E7CEECQTwoStageExactCodec
 lean_lib E7CEECQTwoStageImplementationPath
 lean_lib E7CMSCObstruction
 lean_lib E7CJointFirstCodeSkeleton
+lean_lib E7CJointFirstExecutionRelation
 
 @[default_target]
 lean_lib E7CLeanCore
