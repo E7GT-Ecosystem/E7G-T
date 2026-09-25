@@ -18,7 +18,7 @@ overwritten. See the [successor decision](docs/CANONICAL_SUCCESSOR_DECISION.md).
 
 | Repository path | Role | SHA-256 |
 |---|---|---|
-| `E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md` | Self-contained canonical source | `2ff419f0cb41b9f4af894f4113c61cf7b44a77322594cc14f0f18566a02f990d` |
+| `E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md` | Self-contained canonical source | `5b1e9913cf24b80612f81014b8cc7efc7574d43402a2a188a17daa096c0c621a` |
 | `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md` | Immutable former canonical source, revision RGP2 | `4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1` |
 | `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md` | Immutable RWP1 draft predecessor | `ecade9da08df04d257735d399848ebf2231590cabab8e48fa0b228db3051bdbe` |
 | `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md` | Immutable REC1 draft predecessor | `a64a8d9ecbd417cbe59883e33be7529cb779354b377b3ac261488a2a81cfc43a` |

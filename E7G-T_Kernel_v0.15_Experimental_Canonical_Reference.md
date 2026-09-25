@@ -525,7 +525,7 @@ This JSON record is a complete **FG3** state payload. Its profile fixes the thre
 
 ```json
 {
-  "kernel": "0.13-experimental-draft",
+  "kernel": "0.15-experimental",
   "profile": "EEC-Q/0.1",
   "model": "FG3/0.1",
   "context": "finite labelled graph algebra",
@@ -538,6 +538,10 @@ This JSON record is a complete **FG3** state payload. Its profile fixes the thre
 ```
 
 A general interchange format MUST additionally carry signature and definition editions, canonical semantic payloads or resolvable immutable references, interface declarations, admission constraints, choice dependence, rank information and operation domains. Fractions use reduced numerator/positive-denominator form; floating-point approximations are not interchangeable with exact coefficients.
+
+The example declares the new source edition; it is not a claim that an
+existing FG3 evaluator or E7C IR package admits `0.15-experimental`.
+Edition-specific execution requires its own reviewed adapter.
 
 External references cannot be fetched or executed merely because a glyph names them. Imports require explicit resolution. Rendering metadata and diagnostic logs are separated from semantic identity. Interchange must preserve the exact distinctions that affect canonical collection.
 
