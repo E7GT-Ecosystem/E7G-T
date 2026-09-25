@@ -16,7 +16,7 @@ ENTRY_POINTS = {
     ("e7_ir_eecq_joint_restrict_b1.py", "execute"):
         "2b15481321215e93ab678555944487861448cd633034db38e4ebffa7855aa01c",
     ("e7c_eecq_two_stage_b1.py", "evaluate"):
-        "98587004312e6ff76d8e26e12fa086aa9e55f8ce0368fa2d3eee7bbf48021979",
+        "0929b644631441688400dcb132593e06d23dd22331c4a30305038c3c3788d1b0",
     ("e7_ir_eecq_two_stage_b1.py", "execute"):
         "efbe7c90190ea053c7633af7cbad48fad087e39474f9a851d392e5a38a77992b",
 }
