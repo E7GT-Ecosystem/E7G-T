@@ -7,10 +7,8 @@ excludes coordinate-1 BC rows. This is an opt-in profile edition, not B1 bind.
 from __future__ import annotations
 
 import copy
-from fractions import Fraction
 
-from eec_q_fg3_b1 import Config
-from eec_q_fg3_joint_b1 import joint, restrict_joint_absent
+from eec_q_fg3_joint_b1 import Joint, restrict_joint_absent
 from e7c_b1_canonical import canonical_key, digest, require_canonical_json
 from e7c_eecq_joint_restrict_b1 import (
     EDITION as FIRST_EDITION, EFFECTS as FIRST_EFFECTS,
@@ -135,12 +133,12 @@ def evaluate(source, *, _transition_sink=None):
 
     first_excluded = copy.deepcopy(first["terminal_outcome"]["value"]["excluded"])
     retained_rows = first["terminal_outcome"]["value"]["retained"]
-    # Re-admit the typed intermediate. No marginals or reconstructed products.
-    retained_joint = joint([
-        (Fraction(row["coefficient"]["numerator"], row["coefficient"]["denominator"]),
-         tuple(Config(tuple(g["edges"]), g["tag"]) for g in row["atoms"]))
-        for row in retained_rows
-    ], arity=2)
+    # The admitted source is canonical. Preserve its retained correlated rows
+    # directly, then check the first child actually returned those exact rows.
+    # No marginal product or coefficient re-collection enters stage two.
+    retained_joint = Joint(admitted.arity, tuple(
+        (atoms, coefficient) for atoms, coefficient in admitted.terms
+        if "AB" not in atoms[0].edges))
     if rows(retained_joint) != retained_rows:
         raise TwoStageAdmission("first retained Joint was not preserved")
     if steps >= beta["step_bound"]:
@@ -165,7 +163,7 @@ def evaluate(source, *, _transition_sink=None):
         emit("charge", index=index)
         if len(ledger) >= beta["ledger_bound"]:
             return finish(limit())
-        row = rows(joint([(coefficient, atoms)], arity=2))[0]
+        row = rows(Joint(admitted.arity, ((atoms, coefficient),)))[0]
         decision = "second_excluded" if "BC" in atoms[1].edges else "retained"
         ledger.append({"ordinal": len(ledger), "event": "second_joint_row_checked",
                        "effect": SECOND_EFFECTS[1], "row_index": index,
