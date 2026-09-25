@@ -11,6 +11,7 @@ import E7CEECQTwoStageBridge
 import E7CEECQTwoStageAllInput
 import E7CEECQTwoStageOperational
 import E7CEECQTwoStageExactCodec
+import E7CEECQTwoStageImplementationPath
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.

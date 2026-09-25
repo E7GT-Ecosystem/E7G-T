@@ -17,6 +17,7 @@ lean_lib E7CEECQTwoStageBridge
 lean_lib E7CEECQTwoStageAllInput
 lean_lib E7CEECQTwoStageOperational
 lean_lib E7CEECQTwoStageExactCodec
+lean_lib E7CEECQTwoStageImplementationPath
 
 @[default_target]
 lean_lib E7CLeanCore
