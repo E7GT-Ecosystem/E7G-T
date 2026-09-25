@@ -13,6 +13,7 @@ import E7CEECQTwoStageOperational
 import E7CEECQTwoStageExactCodec
 import E7CEECQTwoStageImplementationPath
 import E7CMSCObstruction
+import E7CJointFirstCodeSkeleton
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
