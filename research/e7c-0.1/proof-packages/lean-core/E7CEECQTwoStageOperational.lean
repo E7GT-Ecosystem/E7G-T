@@ -552,6 +552,46 @@ theorem run_ledger_matches_plan (rs : List Row) (first second : Policy)
     drive_ledger_prefix first second budget.stepBound budget.ledgerBound
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
 
+theorem completed_first_stage_stays_complete (second : Policy)
+    (fuel capacity : Nat) (machine : Machine) (rows : List Row)
+    (h : firstExcludedAt machine.cursor = some rows) :
+    (drive fuel capacity .ready second machine).progress.firstExcluded =
+      some rows := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases hfin : finished machine.cursor <;>
+        simpa [drive, hfin, observe, snapshot] using h
+  | succ fuel ih =>
+      cases hfin : finished machine.cursor with
+      | some terminal => simpa [drive, hfin, observe, snapshot] using h
+      | none =>
+          cases capacity with
+          | zero => simpa [drive, hfin, observe, snapshot] using h
+          | succ capacity =>
+              have next : firstExcludedAt (advance .ready second machine.cursor).2 =
+                  some rows := by
+                cases hc : machine.cursor with
+                | firstAttempt rs => simp [hc, firstExcludedAt] at h
+                | firstRows rs keptRev excludedRev i =>
+                    cases rs with
+                    | nil => cases second <;>
+                        simpa [hc, advance, firstExcludedAt] using h
+                    | cons r rs => simp [hc, firstExcludedAt] at h
+                | secondAttempt kept excluded =>
+                    cases second <;> simpa [hc, advance, firstExcludedAt] using h
+                | secondRows rs retainedRev excluded secondExcludedRev i =>
+                    cases rs with
+                    | nil => simp [hc, finished] at hfin
+                    | cons r rs => cases hbc : r.right.bc <;>
+                        simpa [hc, advance, firstExcludedAt, hbc] using h
+                | stopped terminal excluded => simp [hc, finished] at hfin
+              simpa [drive, hfin] using ih capacity
+                { cursor := (advance .ready second machine.cursor).2,
+                  steps := machine.steps + 1,
+                  ledgerRev := (advance .ready second machine.cursor).1 :: machine.ledgerRev,
+                  secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
+                next
+
 theorem drive_first_exclusions (second : Policy) (fuel capacity : Nat)
     (machine : Machine) (rows : List Row)
     (h : firstExclusionsAt machine.cursor = some rows) :
