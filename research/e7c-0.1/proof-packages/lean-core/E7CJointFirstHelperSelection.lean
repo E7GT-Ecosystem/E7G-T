@@ -2,11 +2,11 @@ import E7CEECQTwoStageExactCodec
 
 /-!
 The value-level interpretation of the two complementary first-stage Joint
-comprehensions. The checked Python AST selects directly from `source.terms`
-and passes both lists to `joint`. This theorem concerns the selection only:
-Python's `joint` normalization, admission and serialization still need a
-code-semantics link. Entire correlated rows and rational coefficients travel
-without modifying their values.
+comprehensions. The selected implementation constructs both children directly
+from filtered canonical tuples, without invoking `joint` re-collection.
+These theorems establish exact selection and preservation of canonical list
+invariants in Lean. Linking Python execution and constructor validation to
+these theorems still requires an interpreter-semantics argument.
 -/
 
 namespace E7CJointFirstHelperSelection
@@ -40,26 +40,19 @@ theorem selection_transport (rs : List WireRow) :
   simp [selects_exact_rows, List.filter_map, Function.comp_def,
     first_predicate_preserved]
 
-/- This premise is precisely the unproved part of `joint` for these admitted
-subsets: re-collecting a sorted, unique support must preserve its row order,
-graph identities and exact rational values. -/
-structure JointNormalization (rs : List Row) where
-  normalize : List Row → List Row
-  retainedPreserved : normalize (rs.filter (fun r => !r.left.ab)) =
-    rs.filter (fun r => !r.left.ab)
-  excludedPreserved : normalize (rs.filter (fun r => r.left.ab)) =
-    rs.filter (fun r => r.left.ab)
+/- Every strict canonical ordering relation is inherited by both filtered
+subsequences. In the Python constructor the relation is the strict ordering
+of tuples of Config.identity() values; strictness also rules out duplicates. -/
+theorem canonical_sublist_order {α : Type} (before : α → α → Prop)
+    (rs : List α) (p : α → Bool) (h : List.Pairwise before rs) :
+    List.Pairwise before (rs.filter p) :=
+  h.filter p
 
-theorem under_normalization_contract (wire : List WireRow)
-    (h : JointNormalization (wire.map toRow)) :
-    (h.normalize ((select wire).1.map toRow),
-     h.normalize ((select wire).2.map toRow)) =
-      ((wire.map toRow).filter (fun r => !r.left.ab),
-       (wire.map toRow).filter (fun r => r.left.ab)) := by
-  apply Prod.ext
-  · rw [← h.retainedPreserved]
-    exact congrArg h.normalize (congrArg Prod.fst (selection_transport wire))
-  · rw [← h.excludedPreserved]
-    exact congrArg h.normalize (congrArg Prod.snd (selection_transport wire))
+theorem canonical_portions_order {α : Type} (before : α → α → Prop)
+    (rs : List α) (p : α → Bool) (h : List.Pairwise before rs) :
+    List.Pairwise before (rs.filter p) ∧
+      List.Pairwise before (rs.filter (fun r => !p r)) := by
+  exact ⟨canonical_sublist_order before rs p h,
+    canonical_sublist_order before rs (fun r => !p r) h⟩
 
 end E7CJointFirstHelperSelection
