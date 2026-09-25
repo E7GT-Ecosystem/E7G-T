@@ -123,6 +123,7 @@ class Context:
 @dataclass(frozen=True)
 class ExpressionRule:
     edition: str
+    source_kernel: str
     source_edition: str
     codec_edition: str
     selected: tuple[str, ...]
@@ -131,6 +132,8 @@ class ExpressionRule:
     mode: str
 
     def __post_init__(self):
+        if self.source_kernel not in KERNELS:
+            raise AdmissionError("rule requires a declared draft kernel edition")
         for item in (self.edition, self.source_edition, self.codec_edition,
                      self.access_scope):
             _name(item)
@@ -169,7 +172,7 @@ def express(portion: Portion, context: Context, rule: ExpressionRule,
             or type(budget) is not int or budget < 0):
         raise AdmissionError("typed context, rule and budget required")
     whole = decode(portion, rule.codec_edition)
-    if whole.edition != rule.source_edition:
+    if whole.kernel != rule.source_kernel or whole.edition != rule.source_edition:
         return Outcome("domain_error", None)
     if context.role not in rule.allowed_roles or context.access != rule.access_scope:
         return Outcome("unsupported", None)

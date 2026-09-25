@@ -11,7 +11,7 @@ def fixture(kernel):
     base = Whole(kernel, "source-edition-A", (("hidden", "alpha"),
                                                ("visible", "same")))
     context = Context("reader", "t0", "r0", "local", "scope-A", "question-A")
-    rule = ExpressionRule("display/1", base.edition, "sr4/1", ("visible",),
+    rule = ExpressionRule("display/1", base.kernel, base.edition, "sr4/1", ("visible",),
                           ("reader",), "local", "read_only")
     return base, context, rule
 
@@ -60,6 +60,7 @@ class RGP02Expression(unittest.TestCase):
         first, second = encode(a, "left", "sr4/1"), encode(b, "right", "sr4/1")
         self.assertNotEqual(decode(first, "sr4/1").kernel,
                             decode(second, "sr4/1").kernel)
+        self.assertEqual(express(second, context, rule, 1).tag, "domain_error")
         for corrupted in (replace(first, source_edition="other"),
                           replace(first, payload=first.payload[:-1]),
                           replace(first, source_identity=second.source_identity)):
