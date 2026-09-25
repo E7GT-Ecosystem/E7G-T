@@ -11,7 +11,9 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from e7c_b1_canonical import canonical_key
-from e7c_eecq_two_stage_b1 import admit
+from e7c_eecq_joint_restrict_b1 import EFFECTS as FIRST_EFFECTS
+from e7c_eecq_joint_restrict_b1 import PREDICATE_EDITION as FIRST_PREDICATE
+from e7c_eecq_two_stage_b1 import SECOND_EFFECTS, SECOND_PREDICATE, admit
 
 EDGES = ("AB", "AC", "BC")
 
@@ -87,6 +89,8 @@ def decode_row(r):
                                            for e in ("ab", "ac", "bc"))
                 or g.tag is not None and type(g.tag) is not str):
             raise CodecAdmission("invalid Lean graph")
+        if graph({"edges": g.edges(), "tag": g.tag}) != g:
+            raise CodecAdmission("Lean graph does not roundtrip")
     return {"atoms": [{"edges": g.edges(), "tag": g.tag} for g in (r.left, r.right)],
             "coefficient": {"numerator": r.coefficient.numerator,
                             "denominator": r.coefficient.denominator}}
@@ -126,7 +130,7 @@ def budget(source):
 
 
 def events(observation, encoded):
-    """Check and map every ledger entry, ordinal, row key and decision."""
+    """Validate complete event fields before projecting to Lean Event."""
     ledger = observation["ordered_ledger"]
     if observation["resource_progress"]["ledger_prefix"] != ledger:
         raise CodecAdmission("ledger and progress disagree")
@@ -138,11 +142,21 @@ def events(observation, encoded):
         kind = entry["event"]
         if kind in ("restriction_attempt", "second_restriction_attempt"):
             stage = "first" if kind == "restriction_attempt" else "second"
+            effect, predicate = ((FIRST_EFFECTS[0], FIRST_PREDICATE) if stage == "first"
+                                 else (SECOND_EFFECTS[0], SECOND_PREDICATE))
+            if (set(entry) != {"ordinal", "event", "effect", "predicate_edition"}
+                    or entry["effect"] != effect
+                    or entry["predicate_edition"] != predicate):
+                raise CodecAdmission("attempt effect or predicate edition mismatch")
             mapped.append(LeanEvent(stage))
             continue
         if kind not in ("joint_row_checked", "second_joint_row_checked"):
             raise CodecAdmission("unknown event")
         stage = "first" if kind == "joint_row_checked" else "second"
+        effect = FIRST_EFFECTS[1] if stage == "first" else SECOND_EFFECTS[1]
+        if (set(entry) != {"ordinal", "event", "effect", "row_index",
+                           "row_key", "decision"} or entry["effect"] != effect):
+            raise CodecAdmission("row effect or event shape mismatch")
         candidates = encoded if stage == "first" else first_retained
         index = entry["row_index"]
         if type(index) is not int or index < 0 or index >= len(candidates):
@@ -161,8 +175,9 @@ def events(observation, encoded):
 def observation(source, result):
     """Exact observable projection for Lean Operational.Observation.
 
-    Witness digest and static annotations stay in the Python witness; they are
-    not fields of Lean Observation. All fields of the Lean observation survive.
+    Witness digest and static annotations stay in the Python witness. Effects
+    and predicate editions are validated above, then omitted from Lean Event.
+    All fields of the Lean observation survive.
     """
     encoded = rows(source)
     mapped = events(result, encoded)

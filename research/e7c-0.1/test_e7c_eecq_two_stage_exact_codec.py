@@ -1,4 +1,5 @@
 """All fields of the bounded source/IR observations against staged rule."""
+import copy
 from fractions import Fraction
 import itertools
 import unittest
@@ -9,7 +10,8 @@ from eec_q_fg3_joint_b1 import marginal
 from e7c_eecq_two_stage_b1 import document, evaluate
 from e7_ir_eecq_two_stage_b1 import execute, lower
 from e7c_eecq_two_stage_exact_codec import (
-    CodecAdmission, decode_row, graph, observation, partition, row, rows, staged_spec,
+    CodecAdmission, LeanGraph, LeanRow, decode_row, graph, observation, partition,
+    row, rows, staged_spec,
 )
 
 
@@ -47,6 +49,33 @@ class ExactCodec(unittest.TestCase):
                "coefficient": {"numerator": 2, "denominator": 4}}
         with self.assertRaises(CodecAdmission):
             row(bad)
+
+    def test_inverse_rejects_constructed_surrogate_tag(self):
+        good = LeanGraph(True, False, False, None)
+        invalid = LeanGraph(False, True, False, "\ud800")
+        for candidate in (LeanRow(invalid, good, Fraction(1, 3)),
+                          LeanRow(good, invalid, Fraction(-2, 5))):
+            with self.subTest(candidate=candidate), self.assertRaises(CodecAdmission):
+                decode_row(candidate)
+
+    def test_event_metadata_checked_before_projection(self):
+        source = document(selected(), step_bound=20, ledger_bound=20)
+        result = evaluate(source)
+        self.assertEqual(observation(source, result), staged_spec(source))
+        tamperings = (
+            (0, "effect", "wrong_first_attempt_effect"),
+            (0, "predicate_edition", "wrong_first_predicate"),
+            (1, "effect", "wrong_first_row_effect"),
+            (4, "effect", "wrong_second_attempt_effect"),
+            (4, "predicate_edition", "wrong_second_predicate"),
+            (5, "effect", "wrong_second_row_effect"),
+        )
+        for index, key, replacement in tamperings:
+            altered = copy.deepcopy(result)
+            altered["ordered_ledger"][index][key] = replacement
+            altered["resource_progress"]["ledger_prefix"][index][key] = replacement
+            with self.subTest(index=index, field=key), self.assertRaises(CodecAdmission):
+                observation(source, altered)
 
     def test_all_policy_budget_boundaries_source_ir_and_step_rule(self):
         supports = (joint([], arity=2), selected())
