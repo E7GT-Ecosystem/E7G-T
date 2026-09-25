@@ -126,7 +126,7 @@ def wirePlan (rs : List WireRow) (first second : Policy) : List Event :=
   else
     .attempt .first :: wireFirstRows rs 0 ++
       (.attempt .second :: wireSecondRows
-        (rs.filter (fun r => !r.left.edges.contains "AB")) 0)
+        (rs.filter (fun r => !(toRow r).left.ab)) 0)
 
 theorem wire_plan_simulation (rs : List WireRow) (first second : Policy) :
     wirePlan rs first second = plan (rs.map toRow) first second := by
