@@ -151,7 +151,13 @@ structure Machine where
   cursor : Cursor
   steps : Nat
   ledgerRev : List Event
+  secondStarted : Bool
   deriving DecidableEq, Repr
+
+def attemptingSecond : Cursor → Bool
+  | .firstRows [] _ _ _ => true
+  | .secondAttempt _ _ => true
+  | _ => false
 
 def snapshot (machine : Machine) : Progress :=
   { completedSteps := machine.steps
@@ -164,7 +170,7 @@ def observe (machine : Machine) (terminal : Terminal) : Observation :=
   { terminal := terminal
     orderedLedger := p.ledgerPrefix
     progress := p
-    secondStarted := p.ledgerPrefix.any (fun e => e == .attempt .second) }
+    secondStarted := machine.secondStarted }
 
 /- Fuel decreases at each attempted event. The zero-step branch does not
 advance or inspect a row. An exhausted ledger consumes the attempted step,
@@ -178,18 +184,40 @@ def drive : Nat → Nat → Policy → Policy → Machine → Observation
       match finished machine.cursor with
       | some terminal => observe machine terminal
       | none =>
-          let charged := { machine with steps := machine.steps + 1 }
+          let charged := { machine with steps := machine.steps + 1,
+            secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
           match capacity with
           | 0 => observe charged (.resourceLimit (snapshot charged))
           | space + 1 =>
               let (event, cursor) := advance first second machine.cursor
               drive fuel space first second
                 { cursor := cursor, steps := charged.steps,
-                  ledgerRev := event :: machine.ledgerRev }
+                  ledgerRev := event :: machine.ledgerRev,
+                  secondStarted := charged.secondStarted }
 
 def run (rs : List Row) (first second : Policy) (budget : Budget) : Observation :=
   drive budget.stepBound budget.ledgerBound first second
-    { cursor := .firstAttempt rs, steps := 0, ledgerRev := [] }
+    { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
+
+/- The second attempt starts when its step is charged, including when a
+full ledger prevents the attempt event from being appended. This law holds
+for any completed first-stage accumulators and policy. -/
+theorem failed_second_append_starts (keptRev excludedRev : List Row)
+    (events : List Event) (steps fuel index : Nat) (first second : Policy) :
+    (drive (fuel + 1) 0 first second
+      { cursor := .firstRows [] keptRev excludedRev index, steps := steps,
+        ledgerRev := events, secondStarted := false }).secondStarted = true ∧
+    (drive (fuel + 1) 0 first second
+      { cursor := .firstRows [] keptRev excludedRev index, steps := steps,
+        ledgerRev := events, secondStarted := false }).orderedLedger = events.reverse ∧
+    (drive (fuel + 1) 0 first second
+      { cursor := .firstRows [] keptRev excludedRev index, steps := steps,
+        ledgerRev := events, secondStarted := false }).terminal =
+      .resourceLimit ⟨steps + 1, events.reverse, some excludedRev.reverse,
+        secondExcluded events.reverse⟩ := by
+  constructor
+  · rfl
+  constructor <;> rfl
 
 /- These local laws expose the critical stop behavior directly, without
 appealing to the complete planned trace. -/
@@ -217,6 +245,11 @@ private def sampleRow : Row :=
 
 example : (run [sampleRow] .ready .ready ⟨10, 1⟩).terminal =
     .resourceLimit ⟨2, [.attempt .first], none, []⟩ := by decide
+
+example : (run [sampleRow] .ready .ready ⟨4, 2⟩).secondStarted = true ∧
+    (run [sampleRow] .ready .ready ⟨4, 2⟩).terminal =
+      .resourceLimit ⟨3, [.attempt .first, .row .first 0 sampleRow false],
+        some [], []⟩ := by decide
 
 example : (run [sampleRow] .ready .ready ⟨10, 3⟩).terminal =
     .resourceLimit ⟨4,
