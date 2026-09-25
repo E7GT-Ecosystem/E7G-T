@@ -366,12 +366,14 @@ theorem firstExcludedAt_agrees (cursor : Cursor) (rows : List Row)
   | firstAttempt rs => simp [firstExcludedAt]
   | firstRows remaining keptRev excludedRev i =>
       cases remaining with
-      | nil => simpa [firstExclusionsAt, firstExcludedAt] using h.symm
+      | nil => simpa [firstExclusionsAt, firstExcludedAt] using h
       | cons r rs => simp [firstExcludedAt]
   | secondAttempt kept excluded => simpa [firstExclusionsAt, firstExcludedAt] using h
   | secondRows remaining retainedRev excluded secondExcludedRev i =>
       simpa [firstExclusionsAt, firstExcludedAt] using h
-  | stopped terminal excluded => simpa [firstExclusionsAt, firstExcludedAt] using h
+  | stopped terminal excluded =>
+      right
+      simpa [firstExclusionsAt, firstExcludedAt] using h
 
 theorem finished_partition (cursor : Cursor) (terminal : Terminal)
     (value : Partition) (hfin : finished cursor = some terminal)
@@ -681,6 +683,16 @@ private def sampleGraph (ab bc : Bool) : Graph :=
 
 private def sampleRow : Row :=
   ⟨sampleGraph false false, sampleGraph false false, 1⟩
+
+private def secondExcludedRow : Row :=
+  ⟨sampleGraph false false, sampleGraph false true, 1⟩
+
+example : plan [secondExcludedRow] .ready .ready =
+    [.attempt .first, .row .first 0 secondExcludedRow false,
+     .attempt .second, .row .second 0 secondExcludedRow true] := by decide
+
+example : (run [secondExcludedRow] .ready .ready ⟨4, 4⟩).terminal =
+    .success (source [secondExcludedRow]) := by decide
 
 example : (run [sampleRow] .ready .ready ⟨10, 1⟩).terminal =
     .resourceLimit ⟨2, [.attempt .first], none, []⟩ := by decide
