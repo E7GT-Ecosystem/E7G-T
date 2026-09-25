@@ -503,6 +503,28 @@ theorem run_ledger_matches_plan (rs : List Row) (first second : Policy)
     drive_ledger_prefix first second budget.stepBound budget.ledgerBound
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
 
+theorem drive_progress_fields (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine) :
+    (drive fuel capacity first second machine).progress.ledgerPrefix =
+      (drive fuel capacity first second machine).orderedLedger ∧
+    (drive fuel capacity first second machine).progress.secondExcludedPrefix =
+      secondExcluded (drive fuel capacity first second machine).orderedLedger := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases h : finished machine.cursor <;> simp [drive, h, observe, snapshot]
+  | succ fuel ih =>
+      cases h : finished machine.cursor with
+      | some terminal => simp [drive, h, observe, snapshot]
+      | none =>
+          cases capacity with
+          | zero => simp [drive, h, observe, snapshot]
+          | succ capacity =>
+              simpa [drive, h] using ih capacity
+                { cursor := (advance first second machine.cursor).2,
+                  steps := machine.steps + 1,
+                  ledgerRev := (advance first second machine.cursor).1 :: machine.ledgerRev,
+                  secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
+
 theorem exhaustion_returns_prefix_and_steps (rs : List Row)
     (first second : Policy) (budget : Budget)
     (short : min budget.stepBound budget.ledgerBound <
