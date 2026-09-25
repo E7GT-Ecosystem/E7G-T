@@ -18,7 +18,7 @@ FUNCTIONS = {
     ("e7c_eecq_joint_restrict_b1.py", "_graph"): "e24060d0457a10f3cf155f49966203d9eb1a4e658417fc739f243d78daa1d295",
     ("e7c_eecq_joint_restrict_b1.py", "evaluate"): "685451517407181e7497969e26a0e459251bccbb312fd5eb6e8999c84b97d1e8",
     ("adapters/eec_q_fg3_joint_b1.py", "joint"): "895a144ef2ed8c98c6c436cee9c4591cc07bb7a68d2e7cb9ff69a89f2100231f",
-    ("adapters/eec_q_fg3_joint_b1.py", "restrict_joint_absent"): "61c00515756ed00fa6060cf967ace958b79ac560dab04635a3ab6b737e451c06",
+    ("adapters/eec_q_fg3_joint_b1.py", "restrict_joint_absent"): "07bbf9102d3a307cd9e3c37eb120b134047ceb8fd818a412000ee76b95dcba34",
     ("adapters/eec_q_fg3_joint_b1.py", "Joint.__post_init__"): "bf054e3ee0a2271a49a122b1350a54afc8a9f77685f81796cc93fe19e0778b27",
     ("adapters/eec_q_fg3_b1.py", "Config.__post_init__"): "ba7d6085689cebeaffb4a5d46dbf5a15c09e405c54e34f4e97381178ee967d65",
     ("adapters/eec_q_fg3_b1.py", "Config.identity"): "226291c923dd5694adb2898c8fde025d2f3d4cda7e51048cbd1c32452c7a6133",
@@ -75,7 +75,7 @@ def checked_sites(files=None):
         raise ValueError("admission return moved outside checked path")
 
     restrict = nodes["restrict_joint_absent"]
-    comprehensions = [n for n in ast.walk(restrict) if isinstance(n, ast.ListComp)]
+    comprehensions = [n for n in ast.walk(restrict) if isinstance(n, ast.GeneratorExp)]
     if len(comprehensions) != 2:
         raise ValueError("partition must select exactly two portions")
     tests = [ast.unparse(comp.generators[0].ifs[0]) for comp in comprehensions]
@@ -84,11 +84,18 @@ def checked_sites(files=None):
         raise ValueError("partition predicates no longer complement")
     for comp in comprehensions:
         if len(comp.generators) != 1 or ast.unparse(comp.generators[0].iter) != "source.terms" \
-                or ast.unparse(comp.elt) != "(c, atoms)":
+                or ast.unparse(comp.elt) != "(atoms, c)":
             raise ValueError("partition changed joint row or order")
     if not exact(restrict.body[-1],
-                 "return joint(retained, arity=source.arity), joint(excluded, arity=source.arity)"):
-        raise ValueError("partition normalization or returned portions changed")
+                 "return Joint(source.arity, retained), Joint(source.arity, excluded)"):
+        raise ValueError("partition no longer constructs exact canonical sublists")
+    assignments = [n for n in restrict.body if isinstance(n, ast.Assign)]
+    if len(assignments) != 2 or any(not isinstance(n.value, ast.Call)
+                                   or ast.unparse(n.value.func) != "tuple"
+                                   or len(n.value.args) != 1
+                                   or not isinstance(n.value.args[0], ast.GeneratorExp)
+                                   for n in assignments):
+        raise ValueError("partition no longer builds direct canonical tuples")
 
     source_evaluate = function(files["e7c_eecq_joint_restrict_b1.py"], "evaluate")
     finish = next(n for n in source_evaluate.body if isinstance(n, ast.FunctionDef)
@@ -101,6 +108,6 @@ def checked_sites(files=None):
                and "copy.deepcopy(ledger)" in ast.unparse(n) for n in progress.body):
         raise ValueError("progress loses independent ledger snapshot")
     return {"admission": "guarded_ordered_wire_rows",
-            "partition": "complementary_authoritative_joint_filters",
+            "partition": "direct_complementary_authoritative_joint_sublists",
             "serialization": "deepcopied_ledger_and_digest_bound_witness",
             "ir": "pinned_lower_parse_serialize_helpers"}
