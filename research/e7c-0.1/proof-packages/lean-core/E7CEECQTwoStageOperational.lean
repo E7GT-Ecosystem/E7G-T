@@ -270,6 +270,40 @@ def run (rs : List Row) (first second : Policy) (budget : Budget) : Observation 
   drive budget.stepBound budget.ledgerBound first second
     { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
 
+theorem drive_ledger_prefix (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine) :
+    (drive fuel capacity first second machine).orderedLedger =
+      machine.ledgerRev.reverse ++
+        (future first second machine.cursor).take (min fuel capacity) := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases h : finished machine.cursor with
+      | none => simp [drive, h, observe, snapshot]
+      | some terminal =>
+          simp [drive, h, observe, snapshot, finished_has_no_future first second
+            machine.cursor terminal h]
+  | succ fuel ih =>
+      cases h : finished machine.cursor with
+      | some terminal =>
+          simp [drive, h, observe, snapshot, finished_has_no_future first second
+            machine.cursor terminal h]
+      | none =>
+          cases capacity with
+          | zero => simp [drive, h, observe, snapshot]
+          | succ capacity =>
+              have hstep := future_advance first second machine.cursor h
+              simp [drive, h, ih, hstep, List.reverse_cons, List.append_assoc]
+
+/- Therefore the real traversal ledger is the prefix of the independent
+complete plan for every policy and budget, whether complete or exhausted. -/
+theorem run_ledger_matches_plan (rs : List Row) (first second : Policy)
+    (budget : Budget) :
+    (run rs first second budget).orderedLedger =
+      (plan rs first second).take (min budget.stepBound budget.ledgerBound) := by
+  simpa [run, future_start_is_plan] using
+    drive_ledger_prefix first second budget.stepBound budget.ledgerBound
+      { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
+
 /- The second attempt starts when its step is charged, including when a
 full ledger prevents the attempt event from being appended. This law holds
 for any completed first-stage accumulators and policy. -/
