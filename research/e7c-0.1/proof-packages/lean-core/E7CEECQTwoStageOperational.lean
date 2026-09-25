@@ -184,7 +184,8 @@ def drive : Nat → Nat → Policy → Policy → Machine → Observation
       match finished machine.cursor with
       | some terminal => observe machine terminal
       | none =>
-          let charged := { machine with steps := machine.steps + 1,
+          let charged := { machine with steps := machine.steps + 1 }
+          let charged := { charged with
             secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
           match capacity with
           | 0 => observe charged (.resourceLimit (snapshot charged))
