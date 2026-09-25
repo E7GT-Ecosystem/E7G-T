@@ -84,12 +84,18 @@ def parse(encoded):
         raise JointRestrictionIRAdmission("invalid typed joint restriction IR") from exc
 
 
-def execute(package):
+def execute(package, *, _transition_sink=None):
     checked = parse(serialize(package))
     source = checked["source_document"]
     beta, interp = source["resource_policy"], source["interpretation"]
     ledger, retained, excluded = [], [], []
     steps = 0
+
+    def emit(action, *, index=None):
+        if _transition_sink is not None:
+            _transition_sink(copy.deepcopy({"action": action, "stage": "first",
+                "row_index": index, "steps": steps, "ledger_entries": len(ledger),
+                "event": ledger[-1] if action == "append" else None}))
 
     def progress():
         return {"completed_steps": steps, "completed_ledger_entries": len(ledger),
@@ -105,10 +111,12 @@ def execute(package):
     if beta["step_bound"] == 0:
         return result(limit())
     steps += 1
+    emit("charge")
     if beta["ledger_bound"] == 0:
         return result(limit())
     ledger.append({"ordinal": 0, "event": "restriction_attempt",
                    "effect": EFFECTS[0], "predicate_edition": PREDICATE_EDITION})
+    emit("append")
     if not interp["capability"]:
         return result({"tag": "unsupported", "diagnostic": "joint_restriction_unavailable"})
     if interp["obligation"] == "unresolved":
@@ -117,12 +125,14 @@ def execute(package):
         if steps >= beta["step_bound"]:
             return result(limit())
         steps += 1
+        emit("charge", index=index)
         if len(ledger) >= beta["ledger_bound"]:
             return result(limit())
         decision = "excluded" if "AB" in row["atoms"][0]["edges"] else "retained"
         ledger.append({"ordinal": len(ledger), "event": "joint_row_checked",
                        "effect": EFFECTS[1], "row_index": index,
                        "row_key": canonical_key(row), "decision": decision})
+        emit("append", index=index)
         (excluded if decision == "excluded" else retained).append(copy.deepcopy(row))
     # A separate exact rational check guards the partition and coefficient
     # preservation before returning a successful observable result.

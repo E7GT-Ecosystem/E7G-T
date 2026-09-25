@@ -93,16 +93,23 @@ def parse(encoded):
         raise TwoStageIRAdmission("invalid two-stage Joint IR") from exc
 
 
-def execute(package):
+def execute(package, *, _transition_sink=None):
     checked = parse(serialize(package))
     source = checked["source_document"]
-    first = execute_first(checked["first_ir"])
+    first = execute_first(checked["first_ir"], _transition_sink=_transition_sink)
     beta = source["first"]["resource_policy"]
     ledger = copy.deepcopy(first["ordered_ledger"])
     steps = first["resource_progress"]["completed_steps"]
     first_excluded = None
     second_excluded_prefix = []
     second_started = False
+
+    def emit(action, *, index=None):
+        if _transition_sink is not None:
+            _transition_sink(copy.deepcopy({"action": action, "stage": "second",
+                "row_index": index, "steps": steps, "ledger_entries": len(ledger),
+                "second_started": second_started,
+                "event": ledger[-1] if action == "append" else None}))
 
     def progress():
         return {"completed_steps": steps, "completed_ledger_entries": len(ledger),
@@ -127,10 +134,12 @@ def execute(package):
         return result(limit())
     steps += 1
     second_started = True
+    emit("charge")
     if len(ledger) >= beta["ledger_bound"]:
         return result(limit())
     ledger.append({"ordinal": len(ledger), "event": "second_restriction_attempt",
                    "effect": SECOND_EFFECTS[0], "predicate_edition": SECOND_PREDICATE})
+    emit("append")
     policy = source["second_interpretation"]
     if not policy["capability"]:
         return result({"tag": "unsupported", "diagnostic": "second_joint_restriction_unavailable"})
@@ -141,12 +150,14 @@ def execute(package):
         if steps >= beta["step_bound"]:
             return result(limit())
         steps += 1
+        emit("charge", index=index)
         if len(ledger) >= beta["ledger_bound"]:
             return result(limit())
         decision = "second_excluded" if "BC" in row["atoms"][1]["edges"] else "retained"
         ledger.append({"ordinal": len(ledger), "event": "second_joint_row_checked",
                        "effect": SECOND_EFFECTS[1], "row_index": index,
                        "row_key": canonical_key(row), "decision": decision})
+        emit("append", index=index)
         (second_excluded if decision == "second_excluded" else retained).append(copy.deepcopy(row))
         if decision == "second_excluded":
             second_excluded_prefix.append(copy.deepcopy(row))

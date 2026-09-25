@@ -104,10 +104,16 @@ def admit(source):
         raise JointRestrictionAdmission("invalid selected joint restriction input") from exc
 
 
-def evaluate(source):
+def evaluate(source, *, _transition_sink=None):
     value = admit(source)
     beta, interp = source["resource_policy"], source["interpretation"]
     ledger, steps = [], 0
+
+    def emit(action, *, index=None):
+        if _transition_sink is not None:
+            _transition_sink(copy.deepcopy({"action": action, "stage": "first",
+                "row_index": index, "steps": steps, "ledger_entries": len(ledger),
+                "event": ledger[-1] if action == "append" else None}))
 
     def progress():
         return {"completed_steps": steps, "completed_ledger_entries": len(ledger),
@@ -128,10 +134,12 @@ def evaluate(source):
     if beta["step_bound"] == 0:
         return finish(limit())
     steps += 1
+    emit("charge")
     if beta["ledger_bound"] == 0:
         return finish(limit())
     ledger.append({"ordinal": 0, "event": "restriction_attempt",
                    "effect": EFFECTS[0], "predicate_edition": PREDICATE_EDITION})
+    emit("append")
     if not interp["capability"]:
         return finish({"tag": "unsupported", "diagnostic": "joint_restriction_unavailable"})
     if interp["obligation"] != "resolved":
@@ -140,6 +148,7 @@ def evaluate(source):
         if steps >= beta["step_bound"]:
             return finish(limit())
         steps += 1
+        emit("charge", index=index)
         if len(ledger) >= beta["ledger_bound"]:
             return finish(limit())
         decision = "excluded" if "AB" in atoms[0].edges else "retained"
@@ -147,6 +156,7 @@ def evaluate(source):
                        "effect": EFFECTS[1], "row_index": index,
                        "row_key": canonical_key(_row(atoms, coefficient)),
                        "decision": decision})
+        emit("append", index=index)
     retained, excluded = restrict_joint_absent("AB", 0, value)
     return finish({"tag": "success", "value": {"retained": rows(retained),
                                                 "excluded": rows(excluded),
