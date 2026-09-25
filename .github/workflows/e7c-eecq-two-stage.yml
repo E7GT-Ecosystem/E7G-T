@@ -14,6 +14,9 @@ on:
       - "research/e7c-0.1/test_e7c_eecq_two_stage_exact_codec.py"
       - "research/e7c-0.1/e7c_eecq_two_stage_transition_certificate.py"
       - "research/e7c-0.1/test_e7c_eecq_two_stage_transition_certificate.py"
+      - "research/e7c-0.1/e7c_eecq_two_stage_transition_site_audit.py"
+      - "research/e7c-0.1/test_e7c_eecq_two_stage_transition_site_audit.py"
+      - "research/e7c-0.1/E7C_0.1_EECQ_TRANSITION_SITE_AUDIT_GATE.md"
       - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_IMPLEMENTATION_PATH_GATE.md"
       - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_EXACT_CODEC_GATE.md"
       - "research/e7c-0.1/E7C_0.1_EECQ_TWO_STAGE_ALL_INPUT_GATE.md"
@@ -41,5 +44,6 @@ jobs:
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_operational -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_exact_codec -v
           PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_transition_certificate -v
+          PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7c_eecq_two_stage_transition_site_audit -v
       - name: First stage regression
         run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python -m unittest test_e7_ir_eecq_joint_restrict_b1 -v
