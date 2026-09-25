@@ -10,7 +10,7 @@ from eec_q_fg3_joint_b1 import joint
 from e7c_eecq_two_stage_b1 import document, evaluate
 from e7_ir_eecq_two_stage_b1 import execute, lower
 from e7c_eecq_two_stage_transition_certificate import (
-    TransitionAdmission, check,
+    TransitionAdmission, certify_both, check,
 )
 
 
@@ -22,6 +22,22 @@ def correlated():
 
 
 class ActualTransitionCertificate(unittest.TestCase):
+    def test_replayable_instance_binds_both_paths(self):
+        for value in (joint([], arity=2), correlated()):
+            for step_bound, ledger_bound in ((0, 0), (4, 2), (8, 8)):
+                source = document(value, step_bound=step_bound,
+                                  ledger_bound=ledger_bound)
+                with self.subTest(size=len(value.terms), step=step_bound,
+                                  ledger=ledger_bound):
+                    record = certify_both(source)
+                    self.assertEqual(record["source"], source)
+                    self.assertEqual(record["source_transcript"],
+                                     record["ir_transcript"])
+                    self.assertEqual(record["source_result"]["witness"]["claim"],
+                                     record["ir_result"])
+                    source["second_interpretation"]["obligation"] = "unresolved"
+                    self.assertNotEqual(record["source"], source)
+
     def test_both_paths_emit_every_charge_and_append(self):
         for support, steps, ledger, first_cap, second_obl in itertools.product(
                 (joint([], arity=2), correlated()), range(6), range(6),
@@ -74,6 +90,38 @@ class ActualTransitionCertificate(unittest.TestCase):
         ghost_row[2]["row_index"] = 99
         with self.assertRaises(TransitionAdmission):
             check(source, observed, ghost_row)
+
+    def test_forged_completion_at_first_stage_resource_stop(self):
+        # The old transcript-only checker could accept this self-consistent
+        # lie: the first stage ran out of fuel after one row, yet the result
+        # claims the whole first exclusion portion was completed.
+        value = joint([(Fraction(1, 3), (Config(("AB",), None),
+                                         Config(("AC",), None))),
+                       (Fraction(2, 5), (Config(("AC",), None),
+                                         Config(("BC",), "")))], arity=2)
+        source = document(value, step_bound=2, ledger_bound=5)
+        trace = []
+        observed = evaluate(source, _transition_sink=trace.append)
+        self.assertIsNone(observed["resource_progress"]["first_excluded"])
+        forged = copy.deepcopy(observed)
+        excluded = [row for row in source["first"]["rows"]
+                    if "AB" in row["atoms"][0]["edges"]]
+        forged["resource_progress"]["first_excluded"] = excluded
+        forged["terminal_outcome"]["progress"]["first_excluded"] = excluded
+        forged_trace = copy.deepcopy(trace)
+        forged_trace[-1]["stage"] = "second"
+        forged_trace[-1]["progress"] = copy.deepcopy(forged["resource_progress"])
+        with self.assertRaisesRegex(TransitionAdmission, "does not refine staged rule"):
+            check(source, forged, forged_trace)
+
+    def test_forged_second_started_without_second_attempt(self):
+        source = document(correlated(), step_bound=0, ledger_bound=8)
+        trace = []
+        observed = evaluate(source, _transition_sink=trace.append)
+        forged = copy.deepcopy(observed)
+        forged["witness"]["second_started"] = True
+        with self.assertRaisesRegex(TransitionAdmission, "does not refine staged rule"):
+            check(source, forged, trace)
 
 
 if __name__ == "__main__":

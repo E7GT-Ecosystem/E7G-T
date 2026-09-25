@@ -84,6 +84,29 @@ theorem source_or_ir_refines_run (path : Path) (rs : List WireRow)
     result = run (rs.map toRow) first second budget := by
   simpa [run, initial] using trace_refines_drive certificate
 
+/- The exact Python-side paired certificate records two *instances*. In Lean,
+the corresponding mathematical statement has explicit source and IR Trace
+premises. An external checker cannot discharge those premises for all Python
+program executions merely by running on a finite collection of documents. -/
+theorem certified_source_ir_agree (rs : List WireRow)
+    (first second : Policy) (budget : Budget)
+    (sourceResult irResult : Observation)
+    (sourceCertificate : Trace .source first second budget.stepBound
+      budget.ledgerBound (initial (rs.map toRow)) sourceResult)
+    (irCertificate : Trace .ir first second budget.stepBound
+      budget.ledgerBound (initial (rs.map toRow)) irResult) :
+    sourceResult = irResult ∧
+    sourceResult.orderedLedger = (wirePlan rs first second).take
+      (min budget.stepBound budget.ledgerBound) := by
+  have hs := source_or_ir_refines_run .source rs first second budget
+    sourceResult sourceCertificate
+  have hi := source_or_ir_refines_run .ir rs first second budget
+    irResult irCertificate
+  constructor
+  · exact hs.trans hi.symm
+  · rw [hs]
+    exact wire_budgeted_event_simulation rs first second budget
+
 /- The exact admitted wire event plan is inherited by every certified path.
 This conclusion carries complete correlated rows and coefficients in each
 appended row event, including short-budget prefixes. -/
