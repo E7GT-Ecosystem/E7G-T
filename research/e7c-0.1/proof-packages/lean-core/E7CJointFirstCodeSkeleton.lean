@@ -88,10 +88,10 @@ theorem visit_all (rs keptRev excludedRev : List Row)
         (keptRev.reverse ++ rs.filter (fun r => !r.left.ab))
         (excludedRev.reverse ++ rs.filter (fun r => r.left.ab)) := by
   induction rs generalizing keptRev excludedRev index steps ledgerRev with
-  | nil => rfl
+  | nil => simp [visit, child]
   | cons r rest ih =>
       cases h : r.left.ab <;>
-        simp [visit, h, ih, List.filter_cons, List.reverse_cons, List.append_assoc]
+        simp [visit, h, ih, List.reverse_cons, List.append_assoc]
 
 theorem sufficient_exact_budget (rs : List Row) :
     (run rs .ready (rs.length + 1) (rs.length + 1)).terminal =
