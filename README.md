@@ -15,7 +15,15 @@ A static public landing page is available in `site/index.html` for Vercel or any
 
 ---
 
-## v0.14 checkable-reasoning release candidate
+## Current experimental canonical source: v0.15/MSC1
+
+Read the single [v0.15 experimental canonical reference](E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md) for the inherited UC5 constitution and EEC-Q, SF, CFS, RGP, WPC, REC and MSC definitions. MSC's complete formal proposal is incorporated as §X.21. The profiles remain independently selectable and retain their distinct implementation and proof limits. The [release manifest](E7G-T_v0.15_Experimental_Release_Manifest.md) pins the sources; the [successor decision](docs/CANONICAL_SUCCESSOR_DECISION.md) records preservation, loss, lineage and migration impact.
+
+Canonical here identifies the source edition for new work. It does not complete E7C, upgrade a bounded reference model to full conformance, migrate any old wire edition or establish physical, empirical or product claims. In particular, the Python/IR-to-Lean all-input actual-code link for the selected Joint operation remains open.
+
+---
+
+## Historical v0.14 checkable-reasoning draft
 
 The standalone [v0.14 experimental kernel draft](E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md) adds the optional REC/0.1 Reasoning–Evidence Calculus. REC evaluates finite typed claim–evidence envelopes, retains support and refutation independently, rejects hidden scope, temporal and modality expansion, separates information status from action policy, and emits a replayable witness.
 
@@ -25,33 +33,33 @@ The first-party package passes 34 internal checks and 24 external unit tests. Th
 
 ---
 
-## MSC/0.1 multi-scope coherence research proposal
+## MSC/0.1 companion research package
 
 The standalone [MSC/0.1 proposal](proposals/msc-0.1/) investigates whether independently constituted wholes at different declared scopes form a unique compatible family, several compatible families, or a global obstruction. It adds typed common-codomain bridges, access-induced quotients, link-wise-versus-global closure, map commutation and cross-scope invariant checks.
 
-MSC is optional speculative formal research. It is not v0.15, does not replace REC/0.1 or WPC/0.2, creates no product migration obligation, and makes no claim that an externally instantiated scope hierarchy or an actually infinite hierarchy exists. The bounded first-party model passes 26 tests; external formal review and an independent implementation remain promotion gates.
+MSC's formal proposal is incorporated into the v0.15 source, but the bounded implementation and proof gates retain their own status. MSC is optional speculative formal research; it does not replace REC/0.1 or WPC/0.2 or imply that an externally instantiated or infinite scope hierarchy exists. The first-party model's 26 tests do not establish general conformance or independent implementation.
 
 ---
 
 ## E7C/0.1 foundation research programme
 
-The proposed [E7C/0.1 Foundation Build Mandate](roadmaps/E7C_0.1_FOUNDATION_BUILD_MANDATE.md) defines a gated programme for constructing a shared typed calculus, semantics, effect system, proof obligations, witness format and intermediate representation beneath the existing E7G-T profiles. It begins as research under `research/e7c-0.1/`; it is not a new kernel version and does not change the v0.12.1 canonical baseline.
+The [E7C/0.1 Foundation Build Mandate](roadmaps/E7C_0.1_FOUNDATION_BUILD_MANDATE.md) defines a gated programme for constructing a shared typed calculus, semantics, effect system, proof obligations, witness format and intermediate representation beneath the existing E7G-T profiles. It runs as research under `research/e7c-0.1/`; its v0.12.1 source pins remain historical and must not be silently relabelled v0.15.
 
 The [foundation architecture map](roadmaps/E7C_0.1_FOUNDATION_ARCHITECTURE_MAP.md) connects the proposed ontology, judgements, outcomes, effects, equality ladder, witnesses, derived libraries, adapters, empirical gates and product boundary. The [post-v0.12.1 gap and proposal register](roadmaps/E7C_0.1_POST_V0121_GAP_AND_PROPOSAL_REGISTER.md) and its [exact-pin successor coverage manifest](roadmaps/E7C_0.1_SUCCESSOR_SOURCE_COVERAGE.yaml) cover v0.13, subsequent drafts/packages/proposals and differently labelled non-canonical additions. They must be completed and reviewed before the first executable foundation slice. This prevents E7C from freezing known v0.12.1 gaps or treating later suggestions as canonical without evidence.
 
 ---
 
-## v0.13 experimental release candidate
+## Historical v0.13 experimental draft
 
 The standalone [v0.13 experimental kernel draft](E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md) adds the proposed reciprocal whole–part constitution profile WPC/0.2. It formalises the distinction between constituting a whole and carrying a reconstructive representation of that whole, then adds typed local contribution, membership, history and capability boundaries.
 
 The versioned [WPC/0.2 companion package](packages/wpc-0.2/) contains the standalone profile, dependency-free reference model, standard-library tests, validation record and obligation-level conformance matrix. See the [v0.13 release manifest](E7G-T_v0.13_Experimental_Release_Manifest.md) for exact hashes and scope.
 
-This is a review candidate, not yet a replacement for the published v0.12.1 experimental canonical source. Its 34 internal checks and four external first-party tests validate only the bounded allocation example.
+Its reciprocal definitions are included in v0.15; this predecessor draft retains its original edition. Its 34 internal checks and four external first-party tests validate only the bounded allocation example.
 
 ---
 
-## Current published experimental canonical: v0.12.1
+## Historical experimental canonical predecessor: v0.12.1
 
 **Version:** v0.12.1-experimental, revision RGP2  
 **Status:** experimental canonical reference with explicit executable profiles and bounded reference models.
@@ -120,7 +128,7 @@ E7G-T is not redefined as a topological theory. The overlay remains optional and
 
 ## Start here
 
-Read the current published v0.12.1 experimental canonical reference:
+Read the current [v0.15 experimental canonical reference](E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md). For pinned historical comparisons, read the v0.12.1 predecessor:
 
 [`E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md`](E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md)
 
@@ -168,7 +176,7 @@ The v0.11-UC5 through v0.11-UC1 and v0.10 public specifications are retained as 
 
 ## Current validation priority
 
-Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The retained and candidate reference models provide 207 named internal checks across FG3, IC, CG3, RGP-B1, the bounded WPC allocation model and REC-B1; these are first-party bounded conformance evidence rather than independent validation.
+Do not expand the theory merely by adding terminology. Test whether the unified kernel changes a real next move. The inherited FG3, IC, CG3, RGP-B1, WPC and REC models recorded 207 named internal checks, and the MSC package separately records 26 unit tests. These are first-party bounded conformance evidence rather than independent validation or proof of v0.15-wide implementation fidelity.
 
 Recommended cases:
 

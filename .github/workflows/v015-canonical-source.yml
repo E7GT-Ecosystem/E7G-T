@@ -1,0 +1,33 @@
+name: v0.15 canonical source inheritance
+
+on:
+  push:
+    paths:
+      - 'E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md'
+      - 'E7G-T_v0.15_Experimental_Release_Manifest.md'
+      - 'E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md'
+      - 'proposals/msc-0.1/E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md'
+      - 'tools/verify_v015_release.py'
+      - '.github/workflows/v015-canonical-source.yml'
+  pull_request:
+    paths:
+      - 'E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md'
+      - 'E7G-T_v0.15_Experimental_Release_Manifest.md'
+      - 'E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md'
+      - 'proposals/msc-0.1/E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md'
+      - 'tools/verify_v015_release.py'
+      - '.github/workflows/v015-canonical-source.yml'
+
+jobs:
+  inheritance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python3 tools/verify_v015_release.py
+      - run: python3 research/e7c-0.1/e7c_edition_source_audit.py
+      - run: python3 -m unittest discover -s packages/wpc-0.2 -p 'test_*.py'
+      - run: python3 -m unittest discover -s packages/rec-0.1 -p 'test_*.py'
+      - run: python3 -m unittest discover -s proposals/msc-0.1 -p 'test_*.py'
