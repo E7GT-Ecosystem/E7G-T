@@ -463,8 +463,11 @@ theorem drive_short_steps (first second : Policy) (fuel capacity : Nat)
                   ledgerRev := (advance first second machine.cursor).1 :: machine.ledgerRev,
                   secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
               have hrec := ih capacity nextMachine tailShort
-              simpa [drive, h, nextMachine, Nat.succ_le_succ_iff,
-                Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hrec
+              by_cases bound : fuel ≤ capacity
+              · simpa [drive, h, nextMachine, bound, Nat.add_assoc, Nat.add_comm,
+                  Nat.add_left_comm] using hrec
+              · simpa [drive, h, nextMachine, bound, Nat.add_assoc, Nat.add_comm,
+                  Nat.add_left_comm] using hrec
 
 theorem drive_ledger_prefix (first second : Policy) (fuel capacity : Nat)
     (machine : Machine) :
@@ -499,6 +502,30 @@ theorem run_ledger_matches_plan (rs : List Row) (first second : Policy)
   simpa [run, future_start_is_plan] using
     drive_ledger_prefix first second budget.stepBound budget.ledgerBound
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
+
+theorem exhaustion_returns_prefix_and_steps (rs : List Row)
+    (first second : Policy) (budget : Budget)
+    (short : min budget.stepBound budget.ledgerBound <
+      (plan rs first second).length) :
+    (run rs first second budget).terminal =
+      .resourceLimit (run rs first second budget).progress ∧
+    (run rs first second budget).orderedLedger =
+      (plan rs first second).take (min budget.stepBound budget.ledgerBound) ∧
+    (run rs first second budget).progress.completedSteps =
+      if budget.stepBound ≤ budget.ledgerBound then budget.stepBound
+      else budget.ledgerBound + 1 := by
+  have hshort : min budget.stepBound budget.ledgerBound <
+      (future first second (.firstAttempt rs)).length := by
+    simpa [future_start_is_plan] using short
+  refine ⟨?_, run_ledger_matches_plan rs first second budget, ?_⟩
+  · simpa [run] using drive_short_terminal first second budget.stepBound
+      budget.ledgerBound
+      { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
+        secondStarted := false } hshort
+  · simpa [run] using drive_short_steps first second budget.stepBound
+      budget.ledgerBound
+      { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
+        secondStarted := false } hshort
 
 /- The second attempt starts when its step is charged, including when a
 full ledger prevents the attempt event from being appended. This law holds
