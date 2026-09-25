@@ -92,6 +92,56 @@ theorem ir_preserves_exact_partition (rs : List WireRow) :
     ir (rs.map toRow) = wirePartition rs :=
   all_rows_partition_agreement (rs.map toRow)
 
+/- Independent wire-side event specification. Each row event retains the
+whole pair and coefficient; the second pass traverses the first retained
+rows, not an inferred product of marginals. -/
+def wireFirstRows : List WireRow → Nat → List Event
+  | [], _ => []
+  | r :: rest, index =>
+      .row .first index (toRow r) (r.left.edges.contains "AB") ::
+        wireFirstRows rest (index + 1)
+
+def wireSecondRows : List WireRow → Nat → List Event
+  | [], _ => []
+  | r :: rest, index =>
+      .row .second index (toRow r) (r.right.edges.contains "BC") ::
+        wireSecondRows rest (index + 1)
+
+theorem wire_first_step (rs : List WireRow) (index : Nat) :
+    wireFirstRows rs index = firstRows (rs.map toRow) index := by
+  induction rs generalizing index with
+  | nil => rfl
+  | cons r rest ih => simp [wireFirstRows, firstRows, first_predicate_preserved, ih]
+
+theorem wire_second_step (rs : List WireRow) (index : Nat) :
+    wireSecondRows rs index = secondRows (rs.map toRow) index := by
+  induction rs generalizing index with
+  | nil => rfl
+  | cons r rest ih => simp [wireSecondRows, secondRows, second_predicate_preserved, ih]
+
+def wirePlan (rs : List WireRow) (first second : Policy) : List Event :=
+  if first ≠ .ready then [.attempt .first]
+  else if second ≠ .ready then
+    .attempt .first :: wireFirstRows rs 0 ++ [.attempt .second]
+  else
+    .attempt .first :: wireFirstRows rs 0 ++
+      (.attempt .second :: wireSecondRows
+        (rs.filter (fun r => !r.left.edges.contains "AB")) 0)
+
+theorem wire_plan_simulation (rs : List WireRow) (first second : Policy) :
+    wirePlan rs first second = plan (rs.map toRow) first second := by
+  cases first <;> cases second <;>
+    simp [wirePlan, plan, firstTrace, secondTrace, wire_first_step,
+      wire_second_step, first_predicate_preserved, List.filter_map]
+
+theorem wire_budgeted_event_simulation (rs : List WireRow)
+    (first second : Policy) (budget : Budget) :
+    (run (rs.map toRow) first second budget).orderedLedger =
+      (wirePlan rs first second).take
+        (min budget.stepBound budget.ledgerBound) := by
+  rw [wire_plan_simulation]
+  exact run_ledger_matches_plan (rs.map toRow) first second budget
+
 /- Every successful operational transition emits the next exact event in
 the independently specified ordered plan. This is a one-step simulation of
 the *selected abstract rule*. The Python and independent IR implementations
