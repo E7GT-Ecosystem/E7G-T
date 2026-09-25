@@ -147,6 +147,59 @@ def advance (first second : Policy) : Cursor → Event × Cursor
       (.attempt .second, .secondRows [] retainedRev excluded secondExcludedRev i)
   | .stopped t excluded => (.attempt .first, .stopped t excluded)
 
+/- Independent continuation specification for a cursor. This is used in
+proofs; the evaluator never builds it before charging a step. -/
+def futureFirst (second : Policy) : List Row → List Row → Nat → List Event
+  | [], keptRev, _ =>
+      .attempt .second ::
+        if second = .ready then secondRows keptRev.reverse 0 else []
+  | r :: rs, keptRev, i =>
+      .row .first i r r.left.ab ::
+        futureFirst second rs (if r.left.ab then keptRev else r :: keptRev) (i + 1)
+
+def future (first second : Policy) : Cursor → List Event
+  | .firstAttempt rs =>
+      .attempt .first :: if first = .ready then futureFirst second rs [] 0 else []
+  | .firstRows rs keptRev _ i => futureFirst second rs keptRev i
+  | .secondAttempt kept _ =>
+      .attempt .second :: if second = .ready then secondRows kept 0 else []
+  | .secondRows rs _ _ _ i => secondRows rs i
+  | .stopped _ _ => []
+
+theorem finished_has_no_future (first second : Policy) (cursor : Cursor)
+    (terminal : Terminal) (h : finished cursor = some terminal) :
+    future first second cursor = [] := by
+  cases cursor with
+  | firstAttempt rs => simp [finished] at h
+  | firstRows rs keptRev excludedRev i => simp [finished] at h
+  | secondAttempt kept excluded => simp [finished] at h
+  | secondRows rs retainedRev excluded secondExcludedRev i =>
+      cases rs with
+      | nil => rfl
+      | cons r rs => simp [finished] at h
+  | stopped t excluded => rfl
+
+theorem future_advance (first second : Policy) (cursor : Cursor)
+    (h : finished cursor = none) :
+    future first second cursor =
+      (advance first second cursor).1 ::
+        future first second (advance first second cursor).2 := by
+  cases cursor with
+  | firstAttempt rs => cases first <;> simp [future, advance, futureFirst]
+  | firstRows rs keptRev excludedRev i =>
+      cases rs with
+      | nil => cases second <;> simp [future, futureFirst, advance]
+      | cons r rs =>
+          cases h_ab : r.left.ab <;>
+            simp [future, futureFirst, advance, h_ab]
+  | secondAttempt kept excluded => cases second <;> simp [future, advance]
+  | secondRows rs retainedRev excluded secondExcludedRev i =>
+      cases rs with
+      | nil => simp [finished] at h
+      | cons r rs => cases h_bc : r.right.bc <;>
+          simp [future, secondRows, advance, h_bc]
+  | stopped t excluded => simp [finished] at h
+
 structure Machine where
   cursor : Cursor
   steps : Nat
