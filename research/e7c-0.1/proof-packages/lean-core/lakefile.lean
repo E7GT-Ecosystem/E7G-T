@@ -21,6 +21,7 @@ lean_lib E7CEECQTwoStageImplementationPath
 lean_lib E7CMSCObstruction
 lean_lib E7CJointFirstCodeSkeleton
 lean_lib E7CJointFirstExecutionRelation
+lean_lib E7CJointFirstHelperSelection
 
 @[default_target]
 lean_lib E7CLeanCore

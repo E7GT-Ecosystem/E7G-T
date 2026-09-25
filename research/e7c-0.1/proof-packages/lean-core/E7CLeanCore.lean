@@ -15,6 +15,7 @@ import E7CEECQTwoStageImplementationPath
 import E7CMSCObstruction
 import E7CJointFirstCodeSkeleton
 import E7CJointFirstExecutionRelation
+import E7CJointFirstHelperSelection
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
