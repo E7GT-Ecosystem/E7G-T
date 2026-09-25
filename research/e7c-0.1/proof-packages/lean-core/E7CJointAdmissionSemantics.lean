@@ -53,13 +53,16 @@ def signedNullEmpty : WireRow :=
 
 theorem signed_null_empty_normal :
     admission id [signedNullEmpty] = some [toRow signedNullEmpty] := by
+  have canonical : fromRow (toRow signedNullEmpty) = signedNullEmpty := by
+    simp [signedNullEmpty, fromRow, toRow, fromGraph, toGraph]
   simp [admission, parseRows, parseRow, serializeRows, serializeRow,
-    signedNullEmpty, row_roundtrip]
+    canonical]
 
 theorem signed_null_empty_changed_coefficient_rejected :
     admission (fun _ => [⟨toGraph signedNullEmpty.left,
       toGraph signedNullEmpty.right, (1 / 7 : Rat)⟩])
       [signedNullEmpty] = none := by
-  decide
+  apply changed_serialized_rows_rejected
+  simp [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph, toGraph]
 
 end E7CJointAdmissionSemantics
