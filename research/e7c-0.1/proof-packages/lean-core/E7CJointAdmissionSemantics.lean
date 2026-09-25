@@ -66,9 +66,10 @@ theorem signed_null_empty_changed_coefficient_rejected :
   have differentCoefficient : signedNullEmpty.coefficient + (1 : Rat) ≠
       signedNullEmpty.coefficient := by
     intro equality
-    have oneIsZero : (1 : Rat) = 0 :=
-      add_left_cancel (show signedNullEmpty.coefficient + 1 =
-        signedNullEmpty.coefficient + 0 by simpa using equality)
+    have subtracted := congrArg
+      (fun value : Rat => value - signedNullEmpty.coefficient) equality
+    have oneIsZero : (1 : Rat) = 0 := by
+      simpa [add_comm] using subtracted
     have oneIsNotZero : (1 : Rat) ≠ 0 := by decide
     exact oneIsNotZero oneIsZero
   simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
