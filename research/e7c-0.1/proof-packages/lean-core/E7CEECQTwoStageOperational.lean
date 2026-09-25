@@ -592,6 +592,72 @@ theorem completed_first_stage_stays_complete (second : Policy)
                   secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
                 next
 
+theorem sufficient_first_rows_complete (second : Policy) (rs : List Row) :
+    ∀ (keptRev excludedRev : List Row) (i fuel capacity steps : Nat)
+      (ledgerRev : List Event) (started : Bool),
+      rs.length ≤ min fuel capacity →
+      (drive fuel capacity .ready second
+        { cursor := .firstRows rs keptRev excludedRev i, steps := steps,
+          ledgerRev := ledgerRev, secondStarted := started }).progress.firstExcluded =
+        some (excludedRev.reverse ++ rs.filter (fun r => r.left.ab)) := by
+  induction rs with
+  | nil =>
+      intro keptRev excludedRev i fuel capacity steps ledgerRev started _
+      simpa using completed_first_stage_stays_complete second fuel capacity
+        { cursor := .firstRows [] keptRev excludedRev i, steps := steps,
+          ledgerRev := ledgerRev, secondStarted := started }
+        excludedRev.reverse rfl
+  | cons r rs ih =>
+      intro keptRev excludedRev i fuel capacity steps ledgerRev started enough
+      cases fuel with
+      | zero => simp at enough
+      | succ fuel =>
+          cases capacity with
+          | zero => simp at enough
+          | succ capacity =>
+              have tailEnough : rs.length ≤ min fuel capacity := by
+                simpa using enough
+              cases h_ab : r.left.ab with
+              | false =>
+                  have hrec := ih (r :: keptRev) excludedRev (i + 1)
+                    fuel capacity (steps + 1)
+                    (.row .first i r false :: ledgerRev) started tailEnough
+                  simpa [drive, finished, advance, h_ab, List.reverse_cons,
+                    List.append_assoc] using hrec
+              | true =>
+                  have hrec := ih keptRev (r :: excludedRev) (i + 1)
+                    fuel capacity (steps + 1)
+                    (.row .first i r true :: ledgerRev) started tailEnough
+                  simpa [drive, finished, advance, h_ab, List.reverse_cons,
+                    List.append_assoc] using hrec
+
+theorem firstRows_length (rs : List Row) (i : Nat) :
+    (firstRows rs i).length = rs.length := by
+  induction rs generalizing i with
+  | nil => rfl
+  | cons r rs ih => simp [firstRows, ih]
+
+theorem sufficient_first_stage_progress (rs : List Row)
+    (second : Policy) (budget : Budget)
+    (steps : (firstTrace rs).length ≤ budget.stepBound)
+    (ledger : (firstTrace rs).length ≤ budget.ledgerBound) :
+    (run rs .ready second budget).progress.firstExcluded =
+      some (source rs).firstExcluded := by
+  cases hs : budget.stepBound with
+  | zero => simp [firstTrace] at steps
+  | succ fuel =>
+      cases hc : budget.ledgerBound with
+      | zero => simp [firstTrace] at ledger
+      | succ capacity =>
+          have enough : rs.length ≤ min fuel capacity := by
+            apply Nat.le_min.mpr
+            constructor
+            · simpa [firstTrace, firstRows_length, hs] using steps
+            · simpa [firstTrace, firstRows_length, hc] using ledger
+          have h := sufficient_first_rows_complete second rs [] [] 0 fuel
+            capacity 1 [.attempt .first] false enough
+          simpa [run, drive, hs, hc, advance, source] using h
+
 theorem drive_first_exclusions (second : Policy) (fuel capacity : Nat)
     (machine : Machine) (rows : List Row)
     (h : firstExclusionsAt machine.cursor = some rows) :
