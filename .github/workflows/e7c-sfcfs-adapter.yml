@@ -5,7 +5,13 @@ on:
     paths:
       - "research/e7c-0.1/adapters/sfcfs_points_b1.py"
       - "research/e7c-0.1/adapters/test_sfcfs_points_b1.py"
+      - "research/e7c-0.1/adapters/sfcfs_successor_binding_b1.py"
+      - "research/e7c-0.1/adapters/test_sfcfs_successor_binding_b1.py"
+      - "research/e7c-0.1/E7C_0.1_SFCFS_SUCCESSOR_GATE.md"
       - "research/e7c-0.1/E7C_0.1_WP5_SFCFS_POINTS_GATE.md"
+      - "E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md"
+      - "E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md"
+      - "E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md"
       - "E7G-T_Combined_Family_State_v0.1.py"
       - "E7G-T_Symbolic_Families_v0.1.py"
       - ".github/workflows/e7c-sfcfs-adapter.yml"
@@ -36,4 +42,4 @@ jobs:
       - name: Bounded finite point differential
         run: python -m unittest discover -s research/e7c-0.1/adapters -p 'test_sfcfs_*.py' -v
       - name: Compile selected adapter
-        run: python -m compileall -q research/e7c-0.1/adapters/sfcfs_points_b1.py
+        run: python -m compileall -q research/e7c-0.1/adapters/sfcfs_points_b1.py research/e7c-0.1/adapters/sfcfs_successor_binding_b1.py
