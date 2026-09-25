@@ -40,6 +40,9 @@ class TransitionSiteAudit(unittest.TestCase):
                                          'steps += 1\n    emit("charge")\n    second_started = True', 1)
             with self.subTest(name=name, site="start"), self.assertRaises(SiteAuditFailure):
                 audit_code(reordered, function, stage)
+            removed_terminal = original.replace('"action": "terminal"', '"action": "omitted"', 1)
+            with self.subTest(name=name, site="terminal"), self.assertRaises(SiteAuditFailure):
+                audit_code(removed_terminal, function, stage)
 
 
 if __name__ == "__main__":

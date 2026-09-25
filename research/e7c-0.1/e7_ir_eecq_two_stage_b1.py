@@ -118,8 +118,16 @@ def execute(package, *, _transition_sink=None):
                 "second_excluded_prefix": copy.deepcopy(second_excluded_prefix)}
 
     def result(terminal):
-        return {"terminal_outcome": copy.deepcopy(terminal),
-                "ordered_ledger": copy.deepcopy(ledger), "resource_progress": progress()}
+        claim = {"terminal_outcome": copy.deepcopy(terminal),
+                 "ordered_ledger": copy.deepcopy(ledger), "resource_progress": progress()}
+        if _transition_sink is not None:
+            _transition_sink(copy.deepcopy({"action": "terminal",
+                "stage": "second" if first_excluded is not None else "first",
+                "row_index": None, "steps": steps, "ledger_entries": len(ledger),
+                "second_started": second_started, "event": None,
+                "terminal_outcome": claim["terminal_outcome"],
+                "progress": claim["resource_progress"]}))
+        return claim
 
     def limit():
         return {"tag": "resource_limit", "progress": progress()}
