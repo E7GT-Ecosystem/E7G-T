@@ -48,9 +48,26 @@ def check(source, result, transcript):
         started = False
         pending = None
         failed_append = False
+        terminal_seen = False
         for item in transcript:
-            if type(item) is not dict or item.get("action") not in ("charge", "append"):
+            if type(item) is not dict or item.get("action") not in (
+                    "charge", "append", "terminal"):
                 raise TransitionAdmission("invalid transition action")
+            if terminal_seen:
+                raise TransitionAdmission("transition after terminal outcome")
+            if item["action"] == "terminal":
+                if (item.get("stage") != (
+                        "second" if projected["firstExcluded"] is not None else "first")
+                        or item.get("row_index", "missing") is not None
+                        or item.get("steps") != steps
+                        or item.get("ledger_entries") != appended
+                        or item.get("second_started") is not started
+                        or item.get("event", "missing") is not None
+                        or item.get("terminal_outcome") != result["terminal_outcome"]
+                        or item.get("progress") != result["resource_progress"]):
+                    raise TransitionAdmission("terminal step or progress differs from result")
+                terminal_seen = True
+                continue
             if failed_append:
                 raise TransitionAdmission("transition after failed append")
             if item["action"] == "charge":
@@ -82,6 +99,8 @@ def check(source, result, transcript):
                 failed_append = True
         if steps != projected["completedSteps"] or appended != len(ledger):
             raise TransitionAdmission("transcript does not account for all progress")
+        if not terminal_seen:
+            raise TransitionAdmission("missing terminal transition")
         if started != projected["secondStarted"]:
             raise TransitionAdmission("second attempt charge not preserved")
         if pending is not None and not failed_append:

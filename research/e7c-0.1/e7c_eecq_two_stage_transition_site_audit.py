@@ -132,6 +132,19 @@ def audit_code(code, function, stage):
     if counts != {"charge": 2, "append": 2}:
         raise SiteAuditFailure("unexpected number of direct transition sites")
     if stage == "second":
+        helper_name = "finish" if function == "evaluate" else "result"
+        terminal_helpers = [node for node in root.body
+                            if isinstance(node, ast.FunctionDef) and node.name == helper_name]
+        if len(terminal_helpers) != 1 or not any(
+                isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "_transition_sink"
+                for node in ast.walk(terminal_helpers[0])) or not any(
+                isinstance(node, ast.Dict) and any(
+                    isinstance(key, ast.Constant) and key.value == "action"
+                    and isinstance(value, ast.Constant) and value.value == "terminal"
+                    for key, value in zip(node.keys, node.values))
+                for node in ast.walk(terminal_helpers[0])):
+            raise SiteAuditFailure("outer result lacks terminal transition probe")
         child = "evaluate_first" if function == "evaluate" else "execute_first"
         forwarded = any(isinstance(node, ast.Call)
                         and isinstance(node.func, ast.Name) and node.func.id == child

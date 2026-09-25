@@ -50,21 +50,26 @@ class ActualTransitionCertificate(unittest.TestCase):
                                            ("append", "first", 1),
                                            ("charge", "first", 1),
                                            ("append", "first", 2),
-                                           ("charge", "second", 2)])
-        self.assertTrue(trace[-1]["second_started"])
+                                           ("charge", "second", 2),
+                                           ("terminal", "second", 2)])
+        self.assertTrue(trace[-2]["second_started"])
         omissions = (trace[:-1], trace[:3] + trace[4:],
-                     trace + [trace[-1]], trace[1:])
+                     trace[:4] + trace[5:], trace + [trace[-1]], trace[1:])
         for corrupted in omissions:
             with self.assertRaises(TransitionAdmission):
                 check(source, observed, corrupted)
         wrong_started = copy.deepcopy(trace)
-        wrong_started[-1]["second_started"] = False
+        wrong_started[-2]["second_started"] = False
         with self.assertRaises(TransitionAdmission):
             check(source, observed, wrong_started)
         missing_started = copy.deepcopy(trace)
-        del missing_started[-1]["second_started"]
+        del missing_started[-2]["second_started"]
         with self.assertRaises(TransitionAdmission):
             check(source, observed, missing_started)
+        forged_terminal = copy.deepcopy(trace)
+        forged_terminal[-1]["terminal_outcome"] = {"tag": "success"}
+        with self.assertRaises(TransitionAdmission):
+            check(source, observed, forged_terminal)
         ghost_row = copy.deepcopy(trace)
         ghost_row[2]["row_index"] = 99
         with self.assertRaises(TransitionAdmission):

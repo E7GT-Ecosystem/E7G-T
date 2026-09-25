@@ -115,6 +115,13 @@ def evaluate(source, *, _transition_sink=None):
                    "first_witness": copy.deepcopy(first["witness"]),
                    "second_started": second_started, "claim": copy.deepcopy(claim)}
         witness["id"] = digest(witness)
+        if _transition_sink is not None:
+            _transition_sink(copy.deepcopy({"action": "terminal",
+                "stage": "second" if first_excluded is not None else "first",
+                "row_index": None, "steps": steps, "ledger_entries": len(ledger),
+                "second_started": second_started, "event": None,
+                "terminal_outcome": claim["terminal_outcome"],
+                "progress": claim["resource_progress"]}))
         return {**claim, "witness": witness}
 
     def limit():
