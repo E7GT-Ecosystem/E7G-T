@@ -5,6 +5,11 @@ on:
     paths:
       - "research/e7c-0.1/adapters/wpc_allocation_b1.py"
       - "research/e7c-0.1/adapters/test_wpc_allocation_b1.py"
+      - "research/e7c-0.1/adapters/wpc_unencoded_constitution_b1.py"
+      - "research/e7c-0.1/adapters/test_wpc_unencoded_constitution_b1.py"
+      - "research/e7c-0.1/E7C_0.1_WPC_UNENCODED_GATE.md"
+      - "E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md"
+      - "E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md"
       - "research/e7c-0.1/E7C_0.1_WP5_WPC_ALLOCATION_GATE.md"
       - "packages/wpc-0.2/**"
       - ".github/workflows/e7c-wpc-adapter.yml"
@@ -34,4 +39,4 @@ jobs:
       - name: WPC differential checks
         run: python -m unittest discover -s research/e7c-0.1/adapters -p 'test_wpc_*.py' -v
       - name: Compile selected adapter
-        run: python -m compileall -q research/e7c-0.1/adapters/wpc_allocation_b1.py
+        run: python -m compileall -q research/e7c-0.1/adapters/wpc_allocation_b1.py research/e7c-0.1/adapters/wpc_unencoded_constitution_b1.py
