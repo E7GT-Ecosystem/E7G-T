@@ -108,6 +108,10 @@ theorem exhausted_before_scan (limit : Nat) (assignments : List Assignment)
     close true limit assignments links = .resourceLimit := by
   cases assignments with
   | nil => simp at exhausted
-  | cons assignment rest => simp [close, exhausted]
+  | cons assignment rest =>
+      have noFit : ¬ (rest.length + 1 ≤ limit) := by
+        intro fits
+        exact (Nat.not_lt.mpr fits) exhausted
+      simp [close, noFit]
 
 end E7CMSCFiniteClosure
