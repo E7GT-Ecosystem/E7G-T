@@ -240,7 +240,7 @@ theorem ready_step_preserves_partition (cursor : Cursor)
     partitionAt (advance .ready .ready cursor).2 = partitionAt cursor := by
   cases cursor with
   | firstAttempt rs =>
-      simp [advance, partitionAt, source, List.filter_filter]
+      simp [advance, partitionAt, source, List.filter_filter, Bool.and_comm]
   | firstRows rs keptRev excludedRev i =>
       cases rs with
       | nil => simp [advance, partitionAt, List.filter_append]
@@ -267,7 +267,7 @@ theorem finished_success_is_partition (cursor : Cursor) (value : Partition)
   | secondAttempt kept excluded => simp [finished] at h
   | secondRows rs retainedRev excluded secondExcludedRev i =>
       cases rs with
-      | nil => simpa [finished, partitionAt] using h.symm
+      | nil => simpa [finished, partitionAt] using h
       | cons r rs => simp [finished] at h
   | stopped t excluded =>
       simp [finished] at h
