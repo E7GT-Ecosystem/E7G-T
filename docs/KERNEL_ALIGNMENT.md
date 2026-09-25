@@ -27,4 +27,8 @@ Proposition text remains opaque. The model does not validate source truth, natur
 
 ## Next gate
 
+The [active E7C v0.15 build map](../roadmaps/E7C_0.1_V015_ACTIVE_BUILD_MAP.md)
+tracks new calculus work without changing historical adapter pins or product
+adoption.
+
 Close the edition-specific E7C proof and implementation obligations before claiming full profile conformance; the actual Python/IR-to-Lean refinement is still open. Run a controlled comparison using the same model and sources under ordinary prompting, checklist prompting, retrieval alone and retrieval plus REC. Measure accuracy, unsupported claims, scope and modality errors, conflict retention, appropriate abstention, latency and cost. Mature REC claims still require schema/semantic review, expert-reviewed domain rules and an external implementation; MSC retains its separate typed-map and independent reproduction gates.
