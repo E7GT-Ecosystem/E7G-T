@@ -775,10 +775,14 @@ theorem nonready_first_progress (rs : List Row) (first second : Policy)
   | ready => contradiction
   | unsupported =>
       cases budget with
-      | mk steps ledger => cases steps <;> cases ledger <;> rfl
+      | mk steps ledger => cases steps <;> cases ledger <;>
+        simp [run, drive, finished, advance, observe, snapshot,
+          firstExcludedAt, attemptingSecond]
   | undetermined =>
       cases budget with
-      | mk steps ledger => cases steps <;> cases ledger <;> rfl
+      | mk steps ledger => cases steps <;> cases ledger <;>
+        simp [run, drive, finished, advance, observe, snapshot,
+          firstExcludedAt, attemptingSecond]
 
 theorem all_stage_first_progress (rs : List Row) (first second : Policy)
     (budget : Budget) :
