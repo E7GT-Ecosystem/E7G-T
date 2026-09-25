@@ -60,10 +60,17 @@ theorem signed_null_empty_normal :
 
 theorem signed_null_empty_changed_coefficient_rejected :
     admission (fun _ => [⟨toGraph signedNullEmpty.left,
-      toGraph signedNullEmpty.right, (1 / 7 : Rat)⟩])
+      toGraph signedNullEmpty.right, signedNullEmpty.coefficient + 1⟩])
       [signedNullEmpty] = none := by
   apply changed_serialized_rows_rejected
-  have differentCoefficient : (1 / 7 : Rat) ≠ (-2 / 3 : Rat) := by decide
+  have differentCoefficient : signedNullEmpty.coefficient + (1 : Rat) ≠
+      signedNullEmpty.coefficient := by
+    intro equality
+    have oneIsZero : (1 : Rat) = 0 :=
+      add_left_cancel (show signedNullEmpty.coefficient + 1 =
+        signedNullEmpty.coefficient + 0 by simpa using equality)
+    have oneIsNotZero : (1 : Rat) ≠ 0 := by decide
+    exact oneIsNotZero oneIsZero
   simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
     toGraph] using differentCoefficient
 
