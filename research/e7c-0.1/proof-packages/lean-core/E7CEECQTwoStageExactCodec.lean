@@ -32,8 +32,7 @@ def canonicalGraph (g : WireGraph) : Prop := fromGraph (toGraph g) = g
 theorem graph_roundtrip (g : Graph) : toGraph (fromGraph g) = g := by
   cases g with
   | mk ab ac bc tag =>
-      cases ab <;> cases ac <;> cases bc <;>
-        simp [toGraph, fromGraph]
+      cases ab <;> cases ac <;> cases bc <;> rfl
 
 theorem null_differs_from_empty (ab ac bc : Bool) :
     (⟨ab, ac, bc, none⟩ : Graph) ≠ ⟨ab, ac, bc, some ""⟩ := by
