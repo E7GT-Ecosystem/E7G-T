@@ -35,3 +35,7 @@ v0.15 source explicitly; existing consumers record `experimental`, `adopted`,
 
 Source canonicalisation, profile conformance, independent reproduction and
 empirical benefit are separate decisions. This decision supplies the first.
+The central `E7-Ecosystem/DIRECTION.md` still pins v0.12.1/RGP2 for its
+existing product architecture. That separate adoption decision and all
+product-local alignment records remain in force until reviewed there; the
+new E7G-T source edition does not silently amend them.
