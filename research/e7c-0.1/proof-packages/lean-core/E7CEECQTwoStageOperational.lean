@@ -688,12 +688,12 @@ theorem short_first_rows_incomplete (second : Policy) (rs : List Row) :
                   have hrec := ih (r :: keptRev) excludedRev (i + 1) fuel
                     capacity (steps + 1) (.row .first i r false :: ledgerRev)
                     started tailShort
-                  simpa [drive, finished, advance, h_ab] using hrec
+                  simpa [drive, finished, advance, attemptingSecond, h_ab] using hrec
               | true =>
                   have hrec := ih keptRev (r :: excludedRev) (i + 1) fuel
                     capacity (steps + 1) (.row .first i r true :: ledgerRev)
                     started tailShort
-                  simpa [drive, finished, advance, h_ab] using hrec
+                  simpa [drive, finished, advance, attemptingSecond, h_ab] using hrec
 
 theorem short_first_stage_progress (rs : List Row) (second : Policy)
     (budget : Budget)
@@ -710,7 +710,21 @@ theorem short_first_stage_progress (rs : List Row) (second : Policy)
             simpa [firstTrace, firstRows_length, hs, hc] using short
           have hrec := short_first_rows_incomplete second rs [] [] 0 fuel
             capacity 1 [.attempt .first] false tailShort
-          simpa [run, drive, hs, hc, advance] using hrec
+          simpa [run, drive, hs, hc, finished, advance, attemptingSecond] using hrec
+
+theorem exact_first_stage_progress (rs : List Row) (second : Policy)
+    (budget : Budget) :
+    (run rs .ready second budget).progress.firstExcluded =
+      if (firstTrace rs).length ≤ min budget.stepBound budget.ledgerBound then
+        some (source rs).firstExcluded else none := by
+  by_cases enough : (firstTrace rs).length ≤
+      min budget.stepBound budget.ledgerBound
+  · have hs := Nat.le_trans enough (Nat.min_le_left _ _)
+    have hc := Nat.le_trans enough (Nat.min_le_right _ _)
+    simp [enough, sufficient_first_stage_progress rs second budget hs hc]
+  · have short : min budget.stepBound budget.ledgerBound <
+        (firstTrace rs).length := Nat.lt_of_not_ge enough
+    simp [enough, short_first_stage_progress rs second budget short]
 
 theorem drive_first_exclusions (second : Policy) (fuel capacity : Nat)
     (machine : Machine) (rows : List Row)
@@ -753,6 +767,29 @@ theorem run_first_exclusions_exact_when_complete (rs : List Row)
     drive_first_exclusions second budget.stepBound budget.ledgerBound
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
         secondStarted := false } (rs.filter (fun r => r.left.ab)) rfl
+
+theorem nonready_first_progress (rs : List Row) (first second : Policy)
+    (budget : Budget) (h : first ≠ .ready) :
+    (run rs first second budget).progress.firstExcluded = none := by
+  cases first with
+  | ready => contradiction
+  | unsupported =>
+      cases budget with
+      | mk steps ledger => cases steps <;> cases ledger <;> rfl
+  | undetermined =>
+      cases budget with
+      | mk steps ledger => cases steps <;> cases ledger <;> rfl
+
+theorem all_stage_first_progress (rs : List Row) (first second : Policy)
+    (budget : Budget) :
+    (run rs first second budget).progress.firstExcluded =
+      if first = .ready ∧
+          (firstTrace rs).length ≤ min budget.stepBound budget.ledgerBound
+      then some (source rs).firstExcluded else none := by
+  cases first with
+  | ready => simpa using exact_first_stage_progress rs second budget
+  | unsupported => simp [nonready_first_progress rs .unsupported second budget]
+  | undetermined => simp [nonready_first_progress rs .undetermined second budget]
 
 theorem drive_progress_fields (first second : Policy) (fuel capacity : Nat)
     (machine : Machine) :
@@ -799,6 +836,39 @@ theorem exhaustion_returns_prefix_and_steps (rs : List Row)
       budget.ledgerBound
       { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
         secondStarted := false } hshort
+
+theorem exhaustion_exact_progress (rs : List Row)
+    (first second : Policy) (budget : Budget)
+    (short : min budget.stepBound budget.ledgerBound <
+      (plan rs first second).length) :
+    (run rs first second budget).progress =
+      { completedSteps := if budget.stepBound ≤ budget.ledgerBound
+          then budget.stepBound else budget.ledgerBound + 1
+        ledgerPrefix := (plan rs first second).take
+          (min budget.stepBound budget.ledgerBound)
+        firstExcluded := if first = .ready ∧
+          (firstTrace rs).length ≤ min budget.stepBound budget.ledgerBound
+          then some (source rs).firstExcluded else none
+        secondExcludedPrefix := secondExcluded
+          ((plan rs first second).take
+            (min budget.stepBound budget.ledgerBound)) } := by
+  have hex := exhaustion_returns_prefix_and_steps rs first second budget short
+  have hp := drive_progress_fields first second budget.stepBound
+    budget.ledgerBound
+    { cursor := .firstAttempt rs, steps := 0, ledgerRev := [],
+      secondStarted := false }
+  have hfirst := all_stage_first_progress rs first second budget
+  have hledger := run_ledger_matches_plan rs first second budget
+  have hpRun : (run rs first second budget).progress.ledgerPrefix =
+      (run rs first second budget).orderedLedger ∧
+      (run rs first second budget).progress.secondExcludedPrefix =
+        secondExcluded (run rs first second budget).orderedLedger := by
+    simpa [run] using hp
+  rw [hledger] at hpRun
+  cases hprogress : (run rs first second budget).progress with
+  | mk n events excluded secondExcludedRows =>
+      simp only [hprogress, Progress.mk.injEq] at hex hpRun hfirst ⊢
+      exact ⟨hex.2.2, hpRun.1, hfirst, hpRun.2⟩
 
 /- The second attempt starts when its step is charged, including when a
 full ledger prevents the attempt event from being appended. This law holds
