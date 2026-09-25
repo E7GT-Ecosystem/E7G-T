@@ -87,7 +87,7 @@ theorem ordered_three_way_mapping (rs : List WireRow) :
       ⟨(rs.filter (fun r => ! (toRow r).left.ab && ! (toRow r).right.bc)).map toRow,
        (rs.filter (fun r => (toRow r).left.ab)).map toRow,
        (rs.filter (fun r => ! (toRow r).left.ab && (toRow r).right.bc)).map toRow⟩ := by
-  simp [wirePartition, source, List.filter_map]
+  simp [wirePartition, source, List.filter_map, Function.comp_def]
 
 theorem ir_preserves_exact_partition (rs : List WireRow) :
     ir (rs.map toRow) = wirePartition rs :=
@@ -120,6 +120,6 @@ theorem failed_second_append_cross_language_fixture :
     (run [failedSecondAppendRow] .ready .ready ⟨4, 2⟩).progress.firstExcluded =
       some [] ∧
     (run [failedSecondAppendRow] .ready .ready ⟨4, 2⟩).secondStarted = true := by
-  decide
+  repeat' constructor <;> rfl
 
 end E7CEECQTwoStageExactCodec
