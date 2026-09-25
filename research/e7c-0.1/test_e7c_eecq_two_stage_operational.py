@@ -94,6 +94,17 @@ def check(source):
 
 
 class OperationalDifferential(unittest.TestCase):
+    def test_second_attempt_fails_ledger_append_after_step_charge(self):
+        source = document(joint([(Fraction(-2, 3), (Q, R))], arity=2),
+                          step_bound=4, ledger_bound=2)
+        check(source)
+        observed = evaluate(source)
+        assert observed["terminal_outcome"]["tag"] == "resource_limit"
+        assert observed["resource_progress"]["completed_steps"] == 3
+        assert observed["witness"]["second_started"] is True
+        assert [entry["event"] for entry in observed["ordered_ledger"]] == [
+            "restriction_attempt", "joint_row_checked"]
+
     def test_all_policy_and_budget_paths(self):
         supports = [joint([], arity=2), joint([(Fraction(-2, 3), (P, Q))], arity=2),
                     joint([(Fraction(-2, 3), (P, Q)), (Fraction(3, 5), (Q, R)),
