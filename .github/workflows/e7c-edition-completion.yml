@@ -1,0 +1,24 @@
+name: E7C edition source completion audit
+
+on:
+  pull_request:
+    paths:
+      - 'E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md'
+      - 'E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md'
+      - 'E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md'
+      - 'research/e7c-0.1/E7C_0.1_EDITION_COMPLETION_GATE.md'
+      - 'research/e7c-0.1/e7c_edition_source_audit.py'
+      - 'research/e7c-0.1/test_e7c_edition_source_audit.py'
+      - '.github/workflows/e7c-edition-completion.yml'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: python3 research/e7c-0.1/e7c_edition_source_audit.py
+      - run: python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_edition_source_audit.py' -v
