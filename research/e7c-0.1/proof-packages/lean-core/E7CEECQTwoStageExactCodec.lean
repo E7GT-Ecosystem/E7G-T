@@ -120,6 +120,7 @@ theorem failed_second_append_cross_language_fixture :
     (run [failedSecondAppendRow] .ready .ready ⟨4, 2⟩).progress.firstExcluded =
       some [] ∧
     (run [failedSecondAppendRow] .ready .ready ⟨4, 2⟩).secondStarted = true := by
-  repeat' constructor <;> rfl
+  simp [run, drive, advance, finished, snapshot, observe,
+    firstExcludedAt, attemptingSecond, failedSecondAppendRow]
 
 end E7CEECQTwoStageExactCodec
