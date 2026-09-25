@@ -6,6 +6,8 @@ conditional Trace relation; this Python checker is not a proof of Python code.
 
 from __future__ import annotations
 
+import copy
+
 from e7c_eecq_two_stage_exact_codec import (
     CodecAdmission, LeanEvent, budget, events, observation, policy, rows,
     staged_spec,
@@ -144,7 +146,7 @@ def certify_both(source):
             or source_result["witness"]["claim"] != ir_result
             or replayed != ir_result):
         raise TransitionAdmission("source, IR and independent replay disagree")
-    return {"source_digest": digest(source), "source": source,
+    return {"source_digest": digest(source), "source": copy.deepcopy(source),
             "ir_package": package, "source_result": source_result,
             "ir_result": ir_result, "source_transcript": source_trace,
             "ir_transcript": ir_trace, "exact_observation": source_projection}

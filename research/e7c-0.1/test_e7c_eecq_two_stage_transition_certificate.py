@@ -35,6 +35,8 @@ class ActualTransitionCertificate(unittest.TestCase):
                                      record["ir_transcript"])
                     self.assertEqual(record["source_result"]["witness"]["claim"],
                                      record["ir_result"])
+                    source["second_interpretation"]["obligation"] = "unresolved"
+                    self.assertNotEqual(record["source"], source)
 
     def test_both_paths_emit_every_charge_and_append(self):
         for support, steps, ledger, first_cap, second_obl in itertools.product(
