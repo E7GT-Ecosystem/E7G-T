@@ -19,8 +19,8 @@ structure WireGraph where
   deriving DecidableEq, Repr
 
 def toGraph (g : WireGraph) : Graph :=
-  ⟨decide ("AB" ∈ g.edges), decide ("AC" ∈ g.edges),
-    decide ("BC" ∈ g.edges), g.tag⟩
+  ⟨g.edges.contains "AB", g.edges.contains "AC",
+    g.edges.contains "BC", g.tag⟩
 
 def fromGraph (g : Graph) : WireGraph :=
   ⟨(if g.ab then ["AB"] else []) ++
@@ -77,10 +77,10 @@ theorem canonical_rows_injective (a b : WireRow)
 def wirePartition (rs : List WireRow) : Partition := source (rs.map toRow)
 
 theorem first_predicate_preserved (r : WireRow) :
-    (toRow r).left.ab = decide ("AB" ∈ r.left.edges) := rfl
+    (toRow r).left.ab = r.left.edges.contains "AB" := rfl
 
 theorem second_predicate_preserved (r : WireRow) :
-    (toRow r).right.bc = decide ("BC" ∈ r.right.edges) := rfl
+    (toRow r).right.bc = r.right.edges.contains "BC" := rfl
 
 theorem ordered_three_way_mapping (rs : List WireRow) :
     wirePartition rs =
@@ -107,7 +107,7 @@ theorem abstract_one_step_simulation (first second : Policy) (cursor : Cursor)
   future_advance first second cursor h
 
 def failedSecondAppendRow : Row :=
-  ⟨⟨false, false, true, none⟩, ⟨false, true, false, some ""⟩, (-2 : Rat) / 3⟩
+  ⟨⟨false, false, true, none⟩, ⟨false, true, false, some ""⟩, (-2 : Rat)⟩
 
 /- Python fixture: one row, step bound 4, ledger bound 2. The second
 attempt consumes step 3, cannot append event 3, and sets secondStarted. -/

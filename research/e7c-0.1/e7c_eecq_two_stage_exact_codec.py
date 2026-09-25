@@ -53,6 +53,11 @@ def graph(g):
             or g["edges"] != [e for e in EDGES if e in g["edges"]]
             or g["tag"] is not None and type(g["tag"]) is not str):
         raise CodecAdmission("noncanonical graph is outside admitted Joint")
+    if g["tag"] is not None:
+        try:
+            g["tag"].encode("utf-8")
+        except UnicodeEncodeError as exc:
+            raise CodecAdmission("tag is not canonical UTF-8 JSON") from exc
     return LeanGraph(*(e in g["edges"] for e in EDGES), g["tag"])
 
 
@@ -184,7 +189,19 @@ def observation(source, result):
             raise CodecAdmission("resource progress mismatch")
     elif terminal["tag"] not in ("unsupported", "undetermined"):
         raise CodecAdmission("unsupported terminal mapping")
+    terminal_stage = None
+    if terminal["tag"] in ("unsupported", "undetermined"):
+        terminal_stage = "second" if first is not None else "first"
+        expected_diagnostic = {
+            ("first", "unsupported"): "joint_restriction_unavailable",
+            ("first", "undetermined"): "joint_predicate_unresolved",
+            ("second", "unsupported"): "second_joint_restriction_unavailable",
+            ("second", "undetermined"): "second_joint_predicate_unresolved",
+        }[terminal_stage, terminal["tag"]]
+        if terminal["diagnostic"] != expected_diagnostic:
+            raise CodecAdmission("failure stage or diagnostic mismatch")
     return {"terminal": terminal["tag"], "partition": value,
+            "terminalStage": terminal_stage,
             "orderedLedger": mapped, "completedSteps": progress["completed_steps"],
             "firstExcluded": None if first is None else tuple(row(r) for r in first),
             "secondExcludedPrefix": tuple(row(r) for r in second),
@@ -227,6 +244,8 @@ def staged_spec(source):
 
     def finish(terminal, value=None):
         return {"terminal": terminal, "partition": value,
+                "terminalStage": ("first" if first_excluded is None else "second")
+                if terminal in ("unsupported", "undetermined") else None,
                 "orderedLedger": tuple(ledger), "completedSteps": steps,
                 "firstExcluded": first_excluded,
                 "secondExcludedPrefix": tuple(second_excluded),

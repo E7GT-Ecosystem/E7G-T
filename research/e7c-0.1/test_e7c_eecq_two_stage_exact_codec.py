@@ -39,6 +39,7 @@ class ExactCodec(unittest.TestCase):
         for graph_record in ({"edges": ["BC", "AB"], "tag": None},
                              {"edges": ["AB", "AB"], "tag": None},
                              {"edges": [], "tag": 3},
+                             {"edges": [], "tag": "\ud800"},
                              {"edges": ["AX"], "tag": None}):
             with self.subTest(graph=graph_record), self.assertRaises(CodecAdmission):
                 graph(graph_record)
@@ -62,7 +63,7 @@ class ExactCodec(unittest.TestCase):
                 self.assertEqual(observation(source, execute(lower(source))), spec)
 
     def test_second_attempt_charged_without_append(self):
-        only = joint([(Fraction(-2, 3), (Config(("BC",), None),
+        only = joint([(Fraction(-2, 1), (Config(("BC",), None),
                                           Config(("AC",), "")))], arity=2)
         source = document(only, step_bound=4, ledger_bound=2)
         spec = staged_spec(source)
