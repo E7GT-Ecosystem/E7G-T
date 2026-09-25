@@ -23,11 +23,13 @@ theorem each_declared_link_satisfiable :
     (∃ r s : Bool, linkRS r s) ∧
     (∃ s t : Bool, linkST s t) ∧
     (∃ r t : Bool, linkRT r t) := by
-  decide
+  exact ⟨⟨false, false, rfl⟩, ⟨false, false, rfl⟩, ⟨true, false, rfl⟩⟩
 
 theorem no_global_compatible_family :
     ¬ ∃ r s t : Bool, linkRS r s ∧ linkST s t ∧ linkRT r t := by
-  decide
+  intro ⟨r, s, t, hrs, hst, hrt⟩
+  cases r <;> cases s <;> cases t <;>
+    simp_all [linkRS, linkST, linkRT, pRS, cRS, pST, cST, pRTFlip, cRT]
 
 theorem linkwise_does_not_imply_global :
     ((∃ r s : Bool, linkRS r s) ∧
