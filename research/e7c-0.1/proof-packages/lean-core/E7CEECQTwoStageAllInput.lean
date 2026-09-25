@@ -11,7 +11,7 @@ structure Graph where
   ab : Bool
   ac : Bool
   bc : Bool
-  tag : Option Nat
+  tag : Option String
   deriving DecidableEq, Repr
 
 structure Row where
