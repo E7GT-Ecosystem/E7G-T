@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.15-experimental canonical reference (MSC1) — 2026-09-25
+
+- Deliberately designate one self-contained experimental canonical source for new work: `E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md`.
+- Integrate the complete MSC/0.1 formal proposal alongside the inherited v0.13 WPC and v0.14 REC families; retain the UC5 constitutional body, profile identifiers and bounded companion packages.
+- Preserve v0.12.1/RGP2, v0.13/RWP1 and v0.14/REC1 as immutable edition-pinned predecessor sources. No automatic consumer, data, API, schema or E7C source-pin migration.
+- Separate source canonicalisation from implementation conformance, all-input Python/IR-to-Lean refinement, independent reproduction and empirical benefit. WPC-Distributed stays unsupported; full E7C and profile completion remain open.
+- Record the [successor and migration decision](docs/CANONICAL_SUCCESSOR_DECISION.md) and the new release manifest.
+
 ## MSC/0.1 research proposal — 2026-09-15
 
 ### Added
