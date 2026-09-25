@@ -326,6 +326,77 @@ def run (rs : List Row) (first second : Policy) (budget : Budget) : Observation 
   drive budget.stepBound budget.ledgerBound first second
     { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
 
+theorem finished_partition (cursor : Cursor) (terminal : Terminal)
+    (value : Partition) (hfin : finished cursor = some terminal)
+    (hpart : partitionAt cursor = some value) :
+    terminal = .success value := by
+  cases cursor with
+  | firstAttempt rs => simp [finished] at hfin
+  | firstRows rs keptRev excludedRev i => simp [finished] at hfin
+  | secondAttempt kept excluded => simp [finished] at hfin
+  | secondRows rs retainedRev excluded secondExcludedRev i =>
+      cases rs with
+      | nil =>
+          simp [finished, partitionAt] at hfin hpart
+          cases hpart
+          exact hfin.symm
+      | cons r rs => simp [finished] at hfin
+  | stopped t excluded =>
+      cases t <;> simp_all [finished, partitionAt]
+
+theorem drive_sufficient (fuel capacity : Nat) (machine : Machine)
+    (value : Partition)
+    (hpart : partitionAt machine.cursor = some value)
+    (hsteps : (future .ready .ready machine.cursor).length ≤ fuel)
+    (hledger : (future .ready .ready machine.cursor).length ≤ capacity) :
+    (drive fuel capacity .ready .ready machine).terminal = .success value := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases hfin : finished machine.cursor with
+      | some terminal =>
+          have ht := finished_partition machine.cursor terminal value hfin hpart
+          simp [drive, hfin, observe, ht]
+      | none =>
+          have hstep := future_advance .ready .ready machine.cursor hfin
+          simp [hstep] at hsteps
+  | succ fuel ih =>
+      cases hfin : finished machine.cursor with
+      | some terminal =>
+          have ht := finished_partition machine.cursor terminal value hfin hpart
+          simp [drive, hfin, observe, ht]
+      | none =>
+          have hstep := future_advance .ready .ready machine.cursor hfin
+          cases capacity with
+          | zero => simp [hstep] at hledger
+          | succ capacity =>
+              let nextCursor := (advance .ready .ready machine.cursor).2
+              have hp : partitionAt nextCursor = some value := by
+                simpa [nextCursor] using
+                  (ready_step_preserves_partition machine.cursor hfin).trans hpart
+              have hs : (future .ready .ready nextCursor).length ≤ fuel := by
+                simp [hstep, nextCursor] at hsteps ⊢
+                exact Nat.le_of_succ_le_succ hsteps
+              have hc : (future .ready .ready nextCursor).length ≤ capacity := by
+                simp [hstep, nextCursor] at hledger ⊢
+                exact Nat.le_of_succ_le_succ hledger
+              let nextMachine : Machine :=
+                { cursor := nextCursor, steps := machine.steps + 1,
+                  ledgerRev := (advance .ready .ready machine.cursor).1 :: machine.ledgerRev,
+                  secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
+              have hrec := ih capacity nextMachine hp hs hc
+              simpa [drive, hfin, nextMachine, nextCursor] using hrec
+
+theorem sufficient_budgets_produce_partition (rs : List Row) (budget : Budget)
+    (steps : (plan rs .ready .ready).length ≤ budget.stepBound)
+    (ledger : (plan rs .ready .ready).length ≤ budget.ledgerBound) :
+    (run rs .ready .ready budget).terminal = .success (source rs) := by
+  apply drive_sufficient budget.stepBound budget.ledgerBound
+    { cursor := .firstAttempt rs, steps := 0, ledgerRev := [], secondStarted := false }
+    (source rs)
+  · rfl
+  · simpa [future_start_is_plan] using steps
+  · simpa [future_start_is_plan] using ledger
+
 theorem drive_ledger_prefix (first second : Policy) (fuel capacity : Nat)
     (machine : Machine) :
     (drive fuel capacity first second machine).orderedLedger =
