@@ -139,3 +139,12 @@ jobs:
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CEECQTwoStageAllInput
           use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Quot.sound"
+          axiom-audit-root: E7CEECQTwoStageOperational
+          use-mathlib-cache: false
