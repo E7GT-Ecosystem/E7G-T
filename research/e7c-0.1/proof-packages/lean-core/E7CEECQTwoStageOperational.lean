@@ -375,10 +375,10 @@ theorem drive_sufficient (fuel capacity : Nat) (machine : Machine)
                   (ready_step_preserves_partition machine.cursor hfin).trans hpart
               have hs : (future .ready .ready nextCursor).length ≤ fuel := by
                 simp [hstep, nextCursor] at hsteps ⊢
-                exact Nat.le_of_succ_le_succ hsteps
+                exact hsteps
               have hc : (future .ready .ready nextCursor).length ≤ capacity := by
                 simp [hstep, nextCursor] at hledger ⊢
-                exact Nat.le_of_succ_le_succ hledger
+                exact hledger
               let nextMachine : Machine :=
                 { cursor := nextCursor, steps := machine.steps + 1,
                   ledgerRev := (advance .ready .ready machine.cursor).1 :: machine.ledgerRev,
@@ -396,6 +396,75 @@ theorem sufficient_budgets_produce_partition (rs : List Row) (budget : Budget)
   · rfl
   · simpa [future_start_is_plan] using steps
   · simpa [future_start_is_plan] using ledger
+
+theorem drive_short_terminal (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine)
+    (short : min fuel capacity < (future first second machine.cursor).length) :
+    (drive fuel capacity first second machine).terminal =
+      .resourceLimit (drive fuel capacity first second machine).progress := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases h : finished machine.cursor with
+      | some terminal =>
+          have empty := finished_has_no_future first second machine.cursor terminal h
+          simp [empty] at short
+      | none => simp [drive, h, observe]
+  | succ fuel ih =>
+      cases h : finished machine.cursor with
+      | some terminal =>
+          have empty := finished_has_no_future first second machine.cursor terminal h
+          simp [empty] at short
+      | none =>
+          cases capacity with
+          | zero => simp [drive, h, observe]
+          | succ capacity =>
+              have hstep := future_advance first second machine.cursor h
+              have tailShort : min fuel capacity <
+                  (future first second (advance first second machine.cursor).2).length := by
+                rw [hstep] at short
+                simpa using short
+              let nextMachine : Machine :=
+                { cursor := (advance first second machine.cursor).2,
+                  steps := machine.steps + 1,
+                  ledgerRev := (advance first second machine.cursor).1 :: machine.ledgerRev,
+                  secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
+              have hrec := ih capacity nextMachine tailShort
+              simpa [drive, h, nextMachine] using hrec
+
+theorem drive_short_steps (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine)
+    (short : min fuel capacity < (future first second machine.cursor).length) :
+    (drive fuel capacity first second machine).progress.completedSteps =
+      machine.steps + (if fuel ≤ capacity then fuel else capacity + 1) := by
+  induction fuel generalizing capacity machine with
+  | zero =>
+      cases h : finished machine.cursor with
+      | some terminal =>
+          have empty := finished_has_no_future first second machine.cursor terminal h
+          simp [empty] at short
+      | none => simp [drive, h, observe, snapshot]
+  | succ fuel ih =>
+      cases h : finished machine.cursor with
+      | some terminal =>
+          have empty := finished_has_no_future first second machine.cursor terminal h
+          simp [empty] at short
+      | none =>
+          cases capacity with
+          | zero => simp [drive, h, observe, snapshot]
+          | succ capacity =>
+              have hstep := future_advance first second machine.cursor h
+              have tailShort : min fuel capacity <
+                  (future first second (advance first second machine.cursor).2).length := by
+                rw [hstep] at short
+                simpa using short
+              let nextMachine : Machine :=
+                { cursor := (advance first second machine.cursor).2,
+                  steps := machine.steps + 1,
+                  ledgerRev := (advance first second machine.cursor).1 :: machine.ledgerRev,
+                  secondStarted := machine.secondStarted || attemptingSecond machine.cursor }
+              have hrec := ih capacity nextMachine tailShort
+              simpa [drive, h, nextMachine, Nat.succ_le_succ_iff,
+                Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hrec
 
 theorem drive_ledger_prefix (first second : Policy) (fuel capacity : Nat)
     (machine : Machine) :
