@@ -105,14 +105,19 @@ def restrict_absent(edge: str, source: State) -> tuple[State, State]:
 
 
 def restrict_joint_absent(edge: str, coordinate: int, source: Joint) -> tuple[Joint, Joint]:
-    """Partition authoritative joint rows without factorising or renormalising."""
+    """Partition canonical support directly, preserving its order and coefficients."""
     if (type(edge) is not str or edge not in {"AB", "AC", "BC"}
             or type(source) is not Joint or type(coordinate) is not int
             or not 0 <= coordinate < source.arity):
         raise AdmissionError("registered edge, coordinate and typed joint required")
-    retained = [(c, atoms) for atoms, c in source.terms if edge not in atoms[coordinate].edges]
-    excluded = [(c, atoms) for atoms, c in source.terms if edge in atoms[coordinate].edges]
-    return joint(retained, arity=source.arity), joint(excluded, arity=source.arity)
+    # A filtered subsequence of a canonical Joint is already sorted, unique,
+    # typed and nonzero. Construct both children directly; re-collection could
+    # otherwise hide a change to the selected coefficients or row order.
+    retained = tuple((atoms, c) for atoms, c in source.terms
+                     if edge not in atoms[coordinate].edges)
+    excluded = tuple((atoms, c) for atoms, c in source.terms
+                     if edge in atoms[coordinate].edges)
+    return Joint(source.arity, retained), Joint(source.arity, excluded)
 
 
 def joint_signature(source: Joint) -> tuple[tuple[tuple[Any, ...], int, int], ...]:
