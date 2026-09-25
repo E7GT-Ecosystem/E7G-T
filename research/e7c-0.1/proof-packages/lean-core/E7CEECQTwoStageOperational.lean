@@ -217,6 +217,62 @@ theorem future_start_is_plan (rs : List Row) (first second : Policy) :
   cases first <;> cases second <;>
     simp [future, plan, firstTrace, secondTrace, futureFirst_agrees_with_plan]
 
+/- The residual partition represented by the cursor, including rows that
+have not yet been visited. This expression is proof-only. -/
+def partitionAt : Cursor → Option Partition
+  | .firstAttempt rs => some (source rs)
+  | .firstRows remaining keptRev excludedRev _ =>
+      let kept := keptRev.reverse ++ remaining.filter (fun r => !r.left.ab)
+      some ⟨kept.filter (fun r => !r.right.bc),
+        excludedRev.reverse ++ remaining.filter (fun r => r.left.ab),
+        kept.filter (fun r => r.right.bc)⟩
+  | .secondAttempt kept excluded =>
+      some ⟨kept.filter (fun r => !r.right.bc), excluded,
+        kept.filter (fun r => r.right.bc)⟩
+  | .secondRows remaining retainedRev excluded secondExcludedRev _ =>
+      some ⟨retainedRev.reverse ++ remaining.filter (fun r => !r.right.bc),
+        excluded, secondExcludedRev.reverse ++ remaining.filter (fun r => r.right.bc)⟩
+  | .stopped (.success value) _ => some value
+  | .stopped _ _ => none
+
+theorem ready_step_preserves_partition (cursor : Cursor)
+    (h : finished cursor = none) :
+    partitionAt (advance .ready .ready cursor).2 = partitionAt cursor := by
+  cases cursor with
+  | firstAttempt rs =>
+      simp [advance, partitionAt, source, List.filter_filter]
+  | firstRows rs keptRev excludedRev i =>
+      cases rs with
+      | nil => simp [advance, partitionAt, List.filter_append]
+      | cons r rs =>
+          cases h_ab : r.left.ab <;>
+            simp [advance, partitionAt, h_ab, List.reverse_cons,
+              List.filter_append, List.append_assoc]
+  | secondAttempt kept excluded => simp [advance, partitionAt]
+  | secondRows rs retainedRev excluded secondExcludedRev i =>
+      cases rs with
+      | nil => simp [finished] at h
+      | cons r rs =>
+          cases h_bc : r.right.bc <;>
+            simp [advance, partitionAt, h_bc, List.reverse_cons,
+              List.filter_append, List.append_assoc]
+  | stopped t excluded => simp [finished] at h
+
+theorem finished_success_is_partition (cursor : Cursor) (value : Partition)
+    (h : finished cursor = some (.success value)) :
+    partitionAt cursor = some value := by
+  cases cursor with
+  | firstAttempt rs => simp [finished] at h
+  | firstRows rs keptRev excludedRev i => simp [finished] at h
+  | secondAttempt kept excluded => simp [finished] at h
+  | secondRows rs retainedRev excluded secondExcludedRev i =>
+      cases rs with
+      | nil => simpa [finished, partitionAt] using h.symm
+      | cons r rs => simp [finished] at h
+  | stopped t excluded =>
+      simp [finished] at h
+      cases t <;> simp_all [partitionAt]
+
 structure Machine where
   cursor : Cursor
   steps : Nat
