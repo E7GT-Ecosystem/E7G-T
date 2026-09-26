@@ -128,6 +128,13 @@ theorem rows_statement_output_exact
         injection ih with htail
       simp [encodeRawRows, row_statement_output_exact rowTrace, htail]
 
+theorem rows_statement_depth_le
+    {rows : List WireRow} {output : RawJson}
+    (trace : RowsStatementTrace rows output) :
+    rawJsonDepth output ≤ 5 := by
+  rw [rows_statement_output_exact trace]
+  exact encodeRawRows_depth_le rows
+
 inductive FinalGuardOutcome where
   | returnedNormally
   | rejected
@@ -144,27 +151,26 @@ def finalRowsGuard (pythonEqual : RawJson → RawJson → Bool)
 guard. The fuel-safety proofs are separate premises derived below from row
 admission and the serializer trace, not folded into this contract. -/
 structure CPythonJsonEqualityContract
-    (serialized original : RawJson)
-    (serializedFuelSafe : rawJsonDepth serialized ≤ 32)
-    (originalFuelSafe : rawJsonDepth original ≤ 32) where
+    (serialized original : RawJson) where
   pythonEqual : RawJson → RawJson → Bool
   equalityAtComparedPair :
-    pythonEqual serialized original =
-      decide (rawJsonEquivalent serialized original)
+    ∀ (serializedFuelSafe : rawJsonDepth serialized ≤ 32)
+      (originalFuelSafe : rawJsonDepth original ≤ 32),
+      pythonEqual serialized original =
+        decide (rawJsonEquivalent serialized original)
 
 theorem normal_guard_execution_yields_extensional_equality
     {serializedRows originalRows : RawJson}
-    {serializedFuelSafe : rawJsonDepth serializedRows ≤ 32}
-    {originalFuelSafe : rawJsonDepth originalRows ≤ 32}
-    (contract : CPythonJsonEqualityContract serializedRows originalRows
-      serializedFuelSafe originalFuelSafe)
+    (contract : CPythonJsonEqualityContract serializedRows originalRows)
+    (serializedFuelSafe : rawJsonDepth serializedRows ≤ 32)
+    (originalFuelSafe : rawJsonDepth originalRows ≤ 32)
     (branch : finalRowsGuard contract.pythonEqual serializedRows originalRows =
       .returnedNormally) :
     rawJsonEquivalent serializedRows originalRows := by
   have hCompare : contract.pythonEqual serializedRows originalRows = true := by
     unfold finalRowsGuard at branch
     split at branch <;> simp_all
-  rw [contract.equalityAtComparedPair] at hCompare
+  rw [contract.equalityAtComparedPair serializedFuelSafe originalFuelSafe] at hCompare
   exact of_decide_eq_true hCompare
 
 theorem rawJsonEquivalent_of_structural_eq
@@ -185,9 +191,7 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
     (admittedRows : decodeJointRows originalRows = some source)
     (typedExecution : ModeledNormalExecution normalizer source result)
     (serializer : RowsStatementTrace (result.map fromRow) output)
-    (outputFuelSafe : rawJsonDepth output ≤ 32)
-    (contract : CPythonJsonEqualityContract output originalRows
-      outputFuelSafe (decodeJointRows_depth_below_fuel admittedRows))
+    (contract : CPythonJsonEqualityContract output originalRows)
     (returned : finalRowsGuard contract.pythonEqual output originalRows =
       .returnedNormally) :
     result = source.map toRow ∧
@@ -196,14 +200,14 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hExactRows := modeled_normal_execution_exact_rows canonical typedExecution
   have hSerialized : output = encodeRawRows (result.map fromRow) :=
     rows_statement_output_exact serializer
-  have hOutputDepth : rawJsonDepth output ≤ 5 := by
-    rw [hSerialized]
-    exact encodeRawRows_depth_le (result.map fromRow)
+  have hOutputDepth : rawJsonDepth output ≤ 5 :=
+    rows_statement_depth_le serializer
   have hOutputFuel : rawJsonDepth output ≤ 32 := by omega
   have hOriginalFuel : rawJsonDepth originalRows ≤ 32 :=
     decodeJointRows_depth_below_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
-    normal_guard_execution_yields_extensional_equality contract returned
+    normal_guard_execution_yields_extensional_equality contract
+      (by omega) hOriginalFuel returned
   have hCanonical : rawJsonEquivalent output
       (encodeRawRows (result.map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
