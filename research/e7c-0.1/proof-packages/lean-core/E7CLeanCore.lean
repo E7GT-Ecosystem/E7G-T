@@ -853,3 +853,5 @@ theorem typed_strict_domain_failure_has_ledger_prefix :
   · rfl
 
 end E7CLeanCore
+
+import E7CJointCPythonEqualityBoundary
