@@ -118,8 +118,8 @@ theorem raw_rows_mapM_follows_visits
 structure RawRowsAdmissionStatementTrace (raw : RawJson) where
   rawRows : List RawJson
   arrayRead : raw = .array rawRows
-  visits : RawRowsVisitTrace rawRows rows
   rows : List WireRow
+  visits : RawRowsVisitTrace rawRows rows
   capCheck : rawRows.length ≤ 64
   fuelCheck : rawJsonWithinFuel 32 raw = true
 
