@@ -218,8 +218,8 @@ theorem row_helper_result_refines (ops : CPythonRowsHelperTrace result)
     (row : Row) : pythonRow ops row = serializeRow row := by
   cases row with
   | mk left right coefficient =>
-      simp [pythonRow, serializeRow, graph_helper_result_refines,
-        ops.fractionPairRefines]
+      simp [pythonRow, serializeRow, fromRow,
+        graph_helper_result_refines, ops.fractionPairRefines]
 
 theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
     ops.pythonRows = serializeRows result := by
