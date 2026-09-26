@@ -55,13 +55,21 @@ theorem insert_trace_refines_model
     {input output : List JointKey}
     (trace : CPythonInsertTrace compare key input output)
     (comparisonRefines : compare = compareJointIdentity) :
-    output = insertJointKey key input := by
+  output = insertJointKey key input := by
   induction trace with
   | empty => rfl
   | before head tail h =>
-      simp [insertJointKey, jointKeyLt, comparisonRefines, h]
+      have hc : compareJointIdentity key head = .lt := by
+        simpa [comparisonRefines] using h
+      have hl : jointKeyLt key head = true := by
+        simp [jointKeyLt, hc]
+      simp [insertJointKey, hl]
   | @after head tail output h rest ih =>
-      simp [insertJointKey, jointKeyLt, comparisonRefines, h, ih]
+      have hc : compareJointIdentity key head ≠ .lt := by
+        simpa [comparisonRefines] using h
+      have hl : jointKeyLt key head = false := by
+        simp [jointKeyLt, hc]
+      simp [insertJointKey, hl, ih]
 
 /- The abstract list-sort operation is represented by sequential insertion
    traces. Its steps are individual comparisons and list writes, not an assumed
@@ -148,17 +156,20 @@ structure CPythonJointConstructorTrace (ops : CPythonJointConstructorOps)
   visitedRows : JointRowVisitTrace ops arity rows
   canonicalOrder : ops.canonicalOrder rows = true
 
+theorem row_visit_trace_checks_all
+    {ops : CPythonJointConstructorOps} {arity : Nat} {rows : List Row}
+    (trace : JointRowVisitTrace ops arity rows) :
+    rows.all (constructorRowAccepted ops arity) = true := by
+  induction trace with
+  | nil => rfl
+  | @cons row rest accepted tail ih => simp [accepted, ih]
+
 theorem constructor_trace_builds_rows
     {ops : CPythonJointConstructorOps} {arity : Nat} {rows : List Row}
     (trace : CPythonJointConstructorTrace ops arity rows) :
     runConstructorRows ops arity rows = some rows := by
-  induction trace with
-  | mk positive outer visited canonical =>
-      have hall : rows.all (constructorRowAccepted ops arity) = true := by
-        induction visited with
-        | nil => rfl
-        | @cons row rest accepted tail ih => simp [accepted, ih]
-      simp [runConstructorRows, positive, outer, hall, canonical]
+  simp [runConstructorRows, trace.positiveArity, trace.outerTuple,
+    row_visit_trace_checks_all trace, trace.canonicalOrder]
 
 theorem constructor_rejects_bad_row
     (ops : CPythonJointConstructorOps) (arity : Nat) (row : Row)
