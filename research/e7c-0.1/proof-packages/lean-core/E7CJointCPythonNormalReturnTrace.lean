@@ -13,6 +13,11 @@ open E7CEECQTwoStageExactCodec
 open E7CJointAdmissionExecution
 open E7CJointRawJsonAdmission
 
+noncomputable instance rawJsonEquivalentDecidable (left right : RawJson) :
+    Decidable (rawJsonEquivalent left right) := by
+  unfold rawJsonEquivalent
+  infer_instance
+
 structure GraphFieldStatementTrace (graph : WireGraph) (output : RawJson) : Type where
   edgesRead : List String
   edgesAttributeRead : edgesRead = graph.edges
@@ -56,6 +61,7 @@ theorem graph_statement_output_exact
     (trace : GraphFieldStatementTrace graph output) :
     output = encodeRawGraph graph := by
   rw [trace.dictionaryWrite, trace.edgesAttributeRead, trace.tagAttributeRead]
+  rfl
 
 theorem fraction_statement_output_exact
     {coefficient : Rat} {output : RawJson}
@@ -63,15 +69,17 @@ theorem fraction_statement_output_exact
     output = encodeRawFraction coefficient := by
   rw [trace.dictionaryWrite, trace.numeratorAttributeRead,
     trace.denominatorAttributeRead]
+  rfl
 
 theorem row_statement_output_exact
     {row : WireRow} {output : RawJson}
     (trace : RowStatementTrace row output) :
     output = encodeRawRow row := by
-  rw [trace.rowDictionaryWrite, trace.atomsWritten,
-    graph_statement_output_exact trace.leftGraphReadWrite,
-    graph_statement_output_exact trace.rightGraphReadWrite,
-    fraction_statement_output_exact trace.fractionReadWrite]
+  rw [trace.rowDictionaryWrite, trace.atomListWrite]
+  have hleft := graph_statement_output_exact trace.leftGraphReadWrite
+  have hright := graph_statement_output_exact trace.rightGraphReadWrite
+  have hcoeff := fraction_statement_output_exact trace.fractionReadWrite
+  simp [encodeRawRow, hleft, hright, hcoeff]
 
 theorem rows_statement_output_exact
     {rows : List WireRow} {output : RawJson}
@@ -80,7 +88,11 @@ theorem rows_statement_output_exact
   induction trace with
   | nil => rfl
   | @cons row rows rowOutput rowsOutput rowTrace rowsTrace ih =>
-      simp [encodeRawRows, row_statement_output_exact rowTrace, ih]
+      have htail : rowsOutput = rows.map encodeRawRow := by
+        change RawJson.array rowsOutput = RawJson.array (rows.map encodeRawRow) at ih
+        injection ih with htail
+        exact htail
+      simp [encodeRawRows, row_statement_output_exact rowTrace, htail]
 
 inductive FinalGuardOutcome where
   | returnedNormally
