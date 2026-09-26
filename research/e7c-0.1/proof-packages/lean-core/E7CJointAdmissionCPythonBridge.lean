@@ -79,7 +79,7 @@ theorem serializer_result_yields_write_call
   rw [ops.rowsOutputRefines]
   exact rows_write_call ops.result
 
-theorem pinned_normal_return_yields_modeled_trace
+def pinned_normal_return_yields_modeled_trace
     {normalizer : List Row → List Row} {source : List WireRow}
     (ops : CPythonOperationRefinements normalizer source) :
     ModeledNormalExecution normalizer source ops.result := by
