@@ -1,7 +1,7 @@
 import E7CJointRawJsonAdmission
 
-/-!
-A normal-return correspondence audit for the exact pinned `admit` path.
+/-
+A normal-return correspondence audit for the exact pinned admit path.
 This increment records the Python-object equality boundary encountered when
 trying to derive #146's structural RawJson equality from the running helper.
 -/
@@ -32,7 +32,7 @@ def pinnedCanonicalJsonGuardAst : String := "201c5a74316b65b26508d120ed3801a15b9
 def lookupIntField : List (String × Int) → String → Option Int
   | [], _ => none
   | (key, value) :: rest, wanted =>
-      if key == wanted then some value else lookupIntField rest wanted
+      if key == wanted then some value else lookupIntField rest key wanted
 
 def pythonDictEqIntFields (left right : List (String × Int)) : Bool :=
   decide (left.length = right.length) &&
@@ -72,7 +72,7 @@ theorem normal_python_dict_equality_does_not_imply_rawjson_field_sequence_equali
    fall-through branch when the two Python row lists compare equal as mappings.
    That fact alone cannot provide the ordered-field equality required by
    RawTypedNormalReturnTrace.rawRowsEqualityGuard. -/
-theorem #146_structural_guard_is_stronger_than_python_mapping_equality :
+theorem e146_structural_guard_is_stronger_than_python_mapping_equality :
     ¬ (pythonDictEqIntFields canonicalRowsObjectFields permutedRowsObjectFields = true →
        orderedIntFieldListsEqual canonicalRowsObjectFields permutedRowsObjectFields = true) := by
   intro implication
