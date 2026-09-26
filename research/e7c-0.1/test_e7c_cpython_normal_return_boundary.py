@@ -33,15 +33,13 @@ class CPythonNormalReturnEqualityBoundary(unittest.TestCase):
             {"tag": atom["tag"], "edges": atom["edges"]}
             for atom in reversed(row["atoms"])
         ]
-        # The Joint coordinates themselves are ordered and cannot be swapped.
-        with self.assertRaises(ValueError):
-            wrong = copy.deepcopy(source)
-            wrong["rows"][0]["atoms"].reverse()
-            admit(wrong)
-
-        # Reordering only dictionary keys in graph objects remains acceptable.
+        # Coordinate order is data, so a swapped pair is admitted as that
+        # different pair. It is not treated as a dictionary-key permutation.
         admitted = admit(source)
-        self.assertEqual(len(admitted.terms), 1)
+        self.assertEqual(admitted.terms[0][0][0].edges, ("BC",))
+        self.assertEqual(admitted.terms[0][0][0].tag, "")
+        self.assertEqual(admitted.terms[0][0][1].edges, ("AB",))
+        self.assertIsNone(admitted.terms[0][0][1].tag)
 
 
 if __name__ == "__main__":
