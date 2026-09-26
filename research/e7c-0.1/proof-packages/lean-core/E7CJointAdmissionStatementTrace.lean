@@ -191,11 +191,11 @@ theorem raw_statement_admission_reaches_typed_joint_operation
     {rawDocument : RawJson} {ops : CPythonJointPrimitives}
     (admission : PinnedAdmissionRowsStatementTrace rawDocument)
     (canonical : CanonicalWireRows admission.rowsAdmission.rows)
-    (parserCall : ParseRowsCall admission.rowsAdmission.rows
-      (parseRows admission.rowsAdmission.rows))
     (jointTrace : JointNormalizerStatementTrace ops
       (parseRows admission.rowsAdmission.rows)) :
     decodeJointRows admission.rawRows = some admission.rowsAdmission.rows ∧
+    ParseRowsCall admission.rowsAdmission.rows
+      (parseRows admission.rowsAdmission.rows) ∧
     runConstructorRows jointTrace.constructorOps 2
       (materializeJointRows ops jointTrace.preSort.finalDictionary
         jointTrace.sortedKeys) =
@@ -203,17 +203,8 @@ theorem raw_statement_admission_reaches_typed_joint_operation
     parseRows admission.rowsAdmission.rows =
       admission.rowsAdmission.rows.map toRow := by
   have hDecoded := pinned_document_rows_decoder_result admission
+  have hParser := parse_rows_call_of_canonical canonical
   have hJoint := joint_statement_trace_returns_model_rows jointTrace
-  have hParsedRows :=
-    parse_rows_exact parserCall
-  have hParseMap :
-      parseRows admission.rowsAdmission.rows =
-        admission.rowsAdmission.rows.map toRow := by
-    induction admission.rowsAdmission.rows with
-    | nil => rfl
-    | cons row rest ih =>
-        simp [parseRows, parseRow, toRow, canonical] at *
-        exact ih
-  exact ⟨hDecoded, hJoint, hParseMap⟩
+  exact ⟨hDecoded, hParser, hJoint, rfl⟩
 
 end E7CJointAdmissionStatementTrace
