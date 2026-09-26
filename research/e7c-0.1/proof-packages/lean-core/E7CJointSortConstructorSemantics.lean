@@ -189,31 +189,52 @@ theorem constructor_rejects_noncanonical_rows
   have hall := row_visit_trace_checks_all visits
   simp [runConstructorRows, positive, outer, hall, badOrder]
 
-theorem joint_python_terms_refine_from_sort_trace
+/-
+A deliberately weaker pre-sort record. It contains only the ordered
+dictionary-loop and nonzero-filter observations from the helper boundary; in
+particular it has no complete sorted-output or constructor-copy equality.
+-/
+structure PreSortJointHelperTrace
+    (ops : CPythonJointPrimitives) (parsed : List Row) : Type where
+  finalDictionary : List JointEntry
+  dictionaryLoop : JointDictionaryTrace ops parsed [] finalDictionary
+  pythonFilteredKeys : List JointKey
+  filterResult : pythonFilteredKeys = nonzeroKeys ops finalDictionary
+
+def materializeJointRows (ops : CPythonJointPrimitives)
+    (entries : List JointEntry) (keys : List JointKey) : List Row :=
+  keys.map (entryRow ops entries)
+
+theorem sort_trace_materializes_normalizer
     {ops : CPythonJointPrimitives} {parsed : List Row}
-    (trace : CPythonJointHelperTrace ops parsed)
+    (trace : PreSortJointHelperTrace ops parsed)
+    (sortedKeys : List JointKey)
     (sortTrace : AbstractIdentitySortTrace cpythonIdentityCompare
-      trace.pythonFilteredKeys trace.pythonSortedKeys) :
-    trace.pythonTerms = jointNormalizer ops parsed := by
-  have hsorted :
-      trace.pythonSortedKeys = sortJointKeys trace.pythonFilteredKeys :=
+      trace.pythonFilteredKeys sortedKeys) :
+    materializeJointRows ops trace.finalDictionary sortedKeys =
+      jointNormalizer ops parsed := by
+  have hsorted : sortedKeys = sortJointKeys trace.pythonFilteredKeys :=
     sort_trace_refines_model sortTrace (by funext; rfl)
   have hdict : trace.finalDictionary = jointDictRun ops parsed [] :=
     dictionaryTrace_computes_run trace.dictionaryLoop
-  rw [trace.termMaterialisation, hsorted, trace.filterResult, hdict]
-  rfl
+  unfold materializeJointRows jointNormalizer jointModelRows
+  rw [hsorted, trace.filterResult, hdict]
 
 theorem joint_constructor_trace_builds_normalizer
     {jops : CPythonJointPrimitives} {parsed : List Row}
-    (jointTrace : CPythonJointHelperTrace jops parsed)
+    (jointTrace : PreSortJointHelperTrace jops parsed)
+    (sortedKeys : List JointKey)
     (sortTrace : AbstractIdentitySortTrace cpythonIdentityCompare
-      jointTrace.pythonFilteredKeys jointTrace.pythonSortedKeys)
+      jointTrace.pythonFilteredKeys sortedKeys)
     (cops : CPythonJointConstructorOps)
-    (constructorTrace : CPythonJointConstructorTrace cops 2 jointTrace.pythonTerms) :
-    runConstructorRows cops 2 jointTrace.pythonTerms =
+    (constructorTrace : CPythonJointConstructorTrace cops 2
+      (materializeJointRows jops jointTrace.finalDictionary sortedKeys)) :
+    runConstructorRows cops 2
+      (materializeJointRows jops jointTrace.finalDictionary sortedKeys) =
       some (jointNormalizer jops parsed) := by
-  rw [constructor_trace_builds_rows constructorTrace,
-    joint_python_terms_refine_from_sort_trace jointTrace sortTrace]
+  rw [constructor_trace_builds_rows constructorTrace]
+  congr 1
+  exact sort_trace_materializes_normalizer jointTrace sortedKeys sortTrace
 
 theorem edge_AB_precedes_AC :
     compareGraphIdentity
