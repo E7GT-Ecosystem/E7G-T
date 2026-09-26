@@ -65,12 +65,8 @@ theorem signed_null_empty_changed_coefficient_rejected :
   apply changed_serialized_rows_rejected
   have differentCoefficient : signedNullEmpty.coefficient + (1 : Rat) ≠
       signedNullEmpty.coefficient := by
-    intro equality
-    have shifted : signedNullEmpty.coefficient + (1 : Rat) =
-        signedNullEmpty.coefficient + 0 := by
-      simpa using equality
-    have oneIsZero : (1 : Rat) = 0 := add_left_cancel shifted
-    exact (by decide : (1 : Rat) ≠ 0) oneIsZero
+    unfold signedNullEmpty
+    decide
   simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
     toGraph] using differentCoefficient
 
