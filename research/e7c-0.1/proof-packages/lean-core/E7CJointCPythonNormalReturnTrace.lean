@@ -56,40 +56,54 @@ inductive RowsStatementTrace : List WireRow → RawJson → Prop where
       (tailTrace : RowsStatementTrace rows (.array tailRows)) :
       RowsStatementTrace (row :: rows) (.array (rowOutput :: tailRows))
 
-theorem rawJsonDepthList_string (values : List String) :
-    rawJsonDepthList (values.map RawJson.string) = 0 := by
-  induction values with
-  | nil => rfl
-  | cons value rest ih =>
-      simp [rawJsonDepthList, rawJsonDepth, ih]
+theorem rawJsonWithinFuel_mono_of_le
+    {small large : Nat} {value : RawJson}
+    (bound : small ≤ large)
+    (safe : rawJsonWithinFuel small value = true) :
+    rawJsonWithinFuel large value = true := by
+  induction large generalizing small with
+  | zero =>
+      have hs : small = 0 := by omega
+      subst small
+      simpa using safe
+  | succ large ih =>
+      by_cases hsmall : small ≤ large
+      · exact rawJsonWithinFuel_mono (ih hsmall safe)
+      · have hs : small = large + 1 := by omega
+        subst small
+        simpa using safe
 
-theorem encodeRawGraph_depth (graph : WireGraph) :
-    rawJsonDepth (encodeRawGraph graph) = 2 := by
+theorem encodeRawGraph_within_fuel (graph : WireGraph) :
+    rawJsonWithinFuel 2 (encodeRawGraph graph) = true := by
   cases graph with
   | mk edges tag =>
       cases tag <;>
-        simp [encodeRawGraph, rawJsonDepth, rawJsonDepthFields,
-          rawJsonDepthList_string, rawJsonDepthList]
+        simp [encodeRawGraph, rawJsonWithinFuel, List.all_map]
 
-theorem encodeRawFraction_depth (coefficient : Rat) :
-    rawJsonDepth (encodeRawFraction coefficient) = 1 := by
-  simp [encodeRawFraction, rawJsonDepth, rawJsonDepthFields]
+theorem encodeRawFraction_within_fuel (coefficient : Rat) :
+    rawJsonWithinFuel 1 (encodeRawFraction coefficient) = true := by
+  simp [encodeRawFraction, rawJsonWithinFuel]
 
-theorem encodeRawRow_depth (row : WireRow) :
-    rawJsonDepth (encodeRawRow row) = 4 := by
+theorem encodeRawRow_within_fuel (row : WireRow) :
+    rawJsonWithinFuel 4 (encodeRawRow row) = true := by
   cases row with
   | mk left right coefficient =>
-      simp [encodeRawRow, rawJsonDepth, rawJsonDepthFields, rawJsonDepthList,
-        encodeRawGraph_depth, encodeRawFraction_depth]
+      have hleft := encodeRawGraph_within_fuel left
+      have hright := encodeRawGraph_within_fuel right
+      have hcoeff := rawJsonWithinFuel_mono_of_le (by omega)
+        (encodeRawFraction_within_fuel coefficient)
+      simp [encodeRawRow, rawJsonWithinFuel, hleft, hright, hcoeff]
 
-theorem encodeRawRows_depth_le (rows : List WireRow) :
-    rawJsonDepth (encodeRawRows rows) ≤ 5 := by
-  induction rows with
-  | nil => simp [encodeRawRows, rawJsonDepth, rawJsonDepthList]
-  | cons row rest ih =>
-      simp [encodeRawRows, rawJsonDepth, rawJsonDepthList,
-        encodeRawRow_depth, ih]
-      omega
+theorem encodeRawRows_within_fuel (rows : List WireRow) :
+    rawJsonWithinFuel 5 (encodeRawRows rows) = true := by
+  simp only [encodeRawRows, rawJsonWithinFuel]
+  apply List.all_eq_true.mpr
+  intro row membership
+  exact encodeRawRow_within_fuel row
+
+theorem encodeRawRows_within_32 (rows : List WireRow) :
+    rawJsonWithinFuel 32 (encodeRawRows rows) = true :=
+  rawJsonWithinFuel_mono_of_le (by omega) (encodeRawRows_within_fuel rows)
 
 theorem graph_statement_output_exact
     {graph : WireGraph} {output : RawJson}
@@ -131,7 +145,7 @@ theorem rows_statement_output_exact
 theorem rows_statement_depth_le
     {rows : List WireRow} {output : RawJson}
     (trace : RowsStatementTrace rows output) :
-    rawJsonDepth output ≤ 5 := by
+    rawJsonWithinFuel 32 output = true := by
   rw [rows_statement_output_exact trace]
   exact encodeRawRows_depth_le rows
 
@@ -154,16 +168,16 @@ structure CPythonJsonEqualityContract
     (serialized original : RawJson) where
   pythonEqual : RawJson → RawJson → Bool
   equalityAtComparedPair :
-    ∀ (serializedFuelSafe : rawJsonDepth serialized ≤ 32)
-      (originalFuelSafe : rawJsonDepth original ≤ 32),
+    ∀ (serializedFuelSafe : rawJsonWithinFuel 32 serialized = true)
+      (originalFuelSafe : rawJsonWithinFuel 32 original = true),
       pythonEqual serialized original =
         decide (rawJsonEquivalent serialized original)
 
 theorem normal_guard_execution_yields_extensional_equality
     {serializedRows originalRows : RawJson}
     (contract : CPythonJsonEqualityContract serializedRows originalRows)
-    (serializedFuelSafe : rawJsonDepth serializedRows ≤ 32)
-    (originalFuelSafe : rawJsonDepth originalRows ≤ 32)
+    (serializedFuelSafe : rawJsonWithinFuel 32 serializedRows = true)
+    (originalFuelSafe : rawJsonWithinFuel 32 originalRows = true)
     (branch : finalRowsGuard contract.pythonEqual serializedRows originalRows =
       .returnedNormally) :
     rawJsonEquivalent serializedRows originalRows := by
@@ -200,11 +214,10 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hExactRows := modeled_normal_execution_exact_rows canonical typedExecution
   have hSerialized : output = encodeRawRows (result.map fromRow) :=
     rows_statement_output_exact serializer
-  have hOutputDepth : rawJsonDepth output ≤ 5 :=
+  have hOutputFuel : rawJsonWithinFuel 32 output = true :=
     rows_statement_depth_le serializer
-  have hOutputFuel : rawJsonDepth output ≤ 32 := by omega
-  have hOriginalFuel : rawJsonDepth originalRows ≤ 32 :=
-    decodeJointRows_depth_below_fuel admittedRows
+  have hOriginalFuel : rawJsonWithinFuel 32 originalRows = true :=
+    decodeJointRows_within_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
     normal_guard_execution_yields_extensional_equality contract
       hOutputFuel hOriginalFuel returned
