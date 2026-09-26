@@ -25,6 +25,10 @@ def chargedSecond (m : Machine) : Machine :=
   let charged := { m with steps := m.steps + 1 }
   { charged with secondStarted := true }
 
+def appendedSecond (m : Machine) (e : Event) (nextCursor : Cursor) : Machine :=
+  { cursor := nextCursor, steps := m.steps + 1,
+    ledgerRev := e :: m.ledgerRev, secondStarted := true }
+
 /- Each successor rule charges first. The append-blocked rule has no
    second-attempt event, but the start bit becomes true. -/
 inductive IRStep (first second : Policy) :
@@ -43,10 +47,7 @@ inductive IRStep (first second : Policy) :
       (unfinished : finished m.cursor = none)
       (advanceEq : advance first second m.cursor = (e, nextCursor)) :
       IRStep first second (fuel + 1) (capacity + 1) m
-        (.continued { cursor := nextCursor
-          steps := m.steps + 1
-          ledgerRev := e :: m.ledgerRev
-          secondStarted := true })
+        (.continued (appendedSecond m e nextCursor))
 
 theorem entry_attempting_second (keptRev excludedRev : List Row)
     (index steps : Nat) (ledgerRev : List Event) :
@@ -81,10 +82,9 @@ theorem append_has_one_second_event (keptRev excludedRev : List Row)
     ∃ nextCursor : Cursor,
       IRStep first second (fuel + 1) (capacity + 1)
         (entry keptRev excludedRev index steps ledgerRev)
-        (.continued { cursor := nextCursor
-          steps := steps + 1
-          ledgerRev := .attempt .second :: ledgerRev
-          secondStarted := true }) := by
+        (.continued (appendedSecond
+          (entry keptRev excludedRev index steps ledgerRev)
+          (.attempt .second) nextCursor)) := by
   cases second with
   | ready =>
       exact ⟨_, .appended _ _ _ _ _ _ _
