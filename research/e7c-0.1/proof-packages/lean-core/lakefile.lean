@@ -31,6 +31,7 @@ lean_lib E7CJointAdmissionCPythonBridge
 lean_lib E7CJointAdmissionPythonOperations
 lean_lib E7CJointSortConstructorSemantics
 lean_lib E7CJointRawJsonAdmission
+lean_lib E7CJointCPythonEqualityBoundary
 
 @[default_target]
 lean_lib E7CLeanCore
