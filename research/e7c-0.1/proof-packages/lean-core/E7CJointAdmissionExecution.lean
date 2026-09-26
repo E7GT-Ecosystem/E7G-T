@@ -5,8 +5,9 @@ Small operational semantics for the selected successful `admit` suffix.
 The source AST pin selects this suffix; primitive CPython adequacy remains a
 separate premise recorded in the companion gate note. This module proves that
 the mathematical execution of the pinned calls yields the #135 call
-derivation. It does not assume the desired row observation: it assumes only
-that execution takes the actual equality-guard true branch and returns.
+derivation from a modeled trace. The trace includes a true equality-guard
+outcome, which entails serialized-row equality together with `hrows`; this is
+not evidence that CPython produced that trace.
 -/
 namespace E7CJointAdmissionExecution
 open E7CEECQTwoStageAllInput
@@ -18,7 +19,7 @@ def CanonicalWireRows (source : List WireRow) : Prop :=
   ∀ row ∈ source, canonicalGraph row.left ∧ canonicalGraph row.right
 
 /- Each constructor models the mathematical outcome of one selected source
-   call. The final constructor models the actual `if rows(value) != source`
+   call. The final constructor models the selected `if rows(value) != source`
    rejection or fallthrough, not an assumed equality of the desired rows. -/
 inductive AdmissionStep (normalizer : List Row → List Row)
     (source : List WireRow) :
@@ -36,11 +37,11 @@ inductive AdmissionStep (normalizer : List Row → List Row)
       (hguard : decide (encoded = source) = false) :
       AdmissionStep normalizer source parsed result encoded false none
 
-/- A normal-return execution consists of the parser result, the Joint result,
+/- A modeled normal-return execution consists of the parser result, the Joint result,
    the `rows` serialization and the truth value of the built-in equality
-   guard. `returned` is the control-flow fact that this execution reached the
+   guard. `returned` is the modeled control-flow fact that this trace reached the
    source return statement rather than its rejection branch. -/
-structure PythonNormalExecution (normalizer : List Row → List Row)
+structure ModeledNormalExecution (normalizer : List Row → List Row)
     (source : List WireRow) (result : List Row) : Type where
   parsed : List Row
   encoded : List WireRow
@@ -77,11 +78,11 @@ theorem rows_write_call (rows : List Row) :
           (GraphWriteCall.returned row.right))
         ih
 
-theorem python_normal_execution_yields_call_derivation
+theorem modeled_normal_execution_yields_call_derivation
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row}
     (hcanonical : CanonicalWireRows source)
-    (run : PythonNormalExecution normalizer source result) :
+    (run : ModeledNormalExecution normalizer source result) :
     NormalReturn normalizer source result := by
   cases run with
   | mk parsed encoded control =>
@@ -101,28 +102,28 @@ theorem python_normal_execution_yields_call_derivation
           exact NormalReturn.returned parseCall jointCall writeCall
             (WireEqualCall.equal encoded)
 
-theorem python_normal_execution_matches_generated
+theorem modeled_normal_execution_matches_generated
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row}
     (hcanonical : CanonicalWireRows source)
-    (run : PythonNormalExecution normalizer source result) :
+    (run : ModeledNormalExecution normalizer source result) :
     admission normalizer source = some result :=
   normal_return_matches_generated
-    (python_normal_execution_yields_call_derivation hcanonical run)
+    (modeled_normal_execution_yields_call_derivation hcanonical run)
 
-theorem python_normal_execution_exact_rows
+theorem modeled_normal_execution_exact_rows
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row}
     (hcanonical : CanonicalWireRows source)
-    (run : PythonNormalExecution normalizer source result) :
+    (run : ModeledNormalExecution normalizer source result) :
     result = source.map toRow :=
   normal_return_exact_rows
-    (python_normal_execution_yields_call_derivation hcanonical run)
+    (modeled_normal_execution_yields_call_derivation hcanonical run)
 
-theorem changed_rows_cannot_take_normal_return
+theorem changed_rows_cannot_take_modeled_normal_return
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row} (changed : serializeRows result ≠ source) :
-    PythonNormalExecution normalizer source result → False := by
+    ModeledNormalExecution normalizer source result → False := by
   intro run
   cases run with
   | mk _ encoded control =>
