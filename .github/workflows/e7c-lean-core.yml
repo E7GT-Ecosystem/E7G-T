@@ -8,6 +8,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_S1_LEAN_STRICT_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
+      - "research/e7c-0.1/E7C_0.1_RAW_JSON_EXTENSIONAL_EQUALITY.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - ".github/workflows/e7c-lean-core.yml"
   push:
@@ -20,6 +21,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_S1_LEAN_STRICT_CORE.md"
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
+      - "research/e7c-0.1/E7C_0.1_RAW_JSON_EXTENSIONAL_EQUALITY.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - ".github/workflows/e7c-lean-core.yml"
 
