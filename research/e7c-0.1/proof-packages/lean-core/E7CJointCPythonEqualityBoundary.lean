@@ -32,10 +32,10 @@ def pinnedCanonicalJsonGuardAst : String := "201c5a74316b65b26508d120ed3801a15b9
 def lookupIntField : List (String × Int) → String → Option Int
   | [], _ => none
   | (key, value) :: rest, wanted =>
-      if key == wanted then some value else lookupIntField rest key wanted
+      if key == wanted then some value else lookupIntField rest wanted
 
 def pythonDictEqIntFields (left right : List (String × Int)) : Bool :=
-  decide (left.length = right.length) &&
+  (left.length == right.length) &&
     left.all (fun (key, value) => lookupIntField right key == some value) &&
     right.all (fun (key, value) => lookupIntField left key == some value)
 
