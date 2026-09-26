@@ -120,8 +120,8 @@ def compareJointIdentity (left right : JointKey) : Ordering :=
   let first := compareGraphIdentity left.1 right.1
   if first != .eq then first else compareGraphIdentity left.2 right.2
 
-def jointKeyLt (left right : JointKey) : Prop :=
-  compareJointIdentity left right = .lt
+def jointKeyLt (left right : JointKey) : Bool :=
+  compareJointIdentity left right == .lt
 
 def insertJointKey (key : JointKey) : List JointKey → List JointKey
   | [] => [key]
@@ -170,7 +170,7 @@ theorem joint_helper_result_refines
     {ops : CPythonJointPrimitives} {parsed : List Row}
     (trace : CPythonJointHelperTrace ops parsed) :
     trace.constructedTerms = jointNormalizer ops parsed := by
-  have hdict : trace.finalDictionary = jointDictRun ops parsed :=
+  have hdict : trace.finalDictionary = jointDictRun ops parsed [] :=
     dictionaryTrace_computes_run trace.dictionaryLoop
   rw [trace.constructorCopiesTerms, trace.termMaterialisation,
     trace.sortResult, trace.filterResult, hdict]
@@ -204,7 +204,7 @@ def pythonGraph (ops : CPythonRowsHelperTrace result) (graph : Graph) : WireGrap
   ⟨ops.graphEdges graph, ops.graphTag graph⟩
 
 def pythonRow (ops : CPythonRowsHelperTrace result) (row : Row) : WireRow :=
-  ⟨ops.pythonGraph row.left, ops.pythonGraph row.right,
+  ⟨pythonGraph ops row.left, pythonGraph ops row.right,
     (ops.fractionNumerator row.coefficient : Rat) /
       (ops.fractionDenominator row.coefficient : Rat)⟩
 
@@ -217,9 +217,13 @@ theorem row_helper_result_refines (ops : CPythonRowsHelperTrace result)
     (row : Row) : pythonRow ops row = serializeRow row := by
   cases row with
   | mk left right coefficient =>
-      simp [pythonRow, pythonGraph, serializeRow, fromRow,
-        graph_helper_result_refines ops left,
-        graph_helper_result_refines ops right, ops.fractionPairRefines]
+      change ⟨pythonGraph ops left, pythonGraph ops right,
+        (ops.fractionNumerator coefficient : Rat) /
+          (ops.fractionDenominator coefficient : Rat)⟩ =
+        ⟨fromGraph left, fromGraph right, coefficient⟩
+      rw [graph_helper_result_refines ops left,
+        graph_helper_result_refines ops right,
+        ops.fractionPairRefines coefficient]
 
 theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
     ops.pythonRows = serializeRows result := by
@@ -227,6 +231,7 @@ theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
   unfold serializeRows
   apply List.map_congr_left
   intro row membership
+  change pythonRow ops row = serializeRow row
   exact row_helper_result_refines ops row
 
 theorem rows_helper_result_yields_write_call
