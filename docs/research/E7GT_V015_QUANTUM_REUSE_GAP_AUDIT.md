@@ -23,7 +23,7 @@ The motivating question is whether E7G-T's whole/view/reconstruction machinery c
 | Actual outcome | The recorded result of one identified physical run, imported with protocol and provenance. The Born distribution does not specify which result that run produced. |
 | Post-measurement state | Instrument-conditioned state after an actual measurement outcome; distinct from both distribution and record. |
 | Compatibility | Here, operational joint measurability: existence of one parent POVM whose coarse-grained marginals are the declared POVMs for every admitted state. |
-| Reconstruction fibre | All admitted preparations compatible with a declared view under a pinned comparison criterion. A singleton means unique within that model/domain only. |
+| Reconstruction fibres | **State fibre:** all density operators `rho` in the selected admitted state domain `W` whose declared views match `v` under the pinned comparison criterion. **Preparation-description fibre:** all descriptions `d` in the selected preparation domain `D` for which `prepare(d)` has views matching `v` under that criterion. Singleton claims are relative to the named domain, view family and criterion; a singleton state fibre does not imply a singleton description fibre when `prepare` is non-injective. |
 | Evidence | Replay/provenance can establish what declared computation was performed; it does not establish physical validity or truth of the preparation/model. |
 
 ## Source map and dispositions
