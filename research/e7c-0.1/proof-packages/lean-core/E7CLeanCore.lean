@@ -18,6 +18,7 @@ import E7CJointFirstCodeSkeleton
 import E7CJointFirstExecutionRelation
 import E7CJointFirstHelperSelection
 import E7CJointAdmissionSemantics
+import E7CJointIRSecondAttempt
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.

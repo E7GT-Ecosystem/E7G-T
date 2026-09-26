@@ -23,6 +23,7 @@ lean_lib E7CMSCFiniteClosure
 lean_lib E7CJointFirstCodeSkeleton
 lean_lib E7CJointFirstExecutionRelation
 lean_lib E7CJointFirstHelperSelection
+lean_lib E7CJointIRSecondAttempt
 lean_lib E7CJointAdmissionGenerated
 lean_lib E7CJointAdmissionSemantics
 
