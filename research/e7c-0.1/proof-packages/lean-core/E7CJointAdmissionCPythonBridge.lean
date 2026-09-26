@@ -23,9 +23,10 @@ open E7CJointAdmissionExecution
 /-!
 Each field corresponds to one operation in the selected normal path:
 
-* `parsedCall`: exact `Fraction(n,d)` results, `Config(tuple(edges), tag)`
-  construction and post-init canonicalization, plus tuple/list iteration in
-  source order, composed row by row;
+* `parsedCall`: `FractionCall` identity on already decoded exact `Rat`
+  coefficients, `Config(tuple(edges), tag)` construction and post-init
+  canonicalization, plus tuple/list iteration in source order, composed row
+  by row. The raw `Fraction(n,d)` refinement is upstream and remains open;
 * `jointCall`: exact coefficient aggregation, zero cancellation, ordered-pair
   keys, canonical sorting and `Joint(2, terms)` construction;
 * `serializedCall`: `rows`, `_row` and `_graph` output, retaining row order,
