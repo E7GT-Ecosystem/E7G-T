@@ -13,6 +13,8 @@ open E7CEECQTwoStageExactCodec
 open E7CJointAdmissionExecution
 open E7CJointRawJsonAdmission
 open E7CJointCPythonNormalReturnTrace
+open E7CJointAdmissionPythonOperations
+open E7CJointSortConstructorSemantics
 
 structure GraphAdmissionStatementTrace (raw : RawJson) where
   fields : List (String × RawJson)
@@ -160,5 +162,58 @@ theorem raw_statement_rows_supply_typed_parse_call
     ParseRowsCall trace.rowsAdmission.rows
       (parseRows trace.rowsAdmission.rows) :=
   parse_rows_call_of_canonical canonical
+
+
+/- The Joint operation is composed from the admitted typed parser rows,
+   pre-sort dictionary/filter visits, abstract identity-sort visits, and
+   per-row constructor validation. These remain abstract operation semantics;
+   actual CPython sort/constructor adequacy is not asserted here. -/
+structure JointNormalizerStatementTrace
+    (ops : CPythonJointPrimitives) (parsed : List Row) where
+  preSort : PreSortJointHelperTrace ops parsed
+  sortedKeys : List JointKey
+  sortVisits : AbstractIdentitySortTrace cpythonIdentityCompare
+    preSort.pythonFilteredKeys sortedKeys
+  constructorOps : CPythonJointConstructorOps
+  constructorVisits : CPythonJointConstructorTrace constructorOps 2
+    (materializeJointRows ops preSort.finalDictionary sortedKeys)
+
+theorem joint_statement_trace_returns_model_rows
+    {ops : CPythonJointPrimitives} {parsed : List Row}
+    (trace : JointNormalizerStatementTrace ops parsed) :
+    runConstructorRows trace.constructorOps 2
+      (materializeJointRows ops trace.preSort.finalDictionary trace.sortedKeys) =
+      some (jointNormalizer ops parsed) :=
+  joint_constructor_trace_builds_normalizer trace.preSort trace.sortedKeys
+    trace.sortVisits trace.constructorOps trace.constructorVisits
+
+theorem raw_statement_admission_reaches_typed_joint_operation
+    {rawDocument : RawJson} {ops : CPythonJointPrimitives}
+    (admission : PinnedAdmissionRowsStatementTrace rawDocument)
+    (canonical : CanonicalWireRows admission.rowsAdmission.rows)
+    (parserCall : ParseRowsCall admission.rowsAdmission.rows
+      (parseRows admission.rowsAdmission.rows))
+    (jointTrace : JointNormalizerStatementTrace ops
+      (parseRows admission.rowsAdmission.rows)) :
+    decodeJointRows admission.rawRows = some admission.rowsAdmission.rows ∧
+    runConstructorRows jointTrace.constructorOps 2
+      (materializeJointRows ops jointTrace.preSort.finalDictionary
+        jointTrace.sortedKeys) =
+      some (jointNormalizer ops (parseRows admission.rowsAdmission.rows)) ∧
+    parseRows admission.rowsAdmission.rows =
+      admission.rowsAdmission.rows.map toRow := by
+  have hDecoded := pinned_document_rows_decoder_result admission
+  have hJoint := joint_statement_trace_returns_model_rows jointTrace
+  have hParsedRows :=
+    parse_rows_exact parserCall
+  have hParseMap :
+      parseRows admission.rowsAdmission.rows =
+        admission.rowsAdmission.rows.map toRow := by
+    induction admission.rowsAdmission.rows with
+    | nil => rfl
+    | cons row rest ih =>
+        simp [parseRows, parseRow, toRow, canonical] at *
+        exact ih
+  exact ⟨hDecoded, hJoint, hParseMap⟩
 
 end E7CJointAdmissionStatementTrace
