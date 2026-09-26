@@ -294,7 +294,7 @@ theorem raw_typed_normal_return_exact
                 simpa [Function.comp] using canonical_row_roundtrip wire
                   (trace.canonicalGraphs wire hmem).1
                   (trace.canonicalGraphs wire hmem).2
-              simpa using hmaps
+              simpa [Function.comp] using hmaps
             exact congrArg encodeRawRows hround
 
 theorem boundary_outcomes_remain_distinct :
