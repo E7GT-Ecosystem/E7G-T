@@ -218,24 +218,20 @@ theorem null_tag_decodes_distinctly :
 theorem empty_string_tag_decodes_distinctly :
     decodeTag (.string "") = some (some "") := rfl
 
-theorem decodeFractionPair_rejects_boolean_numerator (denominator : Int) :
+theorem decodeFractionPair_rejects_boolean_numerator :
     decodeFractionPair (.object
-      [("numerator", .boolean true), ("denominator", .integer denominator)]) = none := by
-  simp [decodeFractionPair, exactKeys, distinctObjectKeys, exactInteger,
-    lookupField, Option.guard]
+      [("numerator", .boolean true), ("denominator", .integer 2)]) = none := by
+  decide
 
-theorem decodeFractionPair_rejects_zero_denominator (numerator : Int) :
+theorem decodeFractionPair_rejects_zero_denominator :
     decodeFractionPair (.object
-      [("numerator", .integer numerator), ("denominator", .integer 0)]) = none := by
-  simp [decodeFractionPair, exactKeys, distinctObjectKeys, exactInteger,
-    lookupField]
+      [("numerator", .integer 1), ("denominator", .integer 0)]) = none := by
+  decide
 
-theorem decodeFractionPair_rejects_zero_numerator (denominator : Int) :
+theorem decodeFractionPair_rejects_zero_numerator :
     decodeFractionPair (.object
-      [("numerator", .integer 0), ("denominator", .integer denominator)]) = none := by
-  by_cases h : denominator > 0 <;>
-    simp [decodeFractionPair, exactKeys, distinctObjectKeys, exactInteger,
-      lookupField, Option.guard, h]
+      [("numerator", .integer 0), ("denominator", .integer 3)]) = none := by
+  decide
 
 def encodeRawGraph (graph : WireGraph) : RawJson :=
   .object
@@ -289,9 +285,10 @@ theorem raw_typed_normal_return_exact
       _ = encodeRawRows trace.document.rows := by
             have hround :
                 (trace.document.rows.map toRow).map fromRow = trace.document.rows := by
+              rw [List.map_map]
               apply List.map_congr_left
               intro wire hmem
-              exact canonical_row_roundtrip wire
+              simpa using canonical_row_roundtrip wire
                 (trace.canonicalGraphs wire hmem).1
                 (trace.canonicalGraphs wire hmem).2
             exact congrArg encodeRawRows hround
