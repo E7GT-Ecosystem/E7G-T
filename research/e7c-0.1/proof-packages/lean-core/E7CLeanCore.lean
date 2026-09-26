@@ -20,6 +20,7 @@ import E7CJointFirstHelperSelection
 import E7CJointAdmissionSemantics
 import E7CJointAdmissionCalls
 import E7CJointAdmissionExecution
+import E7CJointAdmissionCPythonBridge
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
