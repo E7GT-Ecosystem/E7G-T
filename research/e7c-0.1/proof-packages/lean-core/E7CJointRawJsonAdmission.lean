@@ -265,11 +265,19 @@ structure RawTypedNormalReturnTrace
     (result.map fromRow)
   rawRowsEqualityGuard : rawRowsOutput = document.rawRows
 
+theorem raw_rows_equal_canonical_return
+    {source : RawJson} {normalizer : List Row → List Row} {result : List Row}
+    (trace : RawTypedNormalReturnTrace source normalizer result) :
+    trace.document.rawRows = encodeRawRows (result.map fromRow) :=
+  trace.rawRowsEqualityGuard.symm.trans trace.rawRowsSerializerRefines
+
 theorem raw_typed_normal_return_exact
     {source : RawJson} {normalizer : List Row → List Row} {result : List Row}
     (trace : RawTypedNormalReturnTrace source normalizer result) :
-    result = trace.document.rows.map toRow :=
-  modeled_normal_execution_exact_rows trace.canonicalGraphs trace.typedRun
+    result = trace.document.rows.map toRow ∧
+      trace.document.rawRows = encodeRawRows (result.map fromRow) :=
+  ⟨modeled_normal_execution_exact_rows trace.canonicalGraphs trace.typedRun,
+    raw_rows_equal_canonical_return trace⟩
 
 theorem boundary_outcomes_remain_distinct :
     classifyRawBoundary .jsonSyntaxRejected ≠
