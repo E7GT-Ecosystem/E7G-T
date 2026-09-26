@@ -58,14 +58,14 @@ theorem rawJsonWithinFuel_mono
       | array values =>
           apply List.all_eq_true.mpr
           intro child membership
-          have hAll : values.all (rawJsonWithinFuel (fuel + 1)) = true := by
+          have hAll : values.all (rawJsonWithinFuel fuel) = true := by
             simpa [rawJsonWithinFuel] using safe
           exact ih ((List.all_eq_true.mp hAll) child membership)
       | object fields =>
           apply List.all_eq_true.mpr
           intro field membership
           have hAll : fields.all (fun field =>
-              rawJsonWithinFuel (fuel + 1) field.2) = true := by
+              rawJsonWithinFuel fuel field.2) = true := by
             simpa [rawJsonWithinFuel] using safe
           exact ih ((List.all_eq_true.mp hAll) field membership)
 
