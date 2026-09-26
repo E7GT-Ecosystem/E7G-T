@@ -299,14 +299,7 @@ def normalizeRawJson : RawJson → List Nat
 termination_by value => sizeOf value
 decreasing_by
   all_goals simp_wf
-  · exact Nat.lt_trans (List.sizeOf_lt_of_mem (by assumption)) (by omega)
-  ·
-    have hpair : sizeOf (key, fieldValue) < sizeOf fields :=
-      List.sizeOf_lt_of_mem (by assumption)
-    have hcomponent : sizeOf fieldValue < sizeOf (key, fieldValue) := by
-      simp_wf
-      omega
-    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by omega))
+  all_goals decreasing_trivial
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
