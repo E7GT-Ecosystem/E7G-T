@@ -126,13 +126,18 @@ def expectedDocumentKeys : List String :=
   ["edition", "canonical_source_blob", "model_blob", "predicate_edition",
    "input_type", "output_type", "rows", "resource_policy", "interpretation"]
 
+def fieldIsString (fields : List (String × RawJson)) (key wanted : String) : Bool :=
+  match lookupField fields key with
+  | some (.string actual) => actual == wanted
+  | _ => false
+
 def expectedMetadata (fields : List (String × RawJson)) : Bool :=
-  (lookupField fields "edition").any (fun v => v == .string "E7C-EECQ-JOINT-RESTRICT/0.1-provisional") &&
-  (lookupField fields "canonical_source_blob").any (fun v => v == .string "a84da2c4de2ada23577cde4512a10c3369aba2b5") &&
-  (lookupField fields "model_blob").any (fun v => v == .string "6c624fcd49b95e473a3e80160979183e8d3b58aa") &&
-  (lookupField fields "predicate_edition").any (fun v => v == .string "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional") &&
-  (lookupField fields "input_type").any (fun v => v == .string "Joint[FG3,FG3]") &&
-  (lookupField fields "output_type").any (fun v => v == .string "Outcome[Partition[Joint[FG3,FG3]],core-1]")
+  fieldIsString fields "edition" "E7C-EECQ-JOINT-RESTRICT/0.1-provisional" &&
+  fieldIsString fields "canonical_source_blob" "a84da2c4de2ada23577cde4512a10c3369aba2b5" &&
+  fieldIsString fields "model_blob" "6c624fcd49b95e473a3e80160979183e8d3b58aa" &&
+  fieldIsString fields "predicate_edition" "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional" &&
+  fieldIsString fields "input_type" "Joint[FG3,FG3]" &&
+  fieldIsString fields "output_type" "Outcome[Partition[Joint[FG3,FG3]],core-1]"
 
 def decodeNonnegativeBound (raw : RawJson) : Option Nat :=
   match exactInteger raw with
