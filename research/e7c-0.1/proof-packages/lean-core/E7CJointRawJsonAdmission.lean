@@ -20,6 +20,7 @@ inductive RawJson where
   | string (value : String)
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
+  deriving DecidableEq
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -285,7 +286,7 @@ def normalizeRawJson : RawJson → RawJson
       .object (sortRawFields (fields.map fun (key, value) =>
         (key, normalizeRawJson value)))
 termination_by value => sizeOf value
-decreasing_by all_goals simp_wf; omega
+decreasing_by all_goals simp_wf [RawJson] <;> omega
 
 def rawJsonWellFormed : RawJson → Bool
   | .null => true
@@ -298,7 +299,7 @@ def rawJsonWellFormed : RawJson → Bool
       distinctObjectKeys fields &&
         fields.all (fun field => rawJsonWellFormed field.2)
 termination_by value => sizeOf value
-decreasing_by all_goals simp_wf; omega
+decreasing_by all_goals simp_wf [RawJson] <;> omega
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   rawJsonWellFormed left = true ∧
