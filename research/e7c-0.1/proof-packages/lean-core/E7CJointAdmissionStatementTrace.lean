@@ -39,7 +39,7 @@ def GraphAdmissionStatementTrace.output
 theorem graph_decoder_follows_statement_trace
     {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
     decodeGraph raw = some trace.output := by
-  simp [Option.guard, decodeGraph, trace.objectRead, trace.keyCheck, trace.edgesFieldRead,
+  simp [guard, Option.guard, decodeGraph, trace.objectRead, trace.keyCheck, trace.edgesFieldRead,
     trace.tagFieldRead, trace.stringArrayDecode,
     trace.edgeOrderCheck, trace.tagDecode, GraphAdmissionStatementTrace.output]
 
@@ -65,7 +65,7 @@ def FractionAdmissionStatementTrace.output
 theorem fraction_decoder_follows_statement_trace
     {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
     decodeFractionPair raw = some trace.output := by
-  simp [Option.guard, decodeFractionPair, trace.objectRead, trace.keyCheck, trace.numeratorFieldRead,
+  simp [guard, Option.guard, decodeFractionPair, trace.objectRead, trace.keyCheck, trace.numeratorFieldRead,
     trace.denominatorFieldRead, trace.numeratorExactInt,
     trace.denominatorExactInt, trace.positiveDenominator,
     trace.nonzeroNumerator, FractionAdmissionStatementTrace.output]
@@ -92,7 +92,7 @@ def JointRowAdmissionStatementTrace.output
 theorem row_decoder_follows_statement_trace
     {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
     decodeJointRow raw = some trace.output := by
-  simp [Option.guard, decodeJointRow, trace.objectRead, trace.keyCheck, trace.atomsFieldRead,
+  simp [guard, Option.guard, decodeJointRow, trace.objectRead, trace.keyCheck, trace.atomsFieldRead,
     trace.coefficientFieldRead, trace.twoCoordinateArrayRead,
     graph_decoder_follows_statement_trace trace.leftGraph,
     graph_decoder_follows_statement_trace trace.rightGraph,
