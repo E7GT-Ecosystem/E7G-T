@@ -130,6 +130,6 @@ theorem changed_rows_cannot_take_normal_return
       | evaluated _ _ hrows hguard =>
           apply changed
           have guardEq : encoded = source := of_decide_eq_true hguard
-          exact changed (hrows.symm.trans guardEq)
+          exact hrows.symm.trans guardEq
 
 end E7CJointAdmissionExecution
