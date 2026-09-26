@@ -128,7 +128,6 @@ structure CPythonJointConstructorOps where
   fractionRefines : ∀ row, exactFraction row = true
   nonzeroRefines : ∀ row, nonzeroFraction row = decide (row.coefficient ≠ 0)
   outerTupleRefines : exactOuterTuple = true
-  canonicalOrderRefines : ∀ rows, canonicalOrder rows = true
 
 def constructorRowAccepted (ops : CPythonJointConstructorOps) (arity : Nat)
     (row : Row) : Bool :=
@@ -177,7 +176,17 @@ theorem constructor_rejects_bad_row
     (positive : ops.exactPositiveInt arity = true)
     (bad : constructorRowAccepted ops arity row = false) :
     runConstructorRows ops arity (row :: rest) = none := by
-    simp [runConstructorRows, positive, bad]
+  simp [runConstructorRows, positive, bad]
+
+theorem constructor_rejects_noncanonical_rows
+    (ops : CPythonJointConstructorOps) (arity : Nat) (rows : List Row)
+    (positive : ops.exactPositiveInt arity = true)
+    (outer : ops.exactOuterTuple = true)
+    (visits : JointRowVisitTrace ops arity rows)
+    (badOrder : ops.canonicalOrder rows = false) :
+    runConstructorRows ops arity rows = none := by
+  have hall := row_visit_trace_checks_all visits
+  simp [runConstructorRows, positive, outer, hall, badOrder]
 
 theorem edge_AB_precedes_AC :
     compareGraphIdentity
@@ -188,5 +197,10 @@ theorem null_tag_precedes_empty_tag :
     compareGraphIdentity
       ({ ab := false, ac := false, bc := false, tag := none } : Graph)
       ({ ab := false, ac := false, bc := false, tag := some "" } : Graph) = .lt := rfl
+
+theorem empty_edges_precede_AB :
+    compareGraphIdentity
+      ({ ab := false, ac := false, bc := false, tag := none } : Graph)
+      ({ ab := true, ac := false, bc := false, tag := none } : Graph) = .lt := rfl
 
 end E7CJointSortConstructorSemantics
