@@ -90,13 +90,15 @@ theorem encodeRawRow_within_fuel (row : WireRow) :
   | mk left right coefficient =>
       have hleft := encodeRawGraph_within_fuel left
       have hright := encodeRawGraph_within_fuel right
-      have hcoeff := rawJsonWithinFuel_mono_of_le (by omega)
+      have hcoeff := rawJsonWithinFuel_mono_of_le
+        (small := 1) (large := 3) (by omega)
         (encodeRawFraction_within_fuel coefficient)
       simp [encodeRawRow, rawJsonWithinFuel, hleft, hright, hcoeff]
 
 theorem encodeRawRows_within_fuel (rows : List WireRow) :
     rawJsonWithinFuel 5 (encodeRawRows rows) = true := by
   simp only [encodeRawRows, rawJsonWithinFuel]
+  rw [List.all_map]
   apply List.all_eq_true.mpr
   intro row membership
   exact encodeRawRow_within_fuel row
