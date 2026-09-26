@@ -24,7 +24,7 @@ direction_id: "E7-ECO-DIR-2026-09-15.1"
 
 This document instructs any human or AI system assisting with an E7G-T-family project to develop it as part of a coherent, ambitious and commercially significant technology ecosystem.
 
-It is a **proposed ecosystem operating kernel**, not a replacement for the E7G-T Unified Geometry-Thinking Kernel. E7G-T remains the authoritative conceptual, constructive and reasoning source. This proposal is pinned to E7G-T v0.15-experimental-MSC1 at the exact commit, blob and SHA-256 named in the front matter. v0.15 is the experimental canonical source for new work only if this proposal is accepted. v0.12.1/RGP2, v0.13/RWP1 and v0.14/REC1 remain immutable historical editions; products and artifacts retain their original pins until a reviewed migration. E7G-T v0.11-UC5 remains the inherited constitutional predecessor and compatibility baseline.
+It is a **proposed ecosystem operating kernel**, not a replacement for the E7G-T Unified Geometry-Thinking Kernel. E7G-T remains the authoritative conceptual, constructive and reasoning source. This proposal is pinned to E7G-T v0.15-experimental-MSC1 at the exact commit, blob and SHA-256 named in the front matter. v0.15 is already the experimental canonical source for new work; acceptance of this proposal would make that source selection operative as an ecosystem instruction. v0.12.1/RGP2, v0.13/RWP1 and v0.14/REC1 remain immutable historical editions; products and artifacts retain their original pins until a reviewed migration. E7G-T v0.11-UC5 remains the inherited constitutional predecessor and compatibility baseline.
 
 This document governs how projects derived from, informed by, or interoperating with E7G-T are selected, structured, developed, validated, protected, connected and commercialised. It prevents both ceremonial alignment claims and the inference that every product must implement every profile in the source.
 
@@ -72,7 +72,7 @@ You MUST NOT:
 The ecosystem follows this dependency:
 
 ```text
-E7G-T v0.15-experimental-MSC1 source (proposed pin)
+E7G-T v0.15-experimental-MSC1 source (exact pin)
         ↓
 E7 Core contracts and conformance fixtures
         ↓
@@ -265,6 +265,9 @@ source_pin:
   path: E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md
   blob: 02c09c5af2827098a98c729c6a66f79a4bf5acf2
   sha256: 5b1e9913cf24b80612f81014b8cc7efc7574d43402a2a188a17daa096c0c621a
+subprofile_dispositions: # required when profile is WPC
+  Evolution: adopted | experimental | deferred | not_applicable
+  Distributed: unsupported # explicit status; other WPC dispositions do not imply support
 task_relevance:
 disposition: adopted | experimental | deferred | not_applicable
 capability_sought:
@@ -284,7 +287,7 @@ next_gate:
 
 A profile disposition does not imply implementation. An implementation claim must name its bounded capability, limitations and evidence. An evidence item must identify the artifact and exact head; passing CI is not a substitute for a semantic or external review. Products do not inherit another product's profile status.
 
-## 7.2 Product build-map requirements
+### 7.7 Product build-map requirements
 
 Every material product build map MUST record more than a kernel version. At minimum it records:
 
@@ -623,7 +626,7 @@ The architectural destination is ambitious; the migration remains evidence-drive
 
 ## 20. Proposed v0.15 realignment and change control
 
-If accepted, this proposal makes v0.15-experimental-MSC1 the source for new ecosystem operating decisions. It does not migrate existing products or promote v0.15 profiles to implemented status.
+v0.15-experimental-MSC1 is already the experimental canonical source for new work. Acceptance of this proposal would make that source selection operative as an ecosystem operating instruction. It does not migrate existing products or promote v0.15 profiles to implemented status.
 
 For every product, before a material milestone:
 
