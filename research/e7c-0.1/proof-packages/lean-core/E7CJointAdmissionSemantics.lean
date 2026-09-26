@@ -60,14 +60,9 @@ theorem signed_null_empty_normal :
 
 theorem signed_null_empty_changed_coefficient_rejected :
     admission (fun _ => [⟨toGraph signedNullEmpty.left,
-      toGraph signedNullEmpty.right, signedNullEmpty.coefficient + 1⟩])
+      toGraph signedNullEmpty.right, (1 / 7 : Rat)⟩])
       [signedNullEmpty] = none := by
   apply changed_serialized_rows_rejected
-  have differentCoefficient : signedNullEmpty.coefficient + (1 : Rat) ≠
-      signedNullEmpty.coefficient := by
-    unfold signedNullEmpty
-    decide
-  simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
-    toGraph] using differentCoefficient
+  simp [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph, toGraph]
 
 end E7CJointAdmissionSemantics
