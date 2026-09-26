@@ -303,9 +303,8 @@ decreasing_by
   ·
     have hpair := List.sizeOf_lt_of_mem (by assumption)
     have hcomponent : sizeOf field.2 < sizeOf field := by
-      simp_wf
-      omega
-    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by omega))
+      simp_arith
+    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by simp_arith))
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
