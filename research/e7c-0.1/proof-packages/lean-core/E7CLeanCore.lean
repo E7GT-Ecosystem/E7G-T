@@ -1,3 +1,4 @@
+import E7CJointCPythonEqualityBoundary
 import E7CS1StrictCore
 import E7CS1FG3Single
 import E7CS1FG3Rows
@@ -853,5 +854,3 @@ theorem typed_strict_domain_failure_has_ledger_prefix :
   · rfl
 
 end E7CLeanCore
-
-import E7CJointCPythonEqualityBoundary
