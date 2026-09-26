@@ -270,7 +270,7 @@ structure RawTypedNormalReturnTrace
   typedRun : ModeledNormalExecution normalizer document.rows result
   rawRowsOutput : RawJson
   rawRowsSerializerRefines : rawRowsOutput = encodeRawRows
-    (document.rows.map fun wire => fromRow (toRow wire))
+    (result.map fromRow)
   rawRowsEqualityGuard : rawRowsOutput = document.rawRows
 
 theorem raw_typed_normal_return_exact
@@ -285,8 +285,8 @@ theorem raw_typed_normal_return_exact
   · calc
       trace.document.rawRows = trace.rawRowsOutput :=
         trace.rawRowsEqualityGuard.symm
-      _ = encodeRawRows (trace.document.rows.map fun wire =>
-            fromRow (toRow wire)) := trace.rawRowsSerializerRefines
+      _ = encodeRawRows ((trace.document.rows.map toRow).map fromRow) := by
+            rw [htyped]
       _ = encodeRawRows trace.document.rows := by
             unfold encodeRawRows
             congr 1
