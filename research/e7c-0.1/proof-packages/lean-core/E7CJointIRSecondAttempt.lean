@@ -87,15 +87,15 @@ theorem append_has_one_second_event (keptRev excludedRev : List Row)
           (.attempt .second) nextCursor)) := by
   cases second with
   | ready =>
-      exact ⟨_, .appended _ _ _ _ _ _ _
+      exact ⟨_, .appended _ _ _ _ _
         (entry_attempting_second keptRev excludedRev index steps ledgerRev)
         (entry_unfinished keptRev excludedRev index steps ledgerRev) rfl⟩
   | unsupported =>
-      exact ⟨_, .appended _ _ _ _ _ _ _
+      exact ⟨_, .appended _ _ _ _ _
         (entry_attempting_second keptRev excludedRev index steps ledgerRev)
         (entry_unfinished keptRev excludedRev index steps ledgerRev) rfl⟩
   | undetermined =>
-      exact ⟨_, .appended _ _ _ _ _ _ _
+      exact ⟨_, .appended _ _ _ _ _
         (entry_attempting_second keptRev excludedRev index steps ledgerRev)
         (entry_unfinished keptRev excludedRev index steps ledgerRev) rfl⟩
 
