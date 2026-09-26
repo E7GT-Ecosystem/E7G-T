@@ -188,6 +188,26 @@ theorem constructor_rejects_noncanonical_rows
   have hall := row_visit_trace_checks_all visits
   simp [runConstructorRows, positive, outer, hall, badOrder]
 
+theorem joint_python_terms_refine
+    {ops : CPythonJointPrimitives} {parsed : List Row}
+    (trace : CPythonJointHelperTrace ops parsed) :
+    trace.pythonTerms = jointNormalizer ops parsed := by
+  have hdict : trace.finalDictionary = jointDictRun ops parsed [] :=
+    dictionaryTrace_computes_run trace.dictionaryLoop
+  rw [trace.termMaterialisation, trace.sortResult,
+    trace.filterResult, hdict]
+  rfl
+
+theorem joint_constructor_trace_builds_normalizer
+    {jops : CPythonJointPrimitives} {parsed : List Row}
+    (jointTrace : CPythonJointHelperTrace jops parsed)
+    (cops : CPythonJointConstructorOps)
+    (constructorTrace : CPythonJointConstructorTrace cops 2 jointTrace.pythonTerms) :
+    runConstructorRows cops 2 jointTrace.pythonTerms =
+      some (jointNormalizer jops parsed) := by
+  rw [constructor_trace_builds_rows constructorTrace,
+    joint_python_terms_refine jointTrace]
+
 theorem edge_AB_precedes_AC :
     compareGraphIdentity
       ({ ab := true, ac := false, bc := false, tag := none } : Graph)
