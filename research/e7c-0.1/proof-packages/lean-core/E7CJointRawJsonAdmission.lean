@@ -20,7 +20,6 @@ inductive RawJson where
   | string (value : String)
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
-  deriving DecidableEq, Repr
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -122,24 +121,18 @@ structure DecodedRawDocument where
   ledgerBound : Nat
   capability : Bool
   obligationResolved : Bool
-  deriving Repr
 
 def expectedDocumentKeys : List String :=
   ["edition", "canonical_source_blob", "model_blob", "predicate_edition",
    "input_type", "output_type", "rows", "resource_policy", "interpretation"]
 
 def expectedMetadata (fields : List (String × RawJson)) : Bool :=
-  lookupField fields "edition" ==
-      some (.string "E7C-EECQ-JOINT-RESTRICT/0.1-provisional") &&
-  lookupField fields "canonical_source_blob" ==
-      some (.string "a84da2c4de2ada23577cde4512a10c3369aba2b5") &&
-  lookupField fields "model_blob" ==
-      some (.string "6c624fcd49b95e473a3e80160979183e8d3b58aa") &&
-  lookupField fields "predicate_edition" ==
-      some (.string "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional") &&
-  lookupField fields "input_type" == some (.string "Joint[FG3,FG3]") &&
-  lookupField fields "output_type" ==
-      some (.string "Outcome[Partition[Joint[FG3,FG3]],core-1]")
+  (lookupField fields "edition").any (fun v => v == .string "E7C-EECQ-JOINT-RESTRICT/0.1-provisional") &&
+  (lookupField fields "canonical_source_blob").any (fun v => v == .string "a84da2c4de2ada23577cde4512a10c3369aba2b5") &&
+  (lookupField fields "model_blob").any (fun v => v == .string "6c624fcd49b95e473a3e80160979183e8d3b58aa") &&
+  (lookupField fields "predicate_edition").any (fun v => v == .string "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional") &&
+  (lookupField fields "input_type").any (fun v => v == .string "Joint[FG3,FG3]") &&
+  (lookupField fields "output_type").any (fun v => v == .string "Outcome[Partition[Joint[FG3,FG3]],core-1]")
 
 def decodeNonnegativeBound (raw : RawJson) : Option Nat :=
   match exactInteger raw with
@@ -191,14 +184,12 @@ inductive RawBoundaryEvent where
   | caughtAdmissionFailure
   | uncaughtHelperException
   | resourceInterruption
-  deriving DecidableEq, Repr
 
 inductive RawAdmissionOutcome where
   | accepted (document : DecodedRawDocument)
   | invalidInput
   | exception
   | resource
-  deriving Repr
 
 def classifyRawBoundary : RawBoundaryEvent → RawAdmissionOutcome
   | .parsedJson value =>
@@ -226,7 +217,7 @@ theorem decodeFractionPair_rejects_boolean_numerator (denominator : Int) :
     decodeFractionPair (.object
       [("numerator", .boolean true), ("denominator", .integer denominator)]) = none := by
   simp [decodeFractionPair, exactKeys, distinctObjectKeys, exactInteger,
-    lookupField]
+    lookupField, Option.guard]
 
 theorem decodeFractionPair_rejects_zero_denominator (numerator : Int) :
     decodeFractionPair (.object
@@ -239,7 +230,7 @@ theorem decodeFractionPair_rejects_zero_numerator (denominator : Int) :
       [("numerator", .integer 0), ("denominator", .integer denominator)]) = none := by
   by_cases h : denominator > 0 <;>
     simp [decodeFractionPair, exactKeys, distinctObjectKeys, exactInteger,
-      lookupField, h]
+      lookupField, Option.guard, h]
 
 def encodeRawGraph (graph : WireGraph) : RawJson :=
   .object
@@ -288,15 +279,17 @@ theorem raw_typed_normal_return_exact
       _ = encodeRawRows (result.map fromRow) :=
         trace.rawRowsSerializerRefines
       _ = encodeRawRows ((trace.document.rows.map toRow).map fromRow) := by
-            rw [htyped]
+            exact congrArg encodeRawRows
+              (congrArg (fun rows : List Row => rows.map fromRow) htyped)
       _ = encodeRawRows trace.document.rows := by
-            unfold encodeRawRows
-            congr 1
-            apply List.map_congr_left
-            intro wire hmem
-            exact canonical_row_roundtrip wire
-              (trace.canonicalGraphs wire hmem).1
-              (trace.canonicalGraphs wire hmem).2
+            have hround :
+                (trace.document.rows.map toRow).map fromRow = trace.document.rows := by
+              apply List.map_congr_left
+              intro wire hmem
+              exact canonical_row_roundtrip wire
+                (trace.canonicalGraphs wire hmem).1
+                (trace.canonicalGraphs wire hmem).2
+            exact congrArg encodeRawRows hround
 
 theorem boundary_outcomes_remain_distinct :
     classifyRawBoundary .jsonSyntaxRejected ≠
@@ -305,6 +298,6 @@ theorem boundary_outcomes_remain_distinct :
       classifyRawBoundary .resourceInterruption ∧
     classifyRawBoundary .resourceInterruption ≠
       classifyRawBoundary .jsonSyntaxRejected := by
-  exact ⟨by decide, by decide, by decide⟩
+  constructor <;> simp [classifyRawBoundary]
 
 end E7CJointRawJsonAdmission
