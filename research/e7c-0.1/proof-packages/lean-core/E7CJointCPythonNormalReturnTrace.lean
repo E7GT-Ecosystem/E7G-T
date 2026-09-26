@@ -91,7 +91,6 @@ theorem rows_statement_output_exact
       have htail : rowsOutput = rows.map encodeRawRow := by
         change RawJson.array rowsOutput = RawJson.array (rows.map encodeRawRow) at ih
         injection ih with htail
-        exact htail
       simp [encodeRawRows, row_statement_output_exact rowTrace, htail]
 
 inductive FinalGuardOutcome where
