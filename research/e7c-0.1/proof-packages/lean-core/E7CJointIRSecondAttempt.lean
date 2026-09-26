@@ -21,6 +21,10 @@ inductive StepResult where
   | continued (machine : Machine)
   deriving DecidableEq, Repr
 
+def chargedSecond (m : Machine) : Machine :=
+  let charged := { m with steps := m.steps + 1 }
+  { charged with secondStarted := true }
+
 /- Each successor rule charges first. The append-blocked rule has no
    second-attempt event, but the start bit becomes true. -/
 inductive IRStep (first second : Policy) :
@@ -32,17 +36,17 @@ inductive IRStep (first second : Policy) :
       (h : attemptingSecond m.cursor = true)
       (unfinished : finished m.cursor = none) :
       IRStep first second (fuel + 1) 0 m
-        (.stopped (observe { m with steps := m.steps + 1,
-            secondStarted := true }
-          (.resourceLimit (snapshot { m with steps := m.steps + 1,
-            secondStarted := true }))))
+        (.stopped (observe (chargedSecond m)
+          (.resourceLimit (snapshot (chargedSecond m)))))
   | appended (m : Machine) (fuel capacity : Nat) (e : Event)
       (next : Cursor) (h : attemptingSecond m.cursor = true)
       (unfinished : finished m.cursor = none)
       (advanceEq : advance first second m.cursor = (e, next)) :
       IRStep first second (fuel + 1) (capacity + 1) m
-        (.continued { cursor := next, steps := m.steps + 1,
-          ledgerRev := e :: m.ledgerRev, secondStarted := true })
+        (.continued { cursor := next
+          steps := m.steps + 1
+          ledgerRev := e :: m.ledgerRev
+          secondStarted := true })
 
 theorem entry_attempting_second (keptRev excludedRev : List Row)
     (index steps : Nat) (ledgerRev : List Event) :
@@ -66,7 +70,7 @@ theorem blocked_has_exact_progress (keptRev excludedRev : List Row)
     (drive (fuel + 1) 0 first second
       (entry keptRev excludedRev index steps ledgerRev)).progress.completedSteps = steps + 1 := by
   refine ⟨?_, rfl, rfl, rfl⟩
-  exact IRStep.appendBlocked first second
+  exact IRStep.appendBlocked
     (entry keptRev excludedRev index steps ledgerRev) fuel
     (entry_attempting_second keptRev excludedRev index steps ledgerRev)
     (entry_unfinished keptRev excludedRev index steps ledgerRev)
@@ -77,8 +81,10 @@ theorem append_has_one_second_event (keptRev excludedRev : List Row)
     ∃ next : Cursor,
       IRStep first second (fuel + 1) (capacity + 1)
         (entry keptRev excludedRev index steps ledgerRev)
-        (.continued { cursor := next, steps := steps + 1,
-          ledgerRev := .attempt .second :: ledgerRev, secondStarted := true }) := by
+        (.continued { cursor := next
+          steps := steps + 1
+          ledgerRev := .attempt .second :: ledgerRev
+          secondStarted := true }) := by
   cases second with
   | ready =>
       exact ⟨_, .appended _ _ _ _ _ _ _
