@@ -31,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Focused pinned joint sort and constructor tests
+        run: |
+          PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_sort_constructor_semantics.py
+          python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_edition_source_audit.py'
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
           lake-package-directory: research/e7c-0.1/proof-packages/lean-core
@@ -39,6 +43,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CLeanCore
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: E7CJointSortConstructorSemantics
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
