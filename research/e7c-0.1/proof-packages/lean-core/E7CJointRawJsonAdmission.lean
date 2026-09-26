@@ -280,10 +280,7 @@ def insertRawField (item : String × RawJson) : List (String × RawJson) →
 def sortRawFields (fields : List (String × RawJson)) : List (String × RawJson) :=
   fields.foldr insertRawField []
 
-def encodeRawChild (value : RawJson) : List Nat :=
-  let tokens := normalizeRawJson value
-  tokens.length :: tokens
-where normalizeRawJson : RawJson → List Nat
+def normalizeRawJson : RawJson → List Nat
   | .null => [0]
   | .boolean value => [1, if value then 1 else 0]
   | .integer value =>
@@ -291,16 +288,13 @@ where normalizeRawJson : RawJson → List Nat
   | .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
   | .string value => 4 :: encodeStringCodes value
   | .array values =>
-      [5, values.length] ++ values.flatMap encodeRawChild
+      [5, values.length] ++ values.flatMap normalizeRawJson
   | .object fields =>
       let ordered := sortRawFields fields
       [6, ordered.length] ++ ordered.flatMap fun (key, fieldValue) =>
-        encodeStringCodes key ++ encodeRawChild fieldValue
+        encodeStringCodes key ++ normalizeRawJson fieldValue
 termination_by value => sizeOf value
 decreasing_by all_goals simp_wf; simp_all; omega
-
-def normalizeRawJson : RawJson → List Nat :=
-  encodeRawChild
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
