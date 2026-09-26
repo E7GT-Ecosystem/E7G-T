@@ -39,7 +39,7 @@ def GraphAdmissionStatementTrace.output
 theorem graph_decoder_follows_statement_trace
     {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
     decodeGraph raw = some trace.output := by
-  simp [decodeGraph, trace.objectRead, trace.keyCheck, trace.edgesFieldRead,
+  simp [Option.guard, decodeGraph, trace.objectRead, trace.keyCheck, trace.edgesFieldRead,
     trace.tagFieldRead, trace.stringArrayDecode,
     trace.edgeOrderCheck, trace.tagDecode, GraphAdmissionStatementTrace.output]
 
@@ -65,7 +65,7 @@ def FractionAdmissionStatementTrace.output
 theorem fraction_decoder_follows_statement_trace
     {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
     decodeFractionPair raw = some trace.output := by
-  simp [decodeFractionPair, trace.objectRead, trace.keyCheck, trace.numeratorFieldRead,
+  simp [Option.guard, decodeFractionPair, trace.objectRead, trace.keyCheck, trace.numeratorFieldRead,
     trace.denominatorFieldRead, trace.numeratorExactInt,
     trace.denominatorExactInt, trace.positiveDenominator,
     trace.nonzeroNumerator, FractionAdmissionStatementTrace.output]
@@ -92,7 +92,7 @@ def JointRowAdmissionStatementTrace.output
 theorem row_decoder_follows_statement_trace
     {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
     decodeJointRow raw = some trace.output := by
-  simp [decodeJointRow, trace.objectRead, trace.keyCheck, trace.atomsFieldRead,
+  simp [Option.guard, decodeJointRow, trace.objectRead, trace.keyCheck, trace.atomsFieldRead,
     trace.coefficientFieldRead, trace.twoCoordinateArrayRead,
     graph_decoder_follows_statement_trace trace.leftGraph,
     graph_decoder_follows_statement_trace trace.rightGraph,
@@ -127,7 +127,9 @@ structure RawRowsAdmissionStatementTrace (raw : RawJson) where
 theorem rows_decoder_follows_statement_trace
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
     decodeJointRows raw = some trace.rows := by
-  simp [decodeJointRows, trace.arrayRead, trace.capCheck, trace.fuelCheck,
+  have hfuel : rawJsonWithinFuel 32 (.array trace.rawRows) = true := by
+    simpa [trace.arrayRead] using trace.fuelCheck
+  simp [decodeJointRows, trace.arrayRead, trace.capCheck, hfuel,
     raw_rows_mapM_follows_visits trace.visits]
 
 /-- The prefix pins the top-level document object, exact top-level keys,
