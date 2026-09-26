@@ -51,7 +51,7 @@ structure CPythonNormalReturnOperations
   builtinEquality : guardValue = decide (encoded = source)
   normalBranch : guardValue = true
 
-theorem pinned_normal_return_yields_modeled_trace
+def pinned_normal_return_yields_modeled_trace
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row}
     (operations : CPythonNormalReturnOperations normalizer source result) :
@@ -61,6 +61,7 @@ theorem pinned_normal_return_yields_modeled_trace
     exact operations.normalBranch
   exact ⟨operations.parsed, operations.encoded,
     AdmissionStep.evaluated
+      operations.parsed result operations.encoded
       (parse_rows_exact operations.parsedCall)
       (joint_call_exact operations.jointCall)
       (write_rows_exact operations.serializedCall)
