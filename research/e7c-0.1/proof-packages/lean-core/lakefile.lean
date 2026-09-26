@@ -28,6 +28,7 @@ lean_lib E7CJointAdmissionSemantics
 lean_lib E7CJointAdmissionCalls
 lean_lib E7CJointAdmissionExecution
 lean_lib E7CJointAdmissionCPythonBridge
+lean_lib E7CJointAdmissionPythonOperations
 
 @[default_target]
 lean_lib E7CLeanCore
