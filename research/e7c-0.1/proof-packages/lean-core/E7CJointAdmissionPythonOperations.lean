@@ -217,13 +217,10 @@ theorem row_helper_result_refines (ops : CPythonRowsHelperTrace result)
     (row : Row) : pythonRow ops row = serializeRow row := by
   cases row with
   | mk left right coefficient =>
-      change ⟨pythonGraph ops left, pythonGraph ops right,
-        (ops.fractionNumerator coefficient : Rat) /
-          (ops.fractionDenominator coefficient : Rat)⟩ =
-        ⟨fromGraph left, fromGraph right, coefficient⟩
-      rw [graph_helper_result_refines ops left,
-        graph_helper_result_refines ops right,
-        ops.fractionPairRefines coefficient]
+      apply WireRow.ext
+      · exact graph_helper_result_refines ops left
+      · exact graph_helper_result_refines ops right
+      · exact ops.fractionPairRefines coefficient
 
 theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
     ops.pythonRows = serializeRows result := by
