@@ -28,12 +28,9 @@ def rowKey (row : Row) : JointKey := (row.left, row.right)
 
 structure CPythonJointPrimitives where
   keyEqual : JointKey → JointKey → Bool
-  keyHash : JointKey → Nat
   add : Rat → Rat → Rat
   isZero : Rat → Bool
   keyEqualityRefines : ∀ left right, keyEqual left right = decide (left = right)
-  equalKeysHaveEqualHashes : ∀ left right,
-    keyEqual left right = true → keyHash left = keyHash right
   additionRefines : ∀ left right, add left right = left + right
   truthTestRefines : ∀ value, isZero value = decide (value = 0)
 
@@ -155,11 +152,15 @@ structure CPythonJointHelperTrace (ops : CPythonJointPrimitives)
   pythonFilteredKeys : List JointKey
   filterResult : pythonFilteredKeys = nonzeroKeys ops finalDictionary
   pythonSortedKeys : List JointKey
+  -- Assumed observation of CPython sorted; its comparator/sort execution is
+  -- not derived in this increment.
   sortResult : pythonSortedKeys = sortJointKeys pythonFilteredKeys
   pythonTerms : List Row
   termMaterialisation : pythonTerms = pythonSortedKeys.map
     (entryRow ops finalDictionary)
   constructedTerms : List Row
+  -- Assumed observation of Joint construction copying the supplied terms;
+  -- constructor validation/acceptance is separately recorded below.
   constructorCopiesTerms : constructedTerms = pythonTerms
   arity : Nat
   binaryArity : arity = 2
@@ -217,10 +218,8 @@ theorem row_helper_result_refines (ops : CPythonRowsHelperTrace result)
     (row : Row) : pythonRow ops row = serializeRow row := by
   cases row with
   | mk left right coefficient =>
-      apply WireRow.ext
-      · exact graph_helper_result_refines ops left
-      · exact graph_helper_result_refines ops right
-      · exact ops.fractionPairRefines coefficient
+      simp [pythonRow, serializeRow, graph_helper_result_refines,
+        ops.fractionPairRefines]
 
 theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
     ops.pythonRows = serializeRows result := by
