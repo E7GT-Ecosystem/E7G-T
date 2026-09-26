@@ -207,7 +207,7 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
     decodeJointRows_depth_below_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
     normal_guard_execution_yields_extensional_equality contract
-      (by omega) hOriginalFuel returned
+      hOutputFuel hOriginalFuel returned
   have hCanonical : rawJsonEquivalent output
       (encodeRawRows (result.map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
