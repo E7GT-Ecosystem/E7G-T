@@ -291,7 +291,7 @@ def normalizeRawJson : RawJson → List Nat
   | .array values =>
       [5, values.length] ++ values.flatMap normalizeRawJson
   | .object fields =>
-      let normalizedFields := fields.map fun field =>
+      let normalizedFields := fields.attach.map fun ⟨field, _hmem⟩ =>
         (stringCodes field.1, normalizeRawJson field.2)
       let ordered := sortTokenFields normalizedFields
       [6, ordered.length] ++ ordered.flatMap fun (keyCodes, valueCodes) =>
@@ -302,9 +302,7 @@ decreasing_by
   · exact Nat.lt_trans (List.sizeOf_lt_of_mem (by assumption)) (by omega)
   ·
     have hpair := List.sizeOf_lt_of_mem (by assumption)
-    have hcomponent : sizeOf field.2 < sizeOf field := by
-      simp +arith
-    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by simp +arith))
+    simp_all +arith
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
