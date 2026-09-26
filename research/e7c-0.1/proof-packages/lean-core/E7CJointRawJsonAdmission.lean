@@ -286,12 +286,15 @@ theorem raw_typed_normal_return_exact
             have hround :
                 (trace.document.rows.map toRow).map fromRow = trace.document.rows := by
               rw [List.map_map]
-              rw [← List.map_id]
-              apply List.map_congr_left
-              intro wire hmem
-              simpa [Function.comp] using canonical_row_roundtrip wire
-                (trace.canonicalGraphs wire hmem).1
-                (trace.canonicalGraphs wire hmem).2
+              have hmaps :
+                  List.map (fun wire => fromRow (toRow wire)) trace.document.rows =
+                    List.map id trace.document.rows := by
+                apply List.map_congr_left
+                intro wire hmem
+                simpa [Function.comp] using canonical_row_roundtrip wire
+                  (trace.canonicalGraphs wire hmem).1
+                  (trace.canonicalGraphs wire hmem).2
+              simpa using hmaps
             exact congrArg encodeRawRows hround
 
 theorem boundary_outcomes_remain_distinct :
