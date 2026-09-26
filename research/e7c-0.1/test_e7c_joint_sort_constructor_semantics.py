@@ -61,6 +61,13 @@ class JointSortConstructorSemantics(unittest.TestCase):
         with self.assertRaises(AdmissionError):
             Joint(1, (((object(),), Fraction(1)),))
 
+    def test_constructor_rejects_bool_arity_and_non_tuple_term_container(self):
+        p = graph(("AB",))
+        with self.assertRaises(AdmissionError):
+            Joint(True, (((p,), Fraction(1)),))
+        with self.assertRaises(AdmissionError):
+            Joint(1, [((p,), Fraction(1))])
+
 
 if __name__ == "__main__":
     unittest.main()
