@@ -84,20 +84,22 @@ theorem python_normal_execution_yields_call_derivation
     (run : PythonNormalExecution normalizer source result) :
     NormalReturn normalizer source result := by
   cases run with
-  | returned (.evaluated parsed computed encoded hparse hjoint hrows hguard) =>
-      have parseCall : ParseRowsCall source parsed := by
-        rw [hparse]
-        exact parse_rows_call_of_canonical hcanonical
-      have jointCall : JointCall normalizer parsed computed := by
-        rw [hjoint]
-        exact JointCall.returned parsed
-      have writeCall : RowsWriteCall computed encoded := by
-        rw [hrows]
-        exact rows_write_call computed
-      have guardEq : encoded = source := of_decide_eq_true hguard
-      subst encoded
-      exact NormalReturn.returned parseCall jointCall writeCall
-        (WireEqualCall.equal source)
+  | returned control =>
+      cases control with
+      | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+          have parseCall : ParseRowsCall source parsed := by
+            rw [hparse]
+            exact parse_rows_call_of_canonical hcanonical
+          have jointCall : JointCall normalizer parsed computed := by
+            rw [hjoint]
+            exact JointCall.returned parsed
+          have writeCall : RowsWriteCall computed encoded := by
+            rw [hrows]
+            exact rows_write_call computed
+          have guardEq : encoded = source := of_decide_eq_true hguard
+          subst encoded
+          exact NormalReturn.returned parseCall jointCall writeCall
+            (WireEqualCall.equal source)
 
 theorem python_normal_execution_matches_generated
     {normalizer : List Row → List Row} {source : List WireRow}
@@ -123,10 +125,12 @@ theorem changed_rows_cannot_take_normal_return
     ¬ PythonNormalExecution normalizer source result := by
   intro run
   cases run with
-  | returned (.evaluated parsed computed encoded hparse hjoint hrows hguard) =>
-      apply changed
-      have guardEq : encoded = source := of_decide_eq_true hguard
-      rw [hrows]
-      exact guardEq
+  | returned control =>
+      cases control with
+      | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+          apply changed
+          have guardEq : encoded = source := of_decide_eq_true hguard
+          rw [hrows]
+          exact guardEq
 
 end E7CJointAdmissionExecution
