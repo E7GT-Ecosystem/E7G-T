@@ -281,28 +281,25 @@ def sortTokenFields (fields : List (List Nat × List Nat)) :
     List (List Nat × List Nat) :=
   fields.foldr insertTokenField []
 
-def normalizeRawJson : RawJson → List Nat
-  | .null => [0]
-  | .boolean value => [1, if value then 1 else 0]
-  | .integer value =>
+def normalizeRawJsonFuel : Nat → RawJson → List Nat
+  | 0, _ => [99]
+  | fuel + 1, .null => [0]
+  | fuel + 1, .boolean value => [1, if value then 1 else 0]
+  | fuel + 1, .integer value =>
       [2, if value < 0 then 1 else 0, value.natAbs]
-  | .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
-  | .string value => 4 :: encodeStringCodes value
-  | .array values =>
-      [5, values.length] ++ values.flatMap normalizeRawJson
-  | .object fields =>
-      let normalizedFields := fields.attach.map fun ⟨field, _hmem⟩ =>
-        (stringCodes field.1, normalizeRawJson field.2)
+  | fuel + 1, .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
+  | fuel + 1, .string value => 4 :: encodeStringCodes value
+  | fuel + 1, .array values =>
+      [5, values.length] ++ values.flatMap (normalizeRawJsonFuel fuel)
+  | fuel + 1, .object fields =>
+      let normalizedFields := fields.map fun field =>
+        (stringCodes field.1, normalizeRawJsonFuel fuel field.2)
       let ordered := sortTokenFields normalizedFields
       [6, ordered.length] ++ ordered.flatMap fun (keyCodes, valueCodes) =>
         keyCodes.length :: keyCodes ++ valueCodes.length :: valueCodes
-termination_by value => sizeOf value
-decreasing_by
-  all_goals simp_wf
-  · exact Nat.lt_trans (List.sizeOf_lt_of_mem (by assumption)) (by omega)
-  ·
-    have hpair := List.sizeOf_lt_of_mem (by assumption)
-    simp_all +arith
+
+def normalizeRawJson (value : RawJson) : List Nat :=
+  normalizeRawJsonFuel 32 value
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
