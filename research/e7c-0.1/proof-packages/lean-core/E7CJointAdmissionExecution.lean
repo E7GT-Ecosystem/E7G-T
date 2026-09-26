@@ -41,7 +41,7 @@ inductive AdmissionStep (normalizer : List Row → List Row)
    guard. `returned` is the control-flow fact that this execution reached the
    source return statement rather than its rejection branch. -/
 inductive PythonNormalExecution (normalizer : List Row → List Row)
-    (source : List WireRow) (result : List Row) : Prop where
+    (source : List WireRow) (result : List Row) : Type where
   | returned {parsed : List Row} {encoded : List WireRow}
       (control : AdmissionStep normalizer source parsed result encoded true (some result)) :
       PythonNormalExecution normalizer source result
@@ -84,18 +84,18 @@ theorem python_normal_execution_yields_call_derivation
     (run : PythonNormalExecution normalizer source result) :
     NormalReturn normalizer source result := by
   cases run with
-  | returned control =>
+  | returned parsed encoded control =>
       cases control with
-      | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+      | evaluated hparse hjoint hrows hguard =>
           have parseCall : ParseRowsCall source parsed := by
             rw [hparse]
             exact parse_rows_call_of_canonical hcanonical
-          have jointCall : JointCall normalizer parsed computed := by
+          have jointCall : JointCall normalizer parsed result := by
             rw [hjoint]
             exact JointCall.returned parsed
-          have writeCall : RowsWriteCall computed encoded := by
+          have writeCall : RowsWriteCall result encoded := by
             rw [hrows]
-            exact rows_write_call computed
+            exact rows_write_call result
           have guardEq : encoded = source := of_decide_eq_true hguard
           subst encoded
           exact NormalReturn.returned parseCall jointCall writeCall
@@ -125,9 +125,9 @@ theorem changed_rows_cannot_take_normal_return
     ¬ PythonNormalExecution normalizer source result := by
   intro run
   cases run with
-  | returned control =>
+  | returned _ encoded control =>
       cases control with
-      | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+      | evaluated _ _ hrows hguard =>
           apply changed
           have guardEq : encoded = source := of_decide_eq_true hguard
           rw [hrows]
