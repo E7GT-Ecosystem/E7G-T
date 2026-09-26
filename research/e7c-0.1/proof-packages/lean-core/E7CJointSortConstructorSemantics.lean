@@ -169,7 +169,7 @@ theorem constructor_trace_builds_rows
     (trace : CPythonJointConstructorTrace ops arity rows) :
     runConstructorRows ops arity rows = some rows := by
   simp [runConstructorRows, trace.positiveArity, trace.outerTuple,
-    row_visit_trace_checks_all trace, trace.canonicalOrder]
+    row_visit_trace_checks_all trace.visitedRows, trace.canonicalOrder]
 
 theorem constructor_rejects_bad_row
     (ops : CPythonJointConstructorOps) (arity : Nat) (row : Row)
