@@ -26,6 +26,7 @@ lean_lib E7CJointFirstHelperSelection
 lean_lib E7CJointAdmissionGenerated
 lean_lib E7CJointAdmissionSemantics
 lean_lib E7CJointAdmissionCalls
+lean_lib E7CJointAdmissionExecution
 
 @[default_target]
 lean_lib E7CLeanCore
