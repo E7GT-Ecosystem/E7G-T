@@ -251,9 +251,104 @@ def encodeRawRow (row : WireRow) : RawJson :=
 def encodeRawRows (rows : List WireRow) : RawJson :=
   .array (rows.map encodeRawRow)
 
-/- These are operation-level observations. The raw serializer and equality
-   links are not derived from CPython; the theorem composes them with the
-   previously established typed normal-return execution. -/
+/- Object fields in parsed JSON have unique keys. Equality mirrors Python's
+   recursive dict/list/scalar equality: objects are canonicalized by key,
+   arrays retain their sequence, and scalar constructors and values remain
+   exact. This relation is only applied to well-formed decoded objects. -/
+def natListLe : List Nat → List Nat → Bool
+  | [], _ => true
+  | _ :: _, [] => false
+  | left :: lefts, right :: rights =>
+      if left == right then natListLe lefts rights else left < right
+
+def stringKeyLe (left right : String) : Bool :=
+  natListLe (left.toList.map Char.toNat) (right.toList.map Char.toNat)
+
+def insertRawField (item : String × RawJson) : List (String × RawJson) →
+    List (String × RawJson)
+  | [] => [item]
+  | head :: tail =>
+      if stringKeyLe item.1 head.1 then item :: head :: tail
+      else head :: insertRawField item tail
+
+def sortRawFields (fields : List (String × RawJson)) : List (String × RawJson) :=
+  fields.foldr insertRawField []
+
+def normalizeRawJson : RawJson → RawJson
+  | .null => .null
+  | .boolean value => .boolean value
+  | .integer value => .integer value
+  | .nonIntegerNumber lexeme => .nonIntegerNumber lexeme
+  | .string value => .string value
+  | .array values => .array (values.map normalizeRawJson)
+  | .object fields =>
+      .object (sortRawFields (fields.map fun (key, value) =>
+        (key, normalizeRawJson value)))
+termination_by value => sizeOf value
+decreasing_by all_goals simp_wf; omega
+
+def rawJsonWellFormed : RawJson → Bool
+  | .null => true
+  | .boolean _ => true
+  | .integer _ => true
+  | .nonIntegerNumber _ => true
+  | .string _ => true
+  | .array values => values.all rawJsonWellFormed
+  | .object fields =>
+      distinctObjectKeys fields &&
+        fields.all (fun field => rawJsonWellFormed field.2)
+termination_by value => sizeOf value
+decreasing_by all_goals simp_wf; omega
+
+def rawJsonEquivalent (left right : RawJson) : Prop :=
+  rawJsonWellFormed left = true ∧
+    rawJsonWellFormed right = true ∧
+    normalizeRawJson left = normalizeRawJson right
+
+theorem rawJsonEquivalent_symmetric {left right : RawJson}
+    (h : rawJsonEquivalent left right) : rawJsonEquivalent right left :=
+  ⟨h.2.1, h.1, h.2.2.symm⟩
+
+theorem rawJsonEquivalent_trans {left middle right : RawJson}
+    (h₁ : rawJsonEquivalent left middle)
+    (h₂ : rawJsonEquivalent middle right) :
+    rawJsonEquivalent left right :=
+  ⟨h₁.1, h₂.2.1, h₁.2.2.trans h₂.2.2⟩
+
+def rawObjectForward : RawJson :=
+  .object [("atoms", .integer 7), ("coefficient", .integer 11)]
+
+def rawObjectReordered : RawJson :=
+  .object [("coefficient", .integer 11), ("atoms", .integer 7)]
+
+theorem raw_object_key_order_is_extensional :
+    rawJsonEquivalent rawObjectForward rawObjectReordered := by
+  decide
+
+theorem raw_array_order_remains_significant :
+    ¬ rawJsonEquivalent (.array [.integer 1, .integer 2])
+      (.array [.integer 2, .integer 1]) := by
+  decide
+
+theorem raw_null_and_empty_string_remain_distinct :
+    ¬ rawJsonEquivalent .null (.string "") := by
+  decide
+
+theorem raw_fraction_pairs_remain_exact :
+    ¬ rawJsonEquivalent
+      (.object [("numerator", .integer 2), ("denominator", .integer 4)])
+      (.object [("numerator", .integer 1), ("denominator", .integer 2)]) := by
+  decide
+
+theorem duplicate_object_keys_are_outside_extensional_json_equality :
+    ¬ rawJsonEquivalent
+      (.object [("k", .integer 1), ("k", .integer 1)])
+      (.object [("k", .integer 1)]) := by
+  decide
+
+/- The raw serializer and equality link remain operation-level host premises.
+   This theorem composes them using Python-shaped recursive equality rather
+   than order-sensitive equality on the RawJson object-field lists. -/
 structure RawTypedNormalReturnTrace
     (source : RawJson) (normalizer : List Row → List Row) (result : List Row) : Type where
   document : DecodedRawDocument
@@ -261,21 +356,23 @@ structure RawTypedNormalReturnTrace
   canonicalGraphs : CanonicalWireRows document.rows
   typedRun : ModeledNormalExecution normalizer document.rows result
   rawRowsOutput : RawJson
-  rawRowsSerializerRefines : rawRowsOutput = encodeRawRows
-    (result.map fromRow)
-  rawRowsEqualityGuard : rawRowsOutput = document.rawRows
+  rawRowsSerializerRefines : rawJsonEquivalent rawRowsOutput
+    (encodeRawRows (result.map fromRow))
+  rawRowsEqualityGuard : rawJsonEquivalent rawRowsOutput document.rawRows
 
 theorem raw_rows_equal_canonical_return
     {source : RawJson} {normalizer : List Row → List Row} {result : List Row}
     (trace : RawTypedNormalReturnTrace source normalizer result) :
-    trace.document.rawRows = encodeRawRows (result.map fromRow) :=
-  trace.rawRowsEqualityGuard.symm.trans trace.rawRowsSerializerRefines
+    rawJsonEquivalent trace.document.rawRows (encodeRawRows (result.map fromRow)) :=
+  rawJsonEquivalent_trans
+    (rawJsonEquivalent_symmetric trace.rawRowsEqualityGuard)
+    trace.rawRowsSerializerRefines
 
 theorem raw_typed_normal_return_exact
     {source : RawJson} {normalizer : List Row → List Row} {result : List Row}
     (trace : RawTypedNormalReturnTrace source normalizer result) :
     result = trace.document.rows.map toRow ∧
-      trace.document.rawRows = encodeRawRows (result.map fromRow) :=
+      rawJsonEquivalent trace.document.rawRows (encodeRawRows (result.map fromRow)) :=
   ⟨modeled_normal_execution_exact_rows trace.canonicalGraphs trace.typedRun,
     raw_rows_equal_canonical_return trace⟩
 
