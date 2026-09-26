@@ -56,6 +56,41 @@ inductive RowsStatementTrace : List WireRow → RawJson → Prop where
       (tailTrace : RowsStatementTrace rows (.array tailRows)) :
       RowsStatementTrace (row :: rows) (.array (rowOutput :: tailRows))
 
+theorem rawJsonDepthList_string (values : List String) :
+    rawJsonDepthList (values.map RawJson.string) = 0 := by
+  induction values with
+  | nil => rfl
+  | cons value rest ih =>
+      simp [rawJsonDepthList, rawJsonDepth, ih]
+
+theorem encodeRawGraph_depth (graph : WireGraph) :
+    rawJsonDepth (encodeRawGraph graph) = 2 := by
+  cases graph with
+  | mk edges tag =>
+      cases tag <;>
+        simp [encodeRawGraph, rawJsonDepth, rawJsonDepthFields,
+          rawJsonDepthList_string, rawJsonDepthList]
+
+theorem encodeRawFraction_depth (coefficient : Rat) :
+    rawJsonDepth (encodeRawFraction coefficient) = 1 := by
+  simp [encodeRawFraction, rawJsonDepth, rawJsonDepthFields]
+
+theorem encodeRawRow_depth (row : WireRow) :
+    rawJsonDepth (encodeRawRow row) = 4 := by
+  cases row with
+  | mk left right coefficient =>
+      simp [encodeRawRow, rawJsonDepth, rawJsonDepthFields, rawJsonDepthList,
+        encodeRawGraph_depth, encodeRawFraction_depth]
+
+theorem encodeRawRows_depth_le (rows : List WireRow) :
+    rawJsonDepth (encodeRawRows rows) ≤ 5 := by
+  induction rows with
+  | nil => simp [encodeRawRows, rawJsonDepth, rawJsonDepthList]
+  | cons row rest ih =>
+      simp [encodeRawRows, rawJsonDepth, rawJsonDepthList,
+        encodeRawRow_depth, ih]
+      omega
+
 theorem graph_statement_output_exact
     {graph : WireGraph} {output : RawJson}
     (trace : GraphFieldStatementTrace graph output) :
@@ -105,21 +140,31 @@ def finalRowsGuard (pythonEqual : RawJson → RawJson → Bool)
   else
     .rejected
 
-structure CPythonJsonEqualityContract where
+/- Host adequacy is restricted to the one pair compared by the pinned final
+guard. The fuel-safety proofs are separate premises derived below from row
+admission and the serializer trace, not folded into this contract. -/
+structure CPythonJsonEqualityContract
+    (serialized original : RawJson)
+    (serializedFuelSafe : rawJsonDepth serialized ≤ 32)
+    (originalFuelSafe : rawJsonDepth original ≤ 32) where
   pythonEqual : RawJson → RawJson → Bool
-  equalityRefinesExtensionalModel : ∀ left right,
-    pythonEqual left right = decide (rawJsonEquivalent left right)
+  equalityAtComparedPair :
+    pythonEqual serialized original =
+      decide (rawJsonEquivalent serialized original)
 
 theorem normal_guard_execution_yields_extensional_equality
-    (contract : CPythonJsonEqualityContract)
     {serializedRows originalRows : RawJson}
+    {serializedFuelSafe : rawJsonDepth serializedRows ≤ 32}
+    {originalFuelSafe : rawJsonDepth originalRows ≤ 32}
+    (contract : CPythonJsonEqualityContract serializedRows originalRows
+      serializedFuelSafe originalFuelSafe)
     (branch : finalRowsGuard contract.pythonEqual serializedRows originalRows =
       .returnedNormally) :
     rawJsonEquivalent serializedRows originalRows := by
   have hCompare : contract.pythonEqual serializedRows originalRows = true := by
     unfold finalRowsGuard at branch
     split at branch <;> simp_all
-  rw [contract.equalityRefinesExtensionalModel] at hCompare
+  rw [contract.equalityAtComparedPair] at hCompare
   exact of_decide_eq_true hCompare
 
 theorem rawJsonEquivalent_of_structural_eq
@@ -137,9 +182,12 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
     {normalizer : List Row → List Row} {source : List WireRow}
     {result : List Row} {originalRows output : RawJson}
     (canonical : CanonicalWireRows source)
+    (admittedRows : decodeJointRows originalRows = some source)
     (typedExecution : ModeledNormalExecution normalizer source result)
     (serializer : RowsStatementTrace (result.map fromRow) output)
-    (contract : CPythonJsonEqualityContract)
+    (outputFuelSafe : rawJsonDepth output ≤ 32)
+    (contract : CPythonJsonEqualityContract output originalRows
+      outputFuelSafe (decodeJointRows_depth_below_fuel admittedRows))
     (returned : finalRowsGuard contract.pythonEqual output originalRows =
       .returnedNormally) :
     result = source.map toRow ∧
@@ -148,6 +196,12 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hExactRows := modeled_normal_execution_exact_rows canonical typedExecution
   have hSerialized : output = encodeRawRows (result.map fromRow) :=
     rows_statement_output_exact serializer
+  have hOutputDepth : rawJsonDepth output ≤ 5 := by
+    rw [hSerialized]
+    exact encodeRawRows_depth_le (result.map fromRow)
+  have hOutputFuel : rawJsonDepth output ≤ 32 := by omega
+  have hOriginalFuel : rawJsonDepth originalRows ≤ 32 :=
+    decodeJointRows_depth_below_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
     normal_guard_execution_yields_extensional_equality contract returned
   have hCanonical : rawJsonEquivalent output
