@@ -20,7 +20,7 @@ inductive RawJson where
   | string (value : String)
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
-  deriving DecidableEq
+
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -252,69 +252,58 @@ def encodeRawRow (row : WireRow) : RawJson :=
 def encodeRawRows (rows : List WireRow) : RawJson :=
   .array (rows.map encodeRawRow)
 
-/- Object fields in parsed JSON have unique keys. Equality mirrors Python's
-   recursive dict/list/scalar equality: objects are canonicalized by key,
-   arrays retain their sequence, and scalar constructors and values remain
-   exact. This relation is only applied to well-formed decoded objects. -/
+/- Object keys are normalized recursively. The token encoding is
+   self-delimiting: child nodes and strings carry their lengths. It gives a
+   recursive extensional comparison without relying on RawJson's field-list
+   structural equality. This relation is applied to successfully decoded
+   objects, whose every object node has unique keys. -/
 def natListLe : List Nat → List Nat → Bool
   | [], _ => true
   | _ :: _, [] => false
   | left :: lefts, right :: rights =>
       if left == right then natListLe lefts rights else left < right
 
-def stringKeyLe (left right : String) : Bool :=
-  natListLe (left.toList.map Char.toNat) (right.toList.map Char.toNat)
+def stringCodes (value : String) : List Nat :=
+  value.toList.map Char.toNat
+
+def encodeStringCodes (value : String) : List Nat :=
+  let codes := stringCodes value
+  codes.length :: codes
 
 def insertRawField (item : String × RawJson) : List (String × RawJson) →
     List (String × RawJson)
   | [] => [item]
   | head :: tail =>
-      if stringKeyLe item.1 head.1 then item :: head :: tail
+      if natListLe (stringCodes item.1) (stringCodes head.1) then item :: head :: tail
       else head :: insertRawField item tail
 
 def sortRawFields (fields : List (String × RawJson)) : List (String × RawJson) :=
   fields.foldr insertRawField []
 
-def normalizeRawJson : RawJson → RawJson
-  | .null => .null
-  | .boolean value => .boolean value
-  | .integer value => .integer value
-  | .nonIntegerNumber lexeme => .nonIntegerNumber lexeme
-  | .string value => .string value
-  | .array values => .array (values.map normalizeRawJson)
+def encodeRawChild (value : RawJson) : List Nat :=
+  let tokens := normalizeRawJson value
+  tokens.length :: tokens
+where normalizeRawJson : RawJson → List Nat
+  | .null => [0]
+  | .boolean value => [1, if value then 1 else 0]
+  | .integer value =>
+      [2, if value < 0 then 1 else 0, value.natAbs]
+  | .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
+  | .string value => 4 :: encodeStringCodes value
+  | .array values =>
+      [5, values.length] ++ values.flatMap encodeRawChild
   | .object fields =>
-      .object (sortRawFields (fields.map fun (key, value) =>
-        (key, normalizeRawJson value)))
+      let ordered := sortRawFields fields
+      [6, ordered.length] ++ ordered.flatMap fun (key, fieldValue) =>
+        encodeStringCodes key ++ encodeRawChild fieldValue
 termination_by value => sizeOf value
-decreasing_by all_goals simp_wf [RawJson] <;> omega
+decreasing_by all_goals simp_wf; simp_all; omega
 
-def rawJsonWellFormed : RawJson → Bool
-  | .null => true
-  | .boolean _ => true
-  | .integer _ => true
-  | .nonIntegerNumber _ => true
-  | .string _ => true
-  | .array values => values.all rawJsonWellFormed
-  | .object fields =>
-      distinctObjectKeys fields &&
-        fields.all (fun field => rawJsonWellFormed field.2)
-termination_by value => sizeOf value
-decreasing_by all_goals simp_wf [RawJson] <;> omega
+def normalizeRawJson : RawJson → List Nat :=
+  encodeRawChild
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
-  rawJsonWellFormed left = true ∧
-    rawJsonWellFormed right = true ∧
-    normalizeRawJson left = normalizeRawJson right
-
-theorem rawJsonEquivalent_symmetric {left right : RawJson}
-    (h : rawJsonEquivalent left right) : rawJsonEquivalent right left :=
-  ⟨h.2.1, h.1, h.2.2.symm⟩
-
-theorem rawJsonEquivalent_trans {left middle right : RawJson}
-    (h₁ : rawJsonEquivalent left middle)
-    (h₂ : rawJsonEquivalent middle right) :
-    rawJsonEquivalent left right :=
-  ⟨h₁.1, h₂.2.1, h₁.2.2.trans h₂.2.2⟩
+  normalizeRawJson left = normalizeRawJson right
 
 def rawObjectForward : RawJson :=
   .object [("atoms", .integer 7), ("coefficient", .integer 11)]
@@ -341,11 +330,21 @@ theorem raw_fraction_pairs_remain_exact :
       (.object [("numerator", .integer 1), ("denominator", .integer 2)]) := by
   decide
 
-theorem duplicate_object_keys_are_outside_extensional_json_equality :
+theorem duplicate_object_multiplicity_remains_distinct :
     ¬ rawJsonEquivalent
       (.object [("k", .integer 1), ("k", .integer 1)])
       (.object [("k", .integer 1)]) := by
   decide
+
+theorem rawJsonEquivalent_symmetric {left right : RawJson}
+    (h : rawJsonEquivalent left right) : rawJsonEquivalent right left :=
+  h.symm
+
+theorem rawJsonEquivalent_trans {left middle right : RawJson}
+    (h₁ : rawJsonEquivalent left middle)
+    (h₂ : rawJsonEquivalent middle right) :
+    rawJsonEquivalent left right :=
+  h₁.trans h₂
 
 /- The raw serializer and equality link remain operation-level host premises.
    This theorem composes them using Python-shaped recursive equality rather
