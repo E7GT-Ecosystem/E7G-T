@@ -21,31 +21,53 @@ inductive RawJson where
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
 
-/- Height of the decoded value tree. Collection length does not affect height. -/
-mutual
-  def rawJsonDepth : RawJson → Nat
-    | .null => 0
-    | .boolean _ => 0
-    | .integer _ => 0
-    | .nonIntegerNumber _ => 0
-    | .string _ => 0
-    | .array values => 1 + rawJsonDepthList values
-    | .object fields => 1 + rawJsonDepthFields fields
+/- Fuel-indexed shallow-shape predicate. At fuel zero only scalars are
+safe; each array/object layer consumes one unit, independently of collection
+length. -/
+def rawJsonWithinFuel : Nat → RawJson → Bool
+  | 0, .null => true
+  | 0, .boolean _ => true
+  | 0, .integer _ => true
+  | 0, .nonIntegerNumber _ => true
+  | 0, .string _ => true
+  | 0, .array _ => false
+  | 0, .object _ => false
+  | _ + 1, .null => true
+  | _ + 1, .boolean _ => true
+  | _ + 1, .integer _ => true
+  | _ + 1, .nonIntegerNumber _ => true
+  | _ + 1, .string _ => true
+  | fuel + 1, .array values => values.all (rawJsonWithinFuel fuel)
+  | fuel + 1, .object fields =>
+      fields.all (fun field => rawJsonWithinFuel fuel field.2)
 
-  def rawJsonDepthList : List RawJson → Nat
-    | [] => 0
-    | value :: rest => max (rawJsonDepth value) (rawJsonDepthList rest)
-
-  def rawJsonDepthFields : List (String × RawJson) → Nat
-    | [] => 0
-    | (_, value) :: rest => max (rawJsonDepth value) (rawJsonDepthFields rest)
-termination_by
-  rawJsonDepth value => sizeOf value
-  rawJsonDepthList values => sizeOf values
-  rawJsonDepthFields fields => sizeOf fields
-decreasing_by
-  all_goals simp_wf
-
+theorem rawJsonWithinFuel_mono
+    {fuel : Nat} {value : RawJson}
+    (safe : rawJsonWithinFuel fuel value = true) :
+    rawJsonWithinFuel (fuel + 1) value = true := by
+  induction fuel generalizing value with
+  | zero =>
+      cases value <;> simp_all [rawJsonWithinFuel]
+  | succ fuel ih =>
+      cases value with
+      | null => rfl
+      | boolean b => rfl
+      | integer n => rfl
+      | nonIntegerNumber text => rfl
+      | string text => rfl
+      | array values =>
+          apply List.all_eq_true.mpr
+          intro child membership
+          have hAll : values.all (rawJsonWithinFuel (fuel + 1)) = true := by
+            simpa [rawJsonWithinFuel] using safe
+          exact ih ((List.all_eq_true.mp hAll) child membership)
+      | object fields =>
+          apply List.all_eq_true.mpr
+          intro field membership
+          have hAll : fields.all (fun field =>
+              rawJsonWithinFuel (fuel + 1) field.2) = true := by
+            simpa [rawJsonWithinFuel] using safe
+          exact ih ((List.all_eq_true.mp hAll) field membership)
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -138,7 +160,7 @@ def decodeJointRows (raw : RawJson) : Option (List WireRow) :=
   match raw with
   | .array rows =>
       if rows.length ≤ 64 then
-        if rawJsonDepth (.array rows) ≤ 32 then
+        if rawJsonWithinFuel 32 (.array rows) then
           rows.mapM decodeJointRow
         else none
       else none
@@ -147,14 +169,14 @@ def decodeJointRows (raw : RawJson) : Option (List WireRow) :=
 /-- Successful raw-row admission proves the compared source value is within
 the normalizer's fuel. The depth guard belongs to this bounded RawJson model;
 CPython's fixed schema makes it redundant, but that adequacy link is separate. -/
-theorem decodeJointRows_depth_below_fuel
+theorem decodeJointRows_within_fuel
     {raw : RawJson} {rows : List WireRow}
     (decoded : decodeJointRows raw = some rows) :
-    rawJsonDepth raw ≤ 32 := by
+    rawJsonWithinFuel 32 raw = true := by
   cases raw with
   | array values =>
       by_cases hlen : values.length ≤ 64
-      · by_cases hdepth : rawJsonDepth (.array values) ≤ 32
+      · by_cases hdepth : rawJsonWithinFuel 32 (.array values) = true
         · simpa [decodeJointRows, hlen, hdepth] using hdepth
         · simp [decodeJointRows, hlen, hdepth] at decoded
       · simp [decodeJointRows, hlen] at decoded
