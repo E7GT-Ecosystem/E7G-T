@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Focused pinned joint sort and constructor tests
+      - name: Focused pinned Joint operation and admission source tests
         run: |
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_sort_constructor_semantics.py
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_raw_json_admission.py
