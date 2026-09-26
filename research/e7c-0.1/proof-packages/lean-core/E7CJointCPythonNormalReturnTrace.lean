@@ -38,8 +38,8 @@ structure RowStatementTrace (row : WireRow) (output : RawJson) : Type where
   rightGraphReadWrite : GraphFieldStatementTrace row.right rightOutput
   coefficientOutput : RawJson
   fractionReadWrite : FractionFieldStatementTrace row.coefficient coefficientOutput
-  atomListWrite : RawJson
-  atomsWritten : outputAtoms = .array [leftOutput, rightOutput]
+  outputAtoms : RawJson
+  atomListWrite : outputAtoms = .array [leftOutput, rightOutput]
   rowDictionaryWrite : output = .object
     [("atoms", outputAtoms), ("coefficient", coefficientOutput)]
 
