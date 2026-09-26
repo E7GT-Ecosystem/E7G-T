@@ -27,6 +27,55 @@ class RawJointJsonAdmission(unittest.TestCase):
         with self.assertRaises(JointRestrictionAdmission):
             admit(value)
 
+    @staticmethod
+    def reverse_object_key_order(value):
+        if type(value) is dict:
+            return {key: RawJointJsonAdmission.reverse_object_key_order(item)
+                    for key, item in reversed(list(value.items()))}
+        if type(value) is list:
+            return [RawJointJsonAdmission.reverse_object_key_order(item)
+                    for item in value]
+        return value
+
+    def test_recursive_object_key_permutations_are_accepted(self):
+        source = one_row_document(Fraction(1, 2))
+        permuted = self.reverse_object_key_order(copy.deepcopy(source))
+        self.assertEqual(admit(permuted), admit(source))
+
+    def test_array_order_and_exact_fraction_pair_remain_distinct(self):
+        source = one_row_document(Fraction(1, 2))
+        unreduced = copy.deepcopy(source)
+        unreduced["rows"][0]["coefficient"] = {
+            "numerator": 2, "denominator": 4}
+        self.assert_invalid(unreduced)
+
+        left = Config(("AB",), None)
+        right = Config(("BC",), "")
+        joint = Joint(2, (((left, right), Fraction(1, 3)),
+                          ((right, left), Fraction(2, 5))))
+        reordered_rows = document(joint)
+        reordered_rows["rows"].reverse()
+        self.assert_invalid(reordered_rows)
+
+        swapped_coordinates = copy.deepcopy(source)
+        swapped_coordinates["rows"][0]["atoms"].reverse()
+        original_value = admit(source)
+        swapped_value = admit(swapped_coordinates)
+        self.assertEqual(swapped_value.terms[0][0],
+                         tuple(reversed(original_value.terms[0][0])))
+        self.assertNotEqual(swapped_value.terms[0][0],
+                            original_value.terms[0][0])
+
+    def test_null_empty_tags_and_edge_order_are_not_normalized_away(self):
+        source = one_row_document()
+        value = admit(source)
+        self.assertIsNone(value.terms[0][0][0].tag)
+        self.assertEqual(value.terms[0][0][1].tag, "")
+
+        reordered_edges = copy.deepcopy(source)
+        reordered_edges["rows"][0]["atoms"][0]["edges"] = ["AC", "AB"]
+        self.assert_invalid(reordered_edges)
+
     def test_canonical_raw_document_preserves_null_empty_and_reduced_fraction(self):
         raw = one_row_document(Fraction(-2, 3))
         value = admit(raw)
