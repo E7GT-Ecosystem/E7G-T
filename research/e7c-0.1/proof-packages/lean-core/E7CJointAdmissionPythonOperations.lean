@@ -86,16 +86,42 @@ def nonzeroKeys (ops : CPythonJointPrimitives)
   (entries.filter (fun entry => !ops.isZero entry.coefficient)).map
     (fun entry => entry.key)
 
-def graphIdentity (graph : Graph) : List String × Bool × String :=
-  ((if graph.ab then ["AB"] else []) ++
-   (if graph.ac then ["AC"] else []) ++
-   (if graph.bc then ["BC"] else []), graph.tag.isSome, graph.tag.getD "")
+def compareNatLists : List Nat → List Nat → Ordering
+  | [], [] => .eq
+  | [], _ :: _ => .lt
+  | _ :: _, [] => .gt
+  | left :: leftRest, right :: rightRest =>
+      let head := compare left right
+      if head == .eq then compareNatLists leftRest rightRest else head
 
-def jointIdentity (key : JointKey) :=
-  (graphIdentity key.1, graphIdentity key.2)
+def compareText (left right : String) : Ordering :=
+  compareNatLists (left.toList.map Char.toNat) (right.toList.map Char.toNat)
+
+def graphEdgesIdentity (graph : Graph) : List Nat :=
+  (if graph.ab then [0] else []) ++
+  (if graph.ac then [1] else []) ++
+  (if graph.bc then [2] else [])
+
+def compareBool (left right : Bool) : Ordering :=
+  match left, right with
+  | false, false | true, true => .eq
+  | false, true => .lt
+  | true, false => .gt
+
+def compareGraphIdentity (left right : Graph) : Ordering :=
+  let edges := compareNatLists (graphEdgesIdentity left) (graphEdgesIdentity right)
+  if edges != .eq then edges
+  else
+    let marked := compareBool left.tag.isSome right.tag.isSome
+    if marked != .eq then marked
+    else compareText (left.tag.getD "") (right.tag.getD "")
+
+def compareJointIdentity (left right : JointKey) : Ordering :=
+  let first := compareGraphIdentity left.1 right.1
+  if first != .eq then first else compareGraphIdentity left.2 right.2
 
 def jointKeyLt (left right : JointKey) : Prop :=
-  compare (jointIdentity left) (jointIdentity right) = .lt
+  compareJointIdentity left right = .lt
 
 def insertJointKey (key : JointKey) : List JointKey → List JointKey
   | [] => [key]
@@ -116,7 +142,7 @@ def jointModelRows (ops : CPythonJointPrimitives)
   (sortJointKeys (nonzeroKeys ops entries)).map (entryRow ops entries)
 
 def jointNormalizer (ops : CPythonJointPrimitives) (rows : List Row) : List Row :=
-  jointModelRows ops (jointDictRun ops rows)
+  jointModelRows ops (jointDictRun ops rows [])
 
 /- Each member corresponds to a separate operation result in `joint`: the
    dictionary loop, Fraction truth filtering, Python's `sorted` key function
@@ -183,17 +209,15 @@ def pythonRow (ops : CPythonRowsHelperTrace result) (row : Row) : WireRow :=
       (ops.fractionDenominator row.coefficient : Rat)⟩
 
 theorem graph_helper_result_refines (ops : CPythonRowsHelperTrace result)
-    (graph : Graph) : ops.pythonGraph graph = fromGraph graph := by
-  cases graph with
-  | mk ab ac bc tag =>
-      simp [pythonGraph,
-        ops.graphEdgesRefine, ops.graphTagRefine]
+    (graph : Graph) : pythonGraph ops graph = fromGraph graph := by
+  change ⟨ops.graphEdges graph, ops.graphTag graph⟩ = fromGraph graph
+  rw [ops.graphEdgesRefine graph, ops.graphTagRefine graph]
 
 theorem row_helper_result_refines (ops : CPythonRowsHelperTrace result)
-    (row : Row) : ops.pythonRow row = serializeRow row := by
+    (row : Row) : pythonRow ops row = serializeRow row := by
   cases row with
   | mk left right coefficient =>
-      simp [pythonRow, serializeRow, fromRow,
+      simp [pythonRow, pythonGraph, serializeRow, fromRow,
         graph_helper_result_refines ops left,
         graph_helper_result_refines ops right, ops.fractionPairRefines]
 
@@ -201,8 +225,9 @@ theorem rows_helper_result_refines (ops : CPythonRowsHelperTrace result) :
     ops.pythonRows = serializeRows result := by
   rw [ops.listComprehensionOrder]
   unfold serializeRows
-  simp [pythonRow, pythonGraph, serializeRow, fromRow,
-    graph_helper_result_refines ops, ops.fractionPairRefines]
+  apply List.map_congr_left
+  intro row membership
+  exact row_helper_result_refines ops row
 
 theorem rows_helper_result_yields_write_call
     (ops : CPythonRowsHelperTrace result) :
@@ -248,15 +273,12 @@ def actual_helpers_yield_modeled_trace
     {source : List WireRow}
     (ops : CPythonAdmissionHelperTrace source) :
     ModeledNormalExecution (jointNormalizer ops.primitives) source ops.result := by
-  have parseCall : ParseRowsCall source ops.parsed := by
-    rw [ops.parserIteration]
-    exact parse_rows_call_of_canonical ops.canonicalAccepted
   have guard : decide (ops.encoded = source) = true := by
     rw [← ops.builtinEqualityRefines]
     exact ops.normalReturnBranch
   exact ⟨ops.parsed, ops.encoded,
     AdmissionStep.evaluated ops.parsed ops.result ops.encoded
-      parseCall (helper_trace_joint_result ops)
+      ops.parserIteration (helper_trace_joint_result ops)
       (helper_trace_rows_result ops) guard⟩
 
 theorem actual_helpers_normal_return_exact_rows
