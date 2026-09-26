@@ -21,6 +21,31 @@ inductive RawJson where
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
 
+/- Height of the decoded value tree. Collection length does not affect height. -/
+mutual
+  def rawJsonDepth : RawJson → Nat
+    | .null => 0
+    | .boolean _ => 0
+    | .integer _ => 0
+    | .nonIntegerNumber _ => 0
+    | .string _ => 0
+    | .array values => 1 + rawJsonDepthList values
+    | .object fields => 1 + rawJsonDepthFields fields
+
+  def rawJsonDepthList : List RawJson → Nat
+    | [] => 0
+    | value :: rest => max (rawJsonDepth value) (rawJsonDepthList rest)
+
+  def rawJsonDepthFields : List (String × RawJson) → Nat
+    | [] => 0
+    | (_, value) :: rest => max (rawJsonDepth value) (rawJsonDepthFields rest)
+termination_by
+  rawJsonDepth value => sizeOf value
+  rawJsonDepthList values => sizeOf values
+  rawJsonDepthFields fields => sizeOf fields
+decreasing_by
+  all_goals simp_wf
+
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -112,8 +137,33 @@ def decodeJointRow (raw : RawJson) : Option WireRow :=
 def decodeJointRows (raw : RawJson) : Option (List WireRow) :=
   match raw with
   | .array rows =>
-      if rows.length ≤ 64 then rows.mapM decodeJointRow else none
+      if rows.length ≤ 64 then
+        if rawJsonDepth (.array rows) ≤ 32 then
+          rows.mapM decodeJointRow
+        else none
+      else none
   | _ => none
+
+/-- Successful raw-row admission proves the compared source value is within
+the normalizer's fuel. The depth guard belongs to this bounded RawJson model;
+CPython's fixed schema makes it redundant, but that adequacy link is separate. -/
+theorem decodeJointRows_depth_below_fuel
+    {raw : RawJson} {rows : List WireRow}
+    (decoded : decodeJointRows raw = some rows) :
+    rawJsonDepth raw ≤ 32 := by
+  cases raw with
+  | array values =>
+      by_cases hlen : values.length ≤ 64
+      · by_cases hdepth : rawJsonDepth (.array values) ≤ 32
+        · simpa [decodeJointRows, hlen, hdepth] using hdepth
+        · simp [decodeJointRows, hlen, hdepth] at decoded
+      · simp [decodeJointRows, hlen] at decoded
+  | null => simp [decodeJointRows] at decoded
+  | boolean value => simp [decodeJointRows] at decoded
+  | integer value => simp [decodeJointRows] at decoded
+  | nonIntegerNumber lexeme => simp [decodeJointRows] at decoded
+  | string value => simp [decodeJointRows] at decoded
+  | object fields => simp [decodeJointRows] at decoded
 
 structure DecodedRawDocument where
   rawRows : RawJson
