@@ -142,12 +142,12 @@ theorem rows_statement_output_exact
         injection ih with htail
       simp [encodeRawRows, row_statement_output_exact rowTrace, htail]
 
-theorem rows_statement_depth_le
+theorem rows_statement_within_fuel
     {rows : List WireRow} {output : RawJson}
     (trace : RowsStatementTrace rows output) :
     rawJsonWithinFuel 32 output = true := by
   rw [rows_statement_output_exact trace]
-  exact encodeRawRows_depth_le rows
+  exact encodeRawRows_within_32 rows
 
 inductive FinalGuardOutcome where
   | returnedNormally
@@ -215,7 +215,7 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hSerialized : output = encodeRawRows (result.map fromRow) :=
     rows_statement_output_exact serializer
   have hOutputFuel : rawJsonWithinFuel 32 output = true :=
-    rows_statement_depth_le serializer
+    rows_statement_within_fuel serializer
   have hOriginalFuel : rawJsonWithinFuel 32 originalRows = true :=
     decodeJointRows_within_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
