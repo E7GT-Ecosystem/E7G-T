@@ -34,3 +34,4 @@ lean_lib E7CJointRawJsonAdmission
 
 @[default_target]
 lean_lib E7CLeanCore
+lean_lib E7CJointCPythonNormalReturnTrace
