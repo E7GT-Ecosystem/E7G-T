@@ -311,28 +311,33 @@ def rawObjectReordered : RawJson :=
   .object [("coefficient", .integer 11), ("atoms", .integer 7)]
 
 theorem raw_object_key_order_is_extensional :
-    rawJsonEquivalent rawObjectForward rawObjectReordered := by
+    rawJsonEquivalent rawObjectForward rawObjectReordered  := by
+  unfold rawJsonEquivalent
   decide
 
 theorem raw_array_order_remains_significant :
     ¬ rawJsonEquivalent (.array [.integer 1, .integer 2])
-      (.array [.integer 2, .integer 1]) := by
+      (.array [.integer 2, .integer 1])  := by
+  unfold rawJsonEquivalent
   decide
 
 theorem raw_null_and_empty_string_remain_distinct :
-    ¬ rawJsonEquivalent .null (.string "") := by
+    ¬ rawJsonEquivalent .null (.string "")  := by
+  unfold rawJsonEquivalent
   decide
 
 theorem raw_fraction_pairs_remain_exact :
     ¬ rawJsonEquivalent
       (.object [("numerator", .integer 2), ("denominator", .integer 4)])
-      (.object [("numerator", .integer 1), ("denominator", .integer 2)]) := by
+      (.object [("numerator", .integer 1), ("denominator", .integer 2)])  := by
+  unfold rawJsonEquivalent
   decide
 
 theorem duplicate_object_multiplicity_remains_distinct :
     ¬ rawJsonEquivalent
       (.object [("k", .integer 1), ("k", .integer 1)])
-      (.object [("k", .integer 1)]) := by
+      (.object [("k", .integer 1)])  := by
+  unfold rawJsonEquivalent
   decide
 
 theorem rawJsonEquivalent_symmetric {left right : RawJson}
