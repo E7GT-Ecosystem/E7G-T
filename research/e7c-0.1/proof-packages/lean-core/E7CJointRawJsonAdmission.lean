@@ -286,8 +286,7 @@ theorem raw_typed_normal_return_exact
             have hround :
                 (trace.document.rows.map toRow).map fromRow = trace.document.rows := by
               rw [List.map_map]
-              change List.map (fromRow ∘ toRow) trace.document.rows =
-                List.map id trace.document.rows
+              rw [← List.map_id]
               apply List.map_congr_left
               intro wire hmem
               simpa [Function.comp] using canonical_row_roundtrip wire
