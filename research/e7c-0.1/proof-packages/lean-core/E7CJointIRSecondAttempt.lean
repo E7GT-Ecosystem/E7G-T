@@ -39,11 +39,11 @@ inductive IRStep (first second : Policy) :
         (.stopped (observe (chargedSecond m)
           (.resourceLimit (snapshot (chargedSecond m)))))
   | appended (m : Machine) (fuel capacity : Nat) (e : Event)
-      (next : Cursor) (h : attemptingSecond m.cursor = true)
+      (nextCursor : Cursor) (h : attemptingSecond m.cursor = true)
       (unfinished : finished m.cursor = none)
-      (advanceEq : advance first second m.cursor = (e, next)) :
+      (advanceEq : advance first second m.cursor = (e, nextCursor)) :
       IRStep first second (fuel + 1) (capacity + 1) m
-        (.continued { cursor := next
+        (.continued { cursor := nextCursor
           steps := m.steps + 1
           ledgerRev := e :: m.ledgerRev
           secondStarted := true })
@@ -78,10 +78,10 @@ theorem blocked_has_exact_progress (keptRev excludedRev : List Row)
 theorem append_has_one_second_event (keptRev excludedRev : List Row)
     (index steps fuel capacity : Nat) (ledgerRev : List Event)
     (first second : Policy) :
-    ∃ next : Cursor,
+    ∃ nextCursor : Cursor,
       IRStep first second (fuel + 1) (capacity + 1)
         (entry keptRev excludedRev index steps ledgerRev)
-        (.continued { cursor := next
+        (.continued { cursor := nextCursor
           steps := steps + 1
           ledgerRev := .attempt .second :: ledgerRev
           secondStarted := true }) := by
