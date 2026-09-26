@@ -38,7 +38,7 @@ structure RowStatementTrace (row : WireRow) (output : RawJson) : Type where
   rightGraphReadWrite : GraphFieldStatementTrace row.right rightOutput
   coefficientOutput : RawJson
   fractionReadWrite : FractionFieldStatementTrace row.coefficient coefficientOutput
-  atomListWrite : outputAtoms : RawJson
+  atomListWrite : RawJson
   atomsWritten : outputAtoms = .array [leftOutput, rightOutput]
   rowDictionaryWrite : output = .object
     [("atoms", outputAtoms), ("coefficient", coefficientOutput)]
@@ -46,12 +46,10 @@ structure RowStatementTrace (row : WireRow) (output : RawJson) : Type where
 inductive RowsStatementTrace : List WireRow → RawJson → Prop where
   | nil : RowsStatementTrace [] (.array [])
   | cons {row : WireRow} {rows : List WireRow}
-      {rowOutput rowsOutput : RawJson}
+      {rowOutput : RawJson} {tailRows : List RawJson}
       (rowTrace : RowStatementTrace row rowOutput)
-      (rowsTrace : RowsStatementTrace rows rowsOutput)
-      (listAppend : RowsStatementTrace (row :: rows)
-        (.array (rowOutput ::
-          (match rowsOutput with | .array values => values | _ => []))))
+      (tailTrace : RowsStatementTrace rows (.array tailRows)) :
+      RowsStatementTrace (row :: rows) (.array (rowOutput :: tailRows))
 
 theorem graph_statement_output_exact
     {graph : WireGraph} {output : RawJson}
