@@ -72,7 +72,7 @@ inductive NormalReturn (normalizer : List Row → List Row) :
 theorem parse_row_exact {wire : WireRow} {typed : Row}
     (h : ParseRowCall wire typed) : typed = toRow wire := by
   cases h with
-  | accepted wire left right coefficient hl hr hc =>
+  | accepted left right coefficient hl hr hc =>
       cases hl
       cases hr
       cases hc
@@ -94,7 +94,7 @@ theorem joint_call_exact {normalizer : List Row → List Row}
 theorem write_row_exact {row : Row} {wire : WireRow}
     (h : RowWriteCall row wire) : wire = serializeRow row := by
   cases h with
-  | returned row left right hl hr =>
+  | returned left right hl hr =>
       cases hl
       cases hr
       rfl
