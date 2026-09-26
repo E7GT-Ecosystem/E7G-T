@@ -86,6 +86,7 @@ class RawJointJsonAdmission(unittest.TestCase):
             ((other_left, other_right), Fraction(-2, 5)),
         )))
         rows = raw["rows"]
+        rows[0]["atoms"][0]["edges"] = ["AB", "AC"]
         reordered_object_keys = self.reverse_object_key_order(copy.deepcopy(rows))
         self.assertEqual(rows, reordered_object_keys)
 
