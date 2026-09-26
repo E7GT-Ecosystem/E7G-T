@@ -35,6 +35,8 @@ jobs:
         run: |
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_sort_constructor_semantics.py
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_raw_json_admission.py
+          python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_first_helper_sites.py'
+          python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_admission_translation.py'
           python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_edition_source_audit.py'
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
