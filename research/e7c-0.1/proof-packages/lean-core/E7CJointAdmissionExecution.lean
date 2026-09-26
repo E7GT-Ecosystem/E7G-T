@@ -40,11 +40,11 @@ inductive AdmissionStep (normalizer : List Row → List Row)
    the `rows` serialization and the truth value of the built-in equality
    guard. `returned` is the control-flow fact that this execution reached the
    source return statement rather than its rejection branch. -/
-structure PythonNormalExecution (normalizer : List Row → List Row)
+inductive PythonNormalExecution (normalizer : List Row → List Row)
     (source : List WireRow) (result : List Row) : Prop where
-  parsed : List Row
-  encoded : List WireRow
-  control : AdmissionStep normalizer source parsed result encoded true (some result)
+  | returned {parsed : List Row} {encoded : List WireRow}
+      (control : AdmissionStep normalizer source parsed result encoded true (some result)) :
+      PythonNormalExecution normalizer source result
 
 theorem parse_rows_call_of_canonical {source : List WireRow}
     (hcanonical : CanonicalWireRows source) :
@@ -83,8 +83,8 @@ theorem python_normal_execution_yields_call_derivation
     (hcanonical : CanonicalWireRows source)
     (run : PythonNormalExecution normalizer source result) :
     NormalReturn normalizer source result := by
-  cases run.control with
-  | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+  cases run with
+  | returned (.evaluated parsed computed encoded hparse hjoint hrows hguard) =>
       have parseCall : ParseRowsCall source parsed := by
         rw [hparse]
         exact parse_rows_call_of_canonical hcanonical
@@ -122,8 +122,8 @@ theorem changed_rows_cannot_take_normal_return
     {result : List Row} (changed : serializeRows result ≠ source) :
     ¬ PythonNormalExecution normalizer source result := by
   intro run
-  cases run.control with
-  | evaluated parsed computed encoded hparse hjoint hrows hguard =>
+  cases run with
+  | returned (.evaluated parsed computed encoded hparse hjoint hrows hguard) =>
       apply changed
       have guardEq : encoded = source := of_decide_eq_true hguard
       rw [hrows]
