@@ -1,8 +1,6 @@
 """Regression evidence for CPython dict equality in the pinned admit path."""
 
 from __future__ import annotations
-
-import copy
 import unittest
 
 from e7c_eecq_joint_restrict_b1 import admit
