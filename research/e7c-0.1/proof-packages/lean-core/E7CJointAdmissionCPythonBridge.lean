@@ -77,7 +77,7 @@ theorem serializer_result_yields_write_call
     (ops : CPythonOperationRefinements normalizer source) :
     RowsWriteCall ops.result ops.encoded := by
   rw [ops.rowsOutputRefines]
-  exact rows_write_call result
+  exact rows_write_call ops.result
 
 theorem pinned_normal_return_yields_modeled_trace
     {normalizer : List Row → List Row} {source : List WireRow}
