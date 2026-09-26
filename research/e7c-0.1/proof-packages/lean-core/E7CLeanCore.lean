@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 9297)
+Total output lines: 852
+
 import E7CS1StrictCore
 import E7CS1FG3Single
 import E7CS1FG3Rows
@@ -20,6 +23,7 @@ import E7CJointFirstHelperSelection
 import E7CJointAdmissionSemantics
 import E7CJointAdmissionCalls
 import E7CJointAdmissionExecution
+import E7CJointAdmissionCPythonBridge
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
@@ -419,103 +423,7 @@ inductive SpecEval (environment : Environment) (interpretation : Interpretation)
       SpecEval environment interpretation (.restrict policyName argument)
         (finishWith (childOutcome, childLedger)
           [ledgerEntry (.alternatives policyName)]
-          (restrictionOperation interpretation policyName)).1
-        (finishWith (childOutcome, childLedger)
-          [ledgerEntry (.alternatives policyName)]
-          (restrictionOperation interpretation policyName)).2
-
-theorem spec_eval_matches_function
-    (derivation : SpecEval environment interpretation term outcome ledger) :
-    evaluate environment interpretation term = (outcome, ledger) := by
-  induction derivation with
-  | wp3Variable => rfl
-  | wp3Strict argumentEval inductionHypothesis =>
-      simp [evaluate, inductionHypothesis]
-  | wp3SourceView argumentEval inductionHypothesis =>
-      simp [evaluate, inductionHypothesis]
-  | wp3Restriction argumentEval inductionHypothesis =>
-      simp [evaluate, inductionHypothesis]
-
-theorem evaluate_has_spec_derivation (term : Term) :
-    SpecEval environment interpretation term
-      (evaluate environment interpretation term).1
-      (evaluate environment interpretation term).2 := by
-  induction term with
-  | var name => exact SpecEval.wp3Variable
-  | strictApp mapName argument inductionHypothesis =>
-      simpa [evaluate] using SpecEval.wp3Strict inductionHypothesis
-  | sourceView viewName argument inductionHypothesis =>
-      simpa [evaluate] using SpecEval.wp3SourceView inductionHypothesis
-  | restrict policyName argument inductionHypothesis =>
-      simpa [evaluate] using SpecEval.wp3Restriction inductionHypothesis
-
-theorem spec_evaluation_deterministic
-    (first : SpecEval environment interpretation term firstOutcome firstLedger)
-    (second : SpecEval environment interpretation term secondOutcome secondLedger) :
-    firstOutcome = secondOutcome ∧ firstLedger = secondLedger := by
-  have firstResult := spec_eval_matches_function first
-  have secondResult := spec_eval_matches_function second
-  have pairEquality : (firstOutcome, firstLedger) = (secondOutcome, secondLedger) :=
-    firstResult.symm.trans secondResult
-  exact ⟨congrArg Prod.fst pairEquality, congrArg Prod.snd pairEquality⟩
-
-theorem evaluateBinding_success_has_type
-    (bindingType : BindingHasType binding type)
-    (successful : evaluateBinding binding = .success output) :
-    ValueHasType output (successCarrier type) := by
-  cases binding <;> cases type <;>
-    simp_all [BindingHasType, evaluateBinding, successCarrier, ValueHasType]
-
-theorem successful_type_preservation
-    (termType : HasType declarations context term type effects)
-    (environmentType : EnvironmentWellFormed context environment)
-    (interpretationType : InterpretationWellFormed declarations interpretation)
-    (successful : (evaluate environment interpretation term).1 = .success output) :
-    ValueHasType output (successCarrier type) := by
-  induction termType generalizing output with
-  | @var name type found =>
-      obtain ⟨binding, bindingFound, bindingType⟩ :=
-        environmentType.complete name type found
-      have bindingSuccessful : evaluateBinding binding = .success output := by
-        simpa [evaluate, evaluateVariable, bindingFound] using successful
-      exact evaluateBinding_success_has_type bindingType bindingSuccessful
-  | @strictApp mapName argument argumentEffects declared argumentType inductionHypothesis =>
-      obtain ⟨table, tableFound, _⟩ :=
-        interpretationType.strictComplete mapName declared
-      cases argumentResult : evaluate environment interpretation argument with
-      | mk argumentOutcome argumentLedger =>
-          cases argumentOutcome with
-          | domainError => simp [evaluate, finishWith, argumentResult] at successful
-          | unsupported capability =>
-              simp [evaluate, finishWith, argumentResult] at successful
-          | success input =>
-              have inputType : ValueHasType input .config := by
-                apply inductionHypothesis
-                simp [argumentResult]
-              cases input with
-              | config code =>
-                  cases rowFound : lookupStrictRow table code with
-                  | none =>
-                      simp [evaluate, finishWith, argumentResult, strictOperation,
-                        tableFound, applyStrict, rowFound] at successful
-                  | some mapped =>
-                      have outputIsConfig : output = .config mapped := by
-                        simpa [evaluate, finishWith, argumentResult, strictOperation,
-                          tableFound, applyStrict, rowFound] using successful.symm
-                      cases outputIsConfig
-                      trivial
-              | familyConfig members => simp [ValueHasType] at inputType
-              | sourceView representation sourceReturn => simp [ValueHasType] at inputType
-              | text content => simp [ValueHasType] at inputType
-  | @sourceView viewName argument argumentEffects declared argumentType inductionHypothesis =>
-      obtain ⟨table, tableFound, _⟩ :=
-        interpretationType.viewComplete viewName declared
-      cases argumentResult : evaluate environment interpretation argument with
-      | mk argumentOutcome argumentLedger =>
-          cases argumentOutcome with
-          | domainError => simp [evaluate, finishWith, argumentResult] at successful
-          | unsupported capability =>
-              simp [evaluate, finishWith, argumentResult] at successful
+          (restrictionOperation…1297 tokens truncated…ate, finishWith, argumentResult] at successful
           | success input =>
               have inputType : ValueHasType input .config := by
                 apply inductionHypothesis
