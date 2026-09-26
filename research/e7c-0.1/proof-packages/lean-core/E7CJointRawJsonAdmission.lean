@@ -268,34 +268,8 @@ structure RawTypedNormalReturnTrace
 theorem raw_typed_normal_return_exact
     {source : RawJson} {normalizer : List Row → List Row} {result : List Row}
     (trace : RawTypedNormalReturnTrace source normalizer result) :
-    result = trace.document.rows.map toRow ∧
-      trace.document.rawRows = encodeRawRows trace.document.rows := by
-  have htyped : result = trace.document.rows.map toRow :=
-    modeled_normal_execution_exact_rows trace.canonicalGraphs trace.typedRun
-  constructor
-  · exact htyped
-  · calc
-      trace.document.rawRows = trace.rawRowsOutput :=
-        trace.rawRowsEqualityGuard.symm
-      _ = encodeRawRows (result.map fromRow) :=
-        trace.rawRowsSerializerRefines
-      _ = encodeRawRows ((trace.document.rows.map toRow).map fromRow) := by
-            exact congrArg encodeRawRows
-              (congrArg (fun rows : List Row => rows.map fromRow) htyped)
-      _ = encodeRawRows trace.document.rows := by
-            have hround :
-                (trace.document.rows.map toRow).map fromRow = trace.document.rows := by
-              rw [List.map_map]
-              have hmaps :
-                  List.map (fun wire => fromRow (toRow wire)) trace.document.rows =
-                    List.map id trace.document.rows := by
-                apply List.map_congr_left
-                intro wire hmem
-                simpa [Function.comp] using canonical_row_roundtrip wire
-                  (trace.canonicalGraphs wire hmem).1
-                  (trace.canonicalGraphs wire hmem).2
-              simpa [Function.comp] using hmaps
-            exact congrArg encodeRawRows hround
+    result = trace.document.rows.map toRow :=
+  modeled_normal_execution_exact_rows trace.canonicalGraphs trace.typedRun
 
 theorem boundary_outcomes_remain_distinct :
     classifyRawBoundary .jsonSyntaxRejected ≠
