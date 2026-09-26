@@ -291,15 +291,21 @@ def normalizeRawJson : RawJson → List Nat
   | .array values =>
       [5, values.length] ++ values.flatMap normalizeRawJson
   | .object fields =>
-      let normalizedFields := fields.map fun (key, fieldValue) =>
-        (stringCodes key, normalizeRawJson fieldValue)
+      let normalizedFields := fields.map fun field =>
+        (stringCodes field.1, normalizeRawJson field.2)
       let ordered := sortTokenFields normalizedFields
       [6, ordered.length] ++ ordered.flatMap fun (keyCodes, valueCodes) =>
         keyCodes.length :: keyCodes ++ valueCodes.length :: valueCodes
 termination_by value => sizeOf value
 decreasing_by
   all_goals simp_wf
-  all_goals decreasing_trivial
+  · exact Nat.lt_trans (List.sizeOf_lt_of_mem (by assumption)) (by omega)
+  ·
+    have hpair := List.sizeOf_lt_of_mem (by assumption)
+    have hcomponent : sizeOf field.2 < sizeOf field := by
+      simp_wf
+      omega
+    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by omega))
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
