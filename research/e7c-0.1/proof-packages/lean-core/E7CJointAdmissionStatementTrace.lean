@@ -14,6 +14,8 @@ open E7CJointAdmissionExecution
 open E7CJointRawJsonAdmission
 open E7CJointCPythonNormalReturnTrace
 open E7CJointAdmissionPythonOperations
+open E7CJointAdmissionCalls
+open E7CJointAdmissionGenerated
 open E7CJointSortConstructorSemantics
 
 structure GraphAdmissionStatementTrace (raw : RawJson) where
@@ -37,8 +39,7 @@ def GraphAdmissionStatementTrace.output
 theorem graph_decoder_follows_statement_trace
     {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
     decodeGraph raw = some trace.output := by
-  rw [trace.objectRead]
-  simp [decodeGraph, trace.keyCheck, trace.edgesFieldRead,
+  simp [decodeGraph, trace.objectRead, trace.keyCheck, trace.edgesFieldRead,
     trace.tagFieldRead, trace.stringArrayDecode,
     trace.edgeOrderCheck, trace.tagDecode, GraphAdmissionStatementTrace.output]
 
@@ -64,8 +65,7 @@ def FractionAdmissionStatementTrace.output
 theorem fraction_decoder_follows_statement_trace
     {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
     decodeFractionPair raw = some trace.output := by
-  rw [trace.objectRead]
-  simp [decodeFractionPair, trace.keyCheck, trace.numeratorFieldRead,
+  simp [decodeFractionPair, trace.objectRead, trace.keyCheck, trace.numeratorFieldRead,
     trace.denominatorFieldRead, trace.numeratorExactInt,
     trace.denominatorExactInt, trace.positiveDenominator,
     trace.nonzeroNumerator, FractionAdmissionStatementTrace.output]
@@ -92,8 +92,7 @@ def JointRowAdmissionStatementTrace.output
 theorem row_decoder_follows_statement_trace
     {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
     decodeJointRow raw = some trace.output := by
-  rw [trace.objectRead]
-  simp [decodeJointRow, trace.keyCheck, trace.atomsFieldRead,
+  simp [decodeJointRow, trace.objectRead, trace.keyCheck, trace.atomsFieldRead,
     trace.coefficientFieldRead, trace.twoCoordinateArrayRead,
     graph_decoder_follows_statement_trace trace.leftGraph,
     graph_decoder_follows_statement_trace trace.rightGraph,
@@ -103,10 +102,10 @@ theorem row_decoder_follows_statement_trace
 inductive RawRowsVisitTrace : List RawJson → List WireRow → Prop where
   | nil : RawRowsVisitTrace [] []
   | cons {rawRow : RawJson} {rawTail : List RawJson}
-      {row : WireRow} {tail : List WireRow}
+      {tail : List WireRow}
       (rowVisit : JointRowAdmissionStatementTrace rawRow)
       (tailVisits : RawRowsVisitTrace rawTail tail) :
-      RawRowsVisitTrace (rawRow :: rawTail) (row :: tail)
+      RawRowsVisitTrace (rawRow :: rawTail) (rowVisit.output :: tail)
 
 theorem raw_rows_mapM_follows_visits
     {rawRows : List RawJson} {rows : List WireRow}
@@ -114,7 +113,7 @@ theorem raw_rows_mapM_follows_visits
     rawRows.mapM decodeJointRow = some rows := by
   induction visits with
   | nil => rfl
-  | @cons rawRow rawTail row tail rowVisit tailVisits ih =>
+  | @cons rawRow rawTail tail rowVisit tailVisits ih =>
       simp [row_decoder_follows_statement_trace rowVisit, ih]
 
 structure RawRowsAdmissionStatementTrace (raw : RawJson) where
@@ -128,8 +127,7 @@ structure RawRowsAdmissionStatementTrace (raw : RawJson) where
 theorem rows_decoder_follows_statement_trace
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
     decodeJointRows raw = some trace.rows := by
-  rw [trace.arrayRead]
-  simp [decodeJointRows, trace.capCheck, trace.fuelCheck,
+  simp [decodeJointRows, trace.arrayRead, trace.capCheck, trace.fuelCheck,
     raw_rows_mapM_follows_visits trace.visits]
 
 /-- The prefix pins the top-level document object, exact top-level keys,
@@ -171,7 +169,7 @@ theorem raw_statement_rows_supply_typed_parse_call
 structure JointNormalizerStatementTrace
     (ops : CPythonJointPrimitives) (parsed : List Row) where
   preSort : PreSortJointHelperTrace ops parsed
-  sortedKeys : List JointKey
+  sortedKeys : List E7CJointAdmissionPythonOperations.JointKey
   sortVisits : AbstractIdentitySortTrace cpythonIdentityCompare
     preSort.pythonFilteredKeys sortedKeys
   constructorOps : CPythonJointConstructorOps
