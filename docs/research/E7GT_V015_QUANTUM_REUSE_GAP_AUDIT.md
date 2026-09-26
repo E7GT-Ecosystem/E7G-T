@@ -20,7 +20,7 @@ The motivating question is whether E7G-T's whole/view/reconstruction machinery c
 | Context/view | A declared measurement procedure and its outcome carrier, returning a distribution, an actual run record, or a state transition as separately typed objects. |
 | Projection/view | Existing E7G-T operation retaining its source reference and declaring what is hidden; not automatically a physical measurement. |
 | Outcome distribution | `p(o|rho,c) = tr(rho E[c,o])`, predicted by a state and POVM. It is not an actual outcome. |
-| Actual outcome | One sampled record from one identified run, under a protocol and provenance. Not inferred from a distribution or from separate runs. |
+| Actual outcome | The recorded result of one identified physical run, imported with protocol and provenance. The Born distribution does not specify which result that run produced. |
 | Post-measurement state | Instrument-conditioned state after an actual measurement outcome; distinct from both distribution and record. |
 | Compatibility | Here, operational joint measurability: existence of one parent POVM whose coarse-grained marginals are the declared POVMs for every admitted state. |
 | Reconstruction fibre | All admitted preparations compatible with a declared view under a pinned comparison criterion. A singleton means unique within that model/domain only. |
