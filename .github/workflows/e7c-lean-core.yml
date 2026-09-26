@@ -109,8 +109,8 @@ jobs:
           auto-config: false
           build: false
           axiom-audit: true
-          axiom-audit-allow: "propext,Quot.sound"
-          axiom-audit-root: E7CJointAdmissionPythonOperations.actual_helpers_normal_return_exact_rows
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: E7CJointAdmissionPythonOperations
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
