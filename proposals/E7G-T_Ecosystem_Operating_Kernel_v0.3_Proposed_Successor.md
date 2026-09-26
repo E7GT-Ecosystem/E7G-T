@@ -602,6 +602,20 @@ disciplined scaling
 
 The following section is retained from v0.2 as a dated historical record of its v0.12 plan. Its source pin, decisions and records remain valid for artifacts that actually used that edition. It is not the operative instruction for new work under this proposed v0.3 successor.
 
+### 19.1 Historical edition and source-pin ledger
+
+The v0.1 and v0.2 operating-kernel files remain preserved historical editions. v0.1 recorded no canonical E7G-T source pin. v0.2 remains pinned to v0.12/CFS1 at its recorded commit and source blob. The later E7G-T source editions retain their own exact historical pins below; this proposal does not rewrite or migrate them.
+
+| Historical source edition | Exact source commit | Source blob | Historical role |
+|---|---|---|---|
+| E7G-T v0.12-experimental/CFS1 | `b7a30b2d56375a5a0646e0c1cab4f621b4de99ca` | `215270d72bf237f47d809d62ca23db6760909c24` | Source pin recorded by ecosystem operating kernel v0.2. |
+| E7G-T v0.12.1-experimental/RGP2 | `653f7fb7077b661725f520216a74f9a479c7ed0e` | `a84da2c4de2ada23577cde4512a10c3369aba2b5` | Published experimental canonical predecessor; retained by its existing consumers. |
+| E7G-T v0.13-experimental/RWP1 | `8504d3124ef1e64f008087c46e09ca8acf6d7479` | `e11da3e39e6334c42f838f69fe462451f0d7c61e` | Merged draft successor; its source identity remains distinct. |
+| E7G-T v0.14-experimental/REC1 | `81ad69a29b5b962955a54febed9b90452591b8d7` | `5caf01e5e1ab4aacd878a4889aa9eeaea6127756` | Merged draft successor; its source identity remains distinct. |
+| E7G-T v0.15-experimental/MSC1 | `9092c35a0287f05f9fa43c728eee018ecee3adf6` | `02c09c5af2827098a98c729c6a66f79a4bf5acf2` | Experimental canonical source for new work; SHA-256 is recorded in this proposal's front matter. |
+
+The v0.15 source pin is operative as the experimental canonical source independently of this proposal. Acceptance of v0.3 would make its ecosystem operating instructions effective; it would not change any row in this historical ledger.
+
 The ecosystem was being realigned from a predominantly evidence-aware v0.11 trajectory to the broader v0.12 possibility of a construction-and-realisation platform. Existing work was not presumed invalid and was not discarded merely because it predated that edition.
 
 For each active repository:
