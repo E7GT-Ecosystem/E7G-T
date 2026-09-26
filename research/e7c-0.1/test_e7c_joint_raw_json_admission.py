@@ -105,7 +105,8 @@ class RawJointJsonAdmission(unittest.TestCase):
               Config(("BC",), None)), Fraction(1, index + 1))
             for index in range(65)
         )
-        raw = document(Joint(2, terms))
+        raw = one_row_document()
+        raw["rows"] = raw["rows"] * 65
         self.assert_invalid(raw)
 
     def test_policy_key_sets_and_exact_integer_bounds(self):
