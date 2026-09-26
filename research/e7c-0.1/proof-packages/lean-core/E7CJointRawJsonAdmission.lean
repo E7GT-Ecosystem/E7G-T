@@ -294,7 +294,11 @@ def normalizeRawJson : RawJson → List Nat
       [6, ordered.length] ++ ordered.flatMap fun (key, fieldValue) =>
         encodeStringCodes key ++ normalizeRawJson fieldValue
 termination_by value => sizeOf value
-decreasing_by all_goals simp_wf; simp_all; omega
+decreasing_by
+  all_goals
+    simp_wf
+    trace_state
+    omega
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
