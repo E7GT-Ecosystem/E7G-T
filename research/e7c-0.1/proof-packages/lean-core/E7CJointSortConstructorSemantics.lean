@@ -1,16 +1,16 @@
 import E7CJointAdmissionPythonOperations
 
 /-!
-Operation semantics for the pinned FG3 identity-key sort and the typed Joint
-constructor checks. A sort trace contains comparison outcomes and individual
-list insertion writes; a constructor run checks and copies rows one at a time.
-Neither theorem takes the complete sorted list or constructed rows as an
-operation-result premise.
+An abstract identity-key sorting semantics and typed Joint constructor model.
+The sort trace records comparison outcomes and individual insertion writes;
+a constructor run checks rows and returns its input sequence on success. These
+are model events, not claims about the comparison or write sequence executed
+by CPython's `sorted` or Timsort.
 
-The CPython bridge remains explicit: the host must supply the key extraction,
-comparison, list-write, exact-type and Fraction operation observations named
-below. These theorems establish their consequences in Lean; they do not verify
-the C implementation of CPython or its Timsort implementation.
+The CPython host link remains open. It must justify that the pinned key
+extraction, tuple comparison, built-in sorting, exact-type and Fraction
+operations satisfy the stated observations. Lean derives consequences of the
+abstract semantics and supplied premises; it does not verify CPython's C code.
 -/
 namespace E7CJointSortConstructorSemantics
 
@@ -37,23 +37,24 @@ structure CPythonSortOperationPremises where
   comparisonRefines : ∀ left right,
     compare left right = compareJointIdentity left right
 
-/- One insertion step exposes each comparison and list write. A non-less
-   result keeps the earlier key in place, which is stable for ties. -/
-inductive CPythonInsertTrace (compare : JointKey → JointKey → Ordering)
+ /- Abstract insertion step: a model comparison result determines a list
+   insertion. Non-less keeps the earlier key in place (stable ties). This does
+   not assert CPython uses this comparison/write sequence. -/
+inductive AbstractInsertTrace (compare : JointKey → JointKey → Ordering)
     (key : JointKey) : List JointKey → List JointKey → Prop where
-  | empty : CPythonInsertTrace compare key [] [key]
+  | empty : AbstractInsertTrace compare key [] [key]
   | before (head : JointKey) (tail : List JointKey)
       (comparison : compare key head = .lt) :
-      CPythonInsertTrace compare key (head :: tail) (key :: head :: tail)
+      AbstractInsertTrace compare key (head :: tail) (key :: head :: tail)
   | after (head : JointKey) (tail output : List JointKey)
       (comparison : compare key head ≠ .lt)
-      (rest : CPythonInsertTrace compare key tail output) :
-      CPythonInsertTrace compare key (head :: tail) (head :: output)
+      (rest : AbstractInsertTrace compare key tail output) :
+      AbstractInsertTrace compare key (head :: tail) (head :: output)
 
 theorem insert_trace_refines_model
     {compare : JointKey → JointKey → Ordering} {key : JointKey}
     {input output : List JointKey}
-    (trace : CPythonInsertTrace compare key input output)
+    (trace : AbstractInsertTrace compare key input output)
     (comparisonRefines : compare = compareJointIdentity) :
   output = insertJointKey key input := by
   induction trace with
@@ -74,18 +75,18 @@ theorem insert_trace_refines_model
 /- The abstract list-sort operation is represented by sequential insertion
    traces. Its steps are individual comparisons and list writes, not an assumed
    sorted-list output. Host adequacy to CPython `sorted` is stated separately. -/
-inductive CPythonIdentitySortTrace
+inductive AbstractIdentitySortTrace
     (compare : JointKey → JointKey → Ordering) :
     List JointKey → List JointKey → Prop where
-  | nil : CPythonIdentitySortTrace compare [] []
+  | nil : AbstractIdentitySortTrace compare [] []
   | cons (key : JointKey) (rest sortedRest output : List JointKey)
-      (tail : CPythonIdentitySortTrace compare rest sortedRest)
-      (insert : CPythonInsertTrace compare key sortedRest output) :
-      CPythonIdentitySortTrace compare (key :: rest) output
+      (tail : AbstractIdentitySortTrace compare rest sortedRest)
+      (insert : AbstractInsertTrace compare key sortedRest output) :
+      AbstractIdentitySortTrace compare (key :: rest) output
 
 theorem sort_trace_refines_model
     {compare : JointKey → JointKey → Ordering} {input output : List JointKey}
-    (trace : CPythonIdentitySortTrace compare input output)
+    (trace : AbstractIdentitySortTrace compare input output)
     (comparisonRefines : compare = compareJointIdentity) :
     output = sortJointKeys input := by
   induction trace with
@@ -101,7 +102,7 @@ structure CPythonBuiltinSortAdequacy
   comparisonCallsRefineTupleOrder : ∀ left right,
     ops.compare left right = compareJointIdentity left right
   observedComparisonsAndWrites :
-    CPythonIdentitySortTrace ops.compare input pythonOutput
+    AbstractIdentitySortTrace ops.compare input pythonOutput
 
 theorem cpython_sort_output_refines_model
     {ops : CPythonSortOperationPremises}
@@ -188,25 +189,31 @@ theorem constructor_rejects_noncanonical_rows
   have hall := row_visit_trace_checks_all visits
   simp [runConstructorRows, positive, outer, hall, badOrder]
 
-theorem joint_python_terms_refine
+theorem joint_python_terms_refine_from_sort_trace
     {ops : CPythonJointPrimitives} {parsed : List Row}
-    (trace : CPythonJointHelperTrace ops parsed) :
+    (trace : CPythonJointHelperTrace ops parsed)
+    (sortTrace : AbstractIdentitySortTrace cpythonIdentityCompare
+      trace.pythonFilteredKeys trace.pythonSortedKeys) :
     trace.pythonTerms = jointNormalizer ops parsed := by
+  have hsorted :
+      trace.pythonSortedKeys = sortJointKeys trace.pythonFilteredKeys :=
+    sort_trace_refines_model sortTrace (by funext; rfl)
   have hdict : trace.finalDictionary = jointDictRun ops parsed [] :=
     dictionaryTrace_computes_run trace.dictionaryLoop
-  rw [trace.termMaterialisation, trace.sortResult,
-    trace.filterResult, hdict]
+  rw [trace.termMaterialisation, hsorted, trace.filterResult, hdict]
   rfl
 
 theorem joint_constructor_trace_builds_normalizer
     {jops : CPythonJointPrimitives} {parsed : List Row}
     (jointTrace : CPythonJointHelperTrace jops parsed)
+    (sortTrace : AbstractIdentitySortTrace cpythonIdentityCompare
+      jointTrace.pythonFilteredKeys jointTrace.pythonSortedKeys)
     (cops : CPythonJointConstructorOps)
     (constructorTrace : CPythonJointConstructorTrace cops 2 jointTrace.pythonTerms) :
     runConstructorRows cops 2 jointTrace.pythonTerms =
       some (jointNormalizer jops parsed) := by
   rw [constructor_trace_builds_rows constructorTrace,
-    joint_python_terms_refine jointTrace]
+    joint_python_terms_refine_from_sort_trace jointTrace sortTrace]
 
 theorem edge_AB_precedes_AC :
     compareGraphIdentity
