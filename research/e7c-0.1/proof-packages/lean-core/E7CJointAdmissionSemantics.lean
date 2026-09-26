@@ -48,25 +48,8 @@ theorem changed_serialized_rows_rejected (normalizer : List Row → List Row)
     admission normalizer sourceRows = none := by
   simp [admission, changed]
 
-def signedNullEmpty (coefficient : Rat) : WireRow :=
-  ⟨⟨["AB"], none⟩, ⟨["AC"], some ""⟩, coefficient⟩
-
-theorem signed_null_empty_normal (coefficient : Rat) :
-    admission id [signedNullEmpty coefficient] =
-      some [toRow (signedNullEmpty coefficient)] := by
-  have canonical : fromRow (toRow (signedNullEmpty coefficient)) =
-      signedNullEmpty coefficient := by
-    simp [signedNullEmpty, fromRow, toRow, fromGraph, toGraph]
-  simp [admission, parseRows, parseRow, serializeRows, serializeRow,
-    canonical]
-
-theorem signed_null_empty_changed_coefficient_rejected
-    (original replacement : Rat) (different : replacement ≠ original) :
-    admission (fun _ => [⟨toGraph (signedNullEmpty original).left,
-      toGraph (signedNullEmpty original).right, replacement⟩])
-      [signedNullEmpty original] = none := by
-  apply changed_serialized_rows_rejected
-  simpa [serializeRows, serializeRow, signedNullEmpty, fromRow, fromGraph,
-    toGraph] using different
+/- The all-list theorems above are parametric in `Rat` and include signed
+fractions. Concrete signed-fraction normal and forged-coefficient paths are
+checked against the running Python helpers in the companion tests. -/
 
 end E7CJointAdmissionSemantics
