@@ -97,9 +97,9 @@ theorem python_normal_execution_yields_call_derivation
             rw [hrows]
             exact rows_write_call result
           have guardEq : encoded = source := of_decide_eq_true hguard
-          subst encoded
+          subst source
           exact NormalReturn.returned parseCall jointCall writeCall
-            (WireEqualCall.equal source)
+            (WireEqualCall.equal encoded)
 
 theorem python_normal_execution_matches_generated
     {normalizer : List Row → List Row} {source : List WireRow}
@@ -130,7 +130,6 @@ theorem changed_rows_cannot_take_normal_return
       | evaluated _ _ hrows hguard =>
           apply changed
           have guardEq : encoded = source := of_decide_eq_true hguard
-          rw [hrows]
-          exact guardEq
+          exact changed (hrows.symm.trans guardEq)
 
 end E7CJointAdmissionExecution
