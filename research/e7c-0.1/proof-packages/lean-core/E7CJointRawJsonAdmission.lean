@@ -270,15 +270,16 @@ def encodeStringCodes (value : String) : List Nat :=
   let codes := stringCodes value
   codes.length :: codes
 
-def insertRawField (item : String × RawJson) : List (String × RawJson) →
-    List (String × RawJson)
+def insertTokenField (item : List Nat × List Nat) :
+    List (List Nat × List Nat) → List (List Nat × List Nat)
   | [] => [item]
   | head :: tail =>
-      if natListLe (stringCodes item.1) (stringCodes head.1) then item :: head :: tail
-      else head :: insertRawField item tail
+      if natListLe item.1 head.1 then item :: head :: tail
+      else head :: insertTokenField item tail
 
-def sortRawFields (fields : List (String × RawJson)) : List (String × RawJson) :=
-  fields.foldr insertRawField []
+def sortTokenFields (fields : List (List Nat × List Nat)) :
+    List (List Nat × List Nat) :=
+  fields.foldr insertTokenField []
 
 def normalizeRawJson : RawJson → List Nat
   | .null => [0]
@@ -290,15 +291,22 @@ def normalizeRawJson : RawJson → List Nat
   | .array values =>
       [5, values.length] ++ values.flatMap normalizeRawJson
   | .object fields =>
-      let ordered := sortRawFields fields
-      [6, ordered.length] ++ ordered.flatMap fun (key, fieldValue) =>
-        encodeStringCodes key ++ normalizeRawJson fieldValue
+      let normalizedFields := fields.map fun (key, fieldValue) =>
+        (stringCodes key, normalizeRawJson fieldValue)
+      let ordered := sortTokenFields normalizedFields
+      [6, ordered.length] ++ ordered.flatMap fun (keyCodes, valueCodes) =>
+        keyCodes.length :: keyCodes ++ valueCodes.length :: valueCodes
 termination_by value => sizeOf value
 decreasing_by
-  all_goals
-    simp_wf
-    trace_state
-    omega
+  all_goals simp_wf
+  · exact Nat.lt_trans (List.sizeOf_lt_of_mem (by assumption)) (by omega)
+  ·
+    have hpair : sizeOf (key, fieldValue) < sizeOf fields :=
+      List.sizeOf_lt_of_mem (by assumption)
+    have hcomponent : sizeOf fieldValue < sizeOf (key, fieldValue) := by
+      simp_wf
+      omega
+    exact Nat.lt_trans hcomponent (Nat.lt_trans hpair (by omega))
 
 def rawJsonEquivalent (left right : RawJson) : Prop :=
   normalizeRawJson left = normalizeRawJson right
