@@ -1,8 +1,8 @@
 import E7CJointRawJsonAdmission
 
 /-!
-Statement-level model of row serialization and the final raw equality guard
-for the pinned `admit` normal branch. It constructs serialized values from
+Bounded statement-level model of row serialization and the final raw equality
+guard for the pinned `admit` normal branch. It constructs serialized values from
 field-read/write events and derives the final raw-row relation from branch
 execution plus one CPython equality adequacy contract.
 -/
