@@ -285,6 +285,8 @@ theorem raw_typed_normal_return_exact
   · calc
       trace.document.rawRows = trace.rawRowsOutput :=
         trace.rawRowsEqualityGuard.symm
+      _ = encodeRawRows (result.map fromRow) :=
+        trace.rawRowsSerializerRefines
       _ = encodeRawRows ((trace.document.rows.map toRow).map fromRow) := by
             rw [htyped]
       _ = encodeRawRows trace.document.rows := by
