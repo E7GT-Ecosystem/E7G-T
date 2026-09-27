@@ -99,9 +99,9 @@ theorem exactKeys_two_layout
     fields = [(second, secondValue), (first, firstValue)] := by
   have parts := keys
   simp only [exactKeys, Bool.and_eq_true, decide_eq_true_eq] at parts
-  have lengthTwo : fields.length = 2 := of_decide_eq_true parts.2.1
-  have fieldKeys := parts.2.2.1
-  have uniqueKeys := parts.1
+  have lengthTwo : fields.length = 2 := of_decide_eq_true parts.1.1.2
+  have fieldKeys := parts.1.2
+  have uniqueKeys := parts.1.1.1
   cases fields with
   | nil => simp at lengthTwo
   | cons f rest =>
@@ -125,11 +125,11 @@ theorem exactKeys_two_layout
         · subst fk; subst gk
           exfalso; exact fgNe rfl
         · subst fk; subst gk
-          simp [lookupField] at firstRead secondRead
+          simp [lookupField, distinct] at firstRead secondRead
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
-          simp [lookupField] at firstRead secondRead
+          simp [lookupField, distinct] at firstRead secondRead
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
