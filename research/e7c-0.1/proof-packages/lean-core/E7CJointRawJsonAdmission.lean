@@ -130,7 +130,8 @@ theorem exactKeys_two_layout
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
-          simp [lookupField, distinct] at firstRead secondRead
+          have reverseDistinct : second ≠ first := Ne.symm distinct
+          simp [lookupField, reverseDistinct] at firstRead secondRead
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
