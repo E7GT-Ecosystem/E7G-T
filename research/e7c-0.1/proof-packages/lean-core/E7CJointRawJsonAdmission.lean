@@ -85,6 +85,57 @@ def exactKeys (fields : List (String × RawJson)) (expected : List String) : Boo
   fields.all (fun field => expected.contains field.1) &&
   expected.all (fun key => fields.any (fun field => field.1 == key))
 
+/-- Exact two-key admission plus both reads determines the object's complete
+field sequence up to key order. This is the structural fact used to bound the
+accepted JSON depth; it does not assume a decoded row result. -/
+theorem exactKeys_two_layout
+    {fields : List (String × RawJson)} {first second : String}
+    {firstValue secondValue : RawJson}
+    (keys : exactKeys fields [first, second] = true)
+    (distinct : first ≠ second)
+    (firstRead : lookupField fields first = some firstValue)
+    (secondRead : lookupField fields second = some secondValue) :
+    fields = [(first, firstValue), (second, secondValue)] ∨
+    fields = [(second, secondValue), (first, firstValue)] := by
+  have parts := keys
+  simp only [exactKeys, Bool.and_eq_true, decide_eq_true_eq] at parts
+  have lengthTwo : fields.length = 2 := of_decide_eq_true parts.2.1
+  have fieldKeys := parts.2.2.1
+  have uniqueKeys := parts.1
+  cases fields with
+  | nil => simp at lengthTwo
+  | cons f rest =>
+    cases rest with
+    | nil => simp at lengthTwo
+    | cons g tail =>
+      cases tail with
+      | nil =>
+        rcases f with ⟨fk, fv⟩
+        rcases g with ⟨gk, gv⟩
+        have fKey : fk = first ∨ fk = second := by
+          have h := (List.all_eq_true.mp fieldKeys) (fk, fv) (by simp)
+          simpa using h
+        have gKey : gk = first ∨ gk = second := by
+          have h := (List.all_eq_true.mp fieldKeys) (gk, gv) (by simp)
+          simpa using h
+        have fgNe : fk ≠ gk := by
+          simp [distinctObjectKeys] at uniqueKeys
+          exact uniqueKeys.1
+        rcases fKey with hf | hf <;> rcases gKey with hg | hg
+        · subst fk; subst gk
+          exfalso; exact fgNe rfl
+        · subst fk; subst gk
+          simp [lookupField] at firstRead secondRead
+          cases firstRead; cases secondRead
+          simp
+        · subst fk; subst gk
+          simp [lookupField] at firstRead secondRead
+          cases firstRead; cases secondRead
+          simp
+        · subst fk; subst gk
+          exfalso; exact fgNe rfl
+      | cons _ _ => simp at lengthTwo
+
 def exactInteger : RawJson → Option Int
   | .integer value => some value
   | _ => none
