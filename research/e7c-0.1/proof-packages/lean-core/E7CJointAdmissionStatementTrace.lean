@@ -73,7 +73,14 @@ theorem graph_trace_within_fuel
     | string value => simp [decodeStringList, hEdges] at hStringDecode
     | object fields => simp [decodeStringList, hEdges] at hStringDecode
   have tagFuel : rawJsonWithinFuel 1 trace.rawTag = true := by
-    cases trace.rawTag <;> simp_all [decodeTag, rawJsonWithinFuel]
+    cases hTag : trace.rawTag with
+    | null => rfl
+    | string value => rfl
+    | boolean value => simp [decodeTag, hTag] at trace.tagDecode
+    | integer value => simp [decodeTag, hTag] at trace.tagDecode
+    | nonIntegerNumber lexeme => simp [decodeTag, hTag] at trace.tagDecode
+    | array values => simp [decodeTag, hTag] at trace.tagDecode
+    | object fields => simp [decodeTag, hTag] at trace.tagDecode
   rcases layout with layout | layout
   · rw [trace.objectRead, layout]
     simp [rawJsonWithinFuel, edgesFuel, tagFuel]
