@@ -17,6 +17,7 @@ open E7CJointAdmissionPythonOperations
 open E7CJointRawJsonAdmission
 open E7CJointCPythonNormalReturnTrace
 open E7CJointAdmissionStatementTrace
+open E7CJointSortConstructorSemantics
 
 structure ResourcePolicyStatementTrace (raw : RawJson) where
   fields : List (String × RawJson)
