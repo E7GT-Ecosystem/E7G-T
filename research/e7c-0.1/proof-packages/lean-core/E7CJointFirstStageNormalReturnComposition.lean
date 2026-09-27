@@ -152,6 +152,10 @@ theorem first_stage_normal_return_composition
     (returned : finalRowsGuard contract.pythonEqual output admission.rawRows =
       .returnedNormally) :
     decodeRawDocument rawDocument = some admission.document ∧
+    CanonicalWireRows admission.rowsAdmission.rows ∧
+    ParseRowsCall admission.rowsAdmission.rows
+      (parseRows admission.rowsAdmission.rows) ∧
+    parseRows admission.rowsAdmission.rows = admission.document.rows.map toRow ∧
     runConstructorRows joint.constructorOps 2
       (materializeJointRows ops joint.preSort.finalDictionary joint.sortedKeys) =
       some (jointNormalizer ops (parseRows admission.rowsAdmission.rows)) ∧
@@ -161,6 +165,11 @@ theorem first_stage_normal_return_composition
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) := by
   have hDocument := complete_document_decoder_follows_statement_trace admission
+  have hCanonicalRows := rows_statement_trace_canonical admission.rowsAdmission
+  have hParseCall := parse_rows_call_of_canonical hCanonicalRows
+  have hDecodedTyped : parseRows admission.rowsAdmission.rows =
+      admission.document.rows.map toRow := by
+    rfl
   have hJoint := joint_statement_trace_returns_model_rows joint
   have hSerialized := rows_statement_output_exact serializer
   have hOutputFuel := rows_statement_within_fuel serializer
@@ -172,7 +181,8 @@ theorem first_stage_normal_return_composition
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
-  exact ⟨hDocument, hJoint, hSerialized,
+  exact ⟨hDocument, hCanonicalRows, hParseCall, hDecodedTyped, hJoint,
+    hSerialized,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
 
 end E7CJointFirstStageNormalReturnComposition

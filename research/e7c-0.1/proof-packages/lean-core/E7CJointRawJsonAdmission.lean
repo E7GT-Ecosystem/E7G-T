@@ -103,14 +103,25 @@ def edgeRank : String → Option Nat
   | "BC" => some 2
   | _ => none
 
-def canonicalEdges : List String → Bool
-  | [] => true
-  | [edge] => (edgeRank edge).isSome
-  | edge :: next :: rest =>
-      match edgeRank edge, edgeRank next with
-      | some leftRank, some rightRank =>
-          decide (leftRank < rightRank) && canonicalEdges (next :: rest)
-      | _, _ => false
+/-- The canonical wire edge sequence selected by its three membership bits. -/
+def canonicalEdgeList (edges : List String) : List String :=
+  (if edges.contains "AB" then ["AB"] else []) ++
+  (if edges.contains "AC" then ["AC"] else []) ++
+  (if edges.contains "BC" then ["BC"] else [])
+
+/-- The admission predicate requires the exact supported canonical sequence.
+This is the extensional form of recognized, strictly increasing edge ranks. -/
+def canonicalEdges (edges : List String) : Bool :=
+  decide (edges = canonicalEdgeList edges)
+
+theorem canonicalEdges_implies_canonicalGraph
+    {edges : List String} {tag : Option String}
+    (accepted : canonicalEdges edges = true) :
+    canonicalGraph (⟨edges, tag⟩ : WireGraph) := by
+  have hlist : edges = canonicalEdgeList edges := of_decide_eq_true accepted
+  unfold canonicalGraph fromGraph toGraph
+  rw [hlist]
+  simp [canonicalEdgeList]
 
 def decodeTag : RawJson → Option (Option String)
   | .null => some none
@@ -290,6 +301,22 @@ theorem null_tag_decodes_distinctly :
 
 theorem empty_string_tag_decodes_distinctly :
     decodeTag (.string "") = some (some "") := rfl
+
+theorem noncanonical_edge_order_is_rejected :
+    canonicalEdges ["AC", "AB"] = false := by
+  decide
+
+theorem malformed_graph_nested_edge_shape_is_rejected :
+    decodeGraph (.object
+      [("edges", .array [.integer 1]), ("tag", .null)]) = none := by
+  decide
+
+theorem malformed_row_nested_coordinate_shape_is_rejected :
+    decodeJointRow (.object
+      [("atoms", .array [.null]),
+       ("coefficient", .object
+         [("numerator", .integer 1), ("denominator", .integer 2)])]) = none := by
+  decide
 
 theorem decodeFractionPair_rejects_boolean_numerator :
     decodeFractionPair (.object

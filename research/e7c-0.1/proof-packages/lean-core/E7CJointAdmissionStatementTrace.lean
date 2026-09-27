@@ -43,6 +43,11 @@ theorem graph_decoder_follows_statement_trace
     trace.tagFieldRead, trace.stringArrayDecode,
     trace.edgeOrderCheck, trace.tagDecode, GraphAdmissionStatementTrace.output]
 
+theorem graph_trace_canonical
+    {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
+    canonicalGraph trace.output := by
+  exact canonicalEdges_implies_canonicalGraph trace.edgeOrderCheck
+
 structure FractionAdmissionStatementTrace (raw : RawJson) where
   fields : List (String × RawJson)
   objectRead : raw = .object fields
@@ -116,6 +121,26 @@ theorem raw_rows_mapM_follows_visits
   | @cons rawRow rawTail tail rowVisit tailVisits ih =>
       simp [row_decoder_follows_statement_trace rowVisit, ih]
 
+theorem joint_row_trace_canonical
+    {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
+    canonicalGraph trace.output.left ∧ canonicalGraph trace.output.right := by
+  exact ⟨graph_trace_canonical trace.leftGraph,
+    graph_trace_canonical trace.rightGraph⟩
+
+theorem raw_rows_visits_canonical
+    {rawRows : List RawJson} {rows : List WireRow}
+    (visits : RawRowsVisitTrace rawRows rows) : CanonicalWireRows rows := by
+  induction visits with
+  | nil =>
+      intro row membership
+      simp at membership
+  | @cons rawRow rawTail tail rowVisit tailVisits ih =>
+      intro row membership
+      simp at membership
+      rcases membership with rfl | membership
+      · exact joint_row_trace_canonical rowVisit
+      · exact ih row membership
+
 structure RawRowsAdmissionStatementTrace (raw : RawJson) where
   rawRows : List RawJson
   arrayRead : raw = .array rawRows
@@ -131,6 +156,11 @@ theorem rows_decoder_follows_statement_trace
     simpa [trace.arrayRead] using trace.fuelCheck
   simp [decodeJointRows, trace.arrayRead, trace.capCheck, hfuel,
     raw_rows_mapM_follows_visits trace.visits]
+
+theorem rows_statement_trace_canonical
+    {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
+    CanonicalWireRows trace.rows :=
+  raw_rows_visits_canonical trace.visits
 
 /-- The prefix pins the top-level document object, exact top-level keys,
 metadata checks and rows field read, then derives nested row admission from
