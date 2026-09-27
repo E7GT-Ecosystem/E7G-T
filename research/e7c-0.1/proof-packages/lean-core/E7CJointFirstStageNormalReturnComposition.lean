@@ -173,8 +173,8 @@ theorem first_stage_normal_return_composition
   have hJoint := joint_statement_trace_returns_model_rows joint
   have hSerialized := rows_statement_output_exact serializer
   have hOutputFuel := rows_statement_within_fuel serializer
-  have hOriginalFuel := decodeJointRows_within_fuel
-    (rows_decoder_follows_statement_trace admission.rowsAdmission)
+  have hOriginalFuel :=
+    rows_statement_trace_within_fuel admission.rowsAdmission
   have hGuard := normal_guard_execution_yields_extensional_equality
     contract hOutputFuel hOriginalFuel returned
   have hCanonical : rawJsonEquivalent output

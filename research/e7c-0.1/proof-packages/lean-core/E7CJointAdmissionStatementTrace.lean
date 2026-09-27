@@ -48,6 +48,36 @@ theorem graph_trace_canonical
     canonicalGraph trace.output := by
   exact canonicalEdges_implies_canonicalGraph trace.edgeOrderCheck
 
+theorem graph_trace_within_fuel
+    {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
+    rawJsonWithinFuel 2 raw = true := by
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.edgesFieldRead trace.tagFieldRead
+  have edgesFuel : rawJsonWithinFuel 1 trace.rawEdges = true := by
+    cases hEdges : trace.rawEdges with
+    | array values =>
+        have hstrings : ∀ value ∈ values, ∃ text, value = .string text := by
+          simpa [decodeStringList, hEdges] using
+            decodeStringList_members_are_strings trace.stringArrayDecode
+        simp [rawJsonWithinFuel]
+        apply List.all_eq_true.mpr
+        intro value membership
+        rcases hstrings value membership with ⟨text, rfl⟩
+        rfl
+    | null => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+    | boolean value => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+    | integer value => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+    | nonIntegerNumber lexeme => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+    | string value => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+    | object fields => simp [decodeStringList, hEdges] at trace.stringArrayDecode
+  have tagFuel : rawJsonWithinFuel 1 trace.rawTag = true := by
+    cases trace.rawTag <;> simp_all [decodeTag, rawJsonWithinFuel]
+  rcases layout with layout | layout
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, edgesFuel, tagFuel]
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, edgesFuel, tagFuel]
+
 structure FractionAdmissionStatementTrace (raw : RawJson) where
   fields : List (String × RawJson)
   objectRead : raw = .object fields
@@ -74,6 +104,21 @@ theorem fraction_decoder_follows_statement_trace
     trace.denominatorFieldRead, trace.numeratorExactInt,
     trace.denominatorExactInt, trace.positiveDenominator,
     trace.nonzeroNumerator, FractionAdmissionStatementTrace.output]
+
+theorem fraction_trace_within_fuel
+    {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
+    rawJsonWithinFuel 2 raw = true := by
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.numeratorFieldRead trace.denominatorFieldRead
+  have numeratorFuel : rawJsonWithinFuel 1 trace.rawNumerator = true := by
+    cases trace.rawNumerator <;> simp_all [exactInteger, rawJsonWithinFuel]
+  have denominatorFuel : rawJsonWithinFuel 1 trace.rawDenominator = true := by
+    cases trace.rawDenominator <;> simp_all [exactInteger, rawJsonWithinFuel]
+  rcases layout with layout | layout
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, numeratorFuel, denominatorFuel]
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, numeratorFuel, denominatorFuel]
 
 structure JointRowAdmissionStatementTrace (raw : RawJson) where
   fields : List (String × RawJson)
@@ -103,6 +148,25 @@ theorem row_decoder_follows_statement_trace
     graph_decoder_follows_statement_trace trace.rightGraph,
     fraction_decoder_follows_statement_trace trace.coefficient,
     JointRowAdmissionStatementTrace.output]
+
+theorem joint_row_trace_within_fuel
+    {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
+    rawJsonWithinFuel 4 raw = true := by
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.atomsFieldRead trace.coefficientFieldRead
+  have leftFuel := graph_trace_within_fuel trace.leftGraph
+  have rightFuel := graph_trace_within_fuel trace.rightGraph
+  have atomsFuel : rawJsonWithinFuel 3 trace.rawAtoms = true := by
+    rw [trace.twoCoordinateArrayRead]
+    simp [rawJsonWithinFuel, leftFuel, rightFuel]
+  have coefficientFuel2 := fraction_trace_within_fuel trace.coefficient
+  have coefficientFuel3 : rawJsonWithinFuel 3 trace.rawCoefficient = true := by
+    exact rawJsonWithinFuel_mono (fuel := 2) coefficientFuel2
+  rcases layout with layout | layout
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, atomsFuel, coefficientFuel3]
+  · rw [trace.objectRead, layout]
+    simp [rawJsonWithinFuel, atomsFuel, coefficientFuel3]
 
 inductive RawRowsVisitTrace : List RawJson → List WireRow → Prop where
   | nil : RawRowsVisitTrace [] []
@@ -147,14 +211,26 @@ structure RawRowsAdmissionStatementTrace (raw : RawJson) where
   rows : List WireRow
   visits : RawRowsVisitTrace rawRows rows
   capCheck : rawRows.length ≤ 64
-  fuelCheck : rawJsonWithinFuel 32 raw = true
+
+theorem rows_statement_trace_within_fuel
+    {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
+    rawJsonWithinFuel 32 raw = true := by
+  have hFive : rawJsonWithinFuel 5 (.array trace.rawRows) = true := by
+    induction trace.visits with
+    | nil => rfl
+    | @cons rawRow rawTail tail rowVisit tailVisits ih =>
+        simp [rawJsonWithinFuel, joint_row_trace_within_fuel rowVisit, ih]
+  have hThirtyTwo : rawJsonWithinFuel 32 (.array trace.rawRows) = true := by
+    exact rawJsonWithinFuel_mono_of_le (by omega) hFive
+  simpa [trace.arrayRead] using hThirtyTwo
 
 theorem rows_decoder_follows_statement_trace
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
     decodeJointRows raw = some trace.rows := by
-  have hfuel : rawJsonWithinFuel 32 (.array trace.rawRows) = true := by
-    simpa [trace.arrayRead] using trace.fuelCheck
-  simp [decodeJointRows, trace.arrayRead, trace.capCheck, hfuel,
+  have hfuel := rows_statement_trace_within_fuel trace
+  have hfuelRows : rawJsonWithinFuel 32 (.array trace.rawRows) = true := by
+    simpa [trace.arrayRead] using hfuel
+  simp [decodeJointRows, trace.arrayRead, trace.capCheck, hfuelRows,
     raw_rows_mapM_follows_visits trace.visits]
 
 theorem rows_statement_trace_canonical
