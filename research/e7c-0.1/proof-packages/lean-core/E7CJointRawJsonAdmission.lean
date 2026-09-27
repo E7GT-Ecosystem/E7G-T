@@ -252,21 +252,59 @@ theorem canonicalEdges_eq_pinnedPythonCanonicalEdges (edges : List String) :
     canonicalEdges edges = pinnedPythonCanonicalEdges edges := by
   unfold canonicalEdges pinnedPythonCanonicalEdges
   by_cases h : edges = canonicalEdgeList edges
-  · subst edges
-    simp [canonicalEdgeList, edgeRank]
+  · simp [h, canonicalEdgeList, edgeRank]
   · simp [h]
+
+theorem edgeRank_isSome_iff_registered (edge : String) :
+    (edgeRank edge).isSome = true ↔
+      edge = "AB" ∨ edge = "AC" ∨ edge = "BC" := by
+  unfold edgeRank
+  split <;> simp_all
+
+theorem edgeRank_eq_registered (edge : String) (rank : Nat)
+    (accepted : edgeRank edge = some rank) :
+    (edge = "AB" ∧ rank = 0) ∨
+    (edge = "AC" ∧ rank = 1) ∨
+    (edge = "BC" ∧ rank = 2) := by
+  unfold edgeRank at accepted
+  split at accepted <;> simp_all
 
 theorem canonicalEdges_iff_recursiveCanonicalEdges (edges : List String) :
     canonicalEdges edges = true ↔ recursiveCanonicalEdges edges = true := by
-  induction edges with
-  | nil => rfl
-  | cons edge tail ih =>
+  cases edges with
+  | nil => simp [canonicalEdges, recursiveCanonicalEdges, canonicalEdgeList]
+  | cons edge tail =>
       cases tail with
       | nil =>
-          simp [canonicalEdges, recursiveCanonicalEdges, canonicalEdgeList, edgeRank]
+          simp [canonicalEdges, recursiveCanonicalEdges, canonicalEdgeList,
+            edgeRank]
       | cons next rest =>
-          simp [canonicalEdges, recursiveCanonicalEdges, canonicalEdgeList, edgeRank,
-            ih]
+          simp only [canonicalEdges, recursiveCanonicalEdges,
+            decide_eq_true_eq]
+          cases hleft : edgeRank edge with
+          | none =>
+              simp [hleft, canonicalEdgeList, edgeRank]
+          | some leftRank =>
+              cases hright : edgeRank next with
+              | none =>
+                  simp [hleft, hright, canonicalEdgeList, edgeRank]
+              | some rightRank =>
+                  change (edge :: next :: rest = canonicalEdgeList (edge :: next :: rest)) ↔
+                    (leftRank < rightRank ∧ recursiveCanonicalEdges (next :: rest) = true)
+                  have hleftReg :
+                      (edge = "AB" ∧ leftRank = 0) ∨
+                      (edge = "AC" ∧ leftRank = 1) ∨
+                      (edge = "BC" ∧ leftRank = 2) := by
+                    exact edgeRank_eq_registered edge leftRank hleft
+                  have hrightReg :
+                      (next = "AB" ∧ rightRank = 0) ∨
+                      (next = "AC" ∧ rightRank = 1) ∨
+                      (next = "BC" ∧ rightRank = 2) := by
+                    exact edgeRank_eq_registered next rightRank hright
+                  rw [canonicalEdges_iff_recursiveCanonicalEdges (next :: rest)]
+                  rcases hleftReg with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hrightReg with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    simp [canonicalEdgeList, edgeRank]
 
 theorem canonicalEdges_implies_canonicalGraph
     {edges : List String} {tag : Option String}
