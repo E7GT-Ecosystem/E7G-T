@@ -11,6 +11,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_RAW_JSON_EXTENSIONAL_EQUALITY.md"
       - "research/e7c-0.1/E7C_0.1_CPYTHON_STATEMENT_TRACE.md"
       - "research/e7c-0.1/E7C_0.1_ADMISSION_STATEMENT_TRACE.md"
+      - "research/e7c-0.1/E7C_0.1_FIRST_STAGE_NORMAL_RETURN_COMPOSITION.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - ".github/workflows/e7c-lean-core.yml"
   push:
@@ -86,6 +87,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
           axiom-audit-root: E7CJointAdmissionStatementTrace
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: E7CJointFirstStageNormalReturnComposition
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
