@@ -61,7 +61,7 @@ theorem graph_trace_within_fuel
           simpa [decodeStringList, hEdges] using
             decodeStringList_members_are_strings hStringDecode
         change values.all (rawJsonWithinFuel 0) = true
-        apply List.all_eq_true.mpr
+        rw [List.all_eq_true]
         intro value membership
         rcases hstrings value membership with ⟨text, hvalue⟩
         rw [hvalue]
@@ -237,7 +237,10 @@ theorem raw_rows_visits_within_fuel
   induction visits with
   | nil => rfl
   | @cons rawRow rawTail tail rowVisit tailVisits ih =>
-      simp [rawJsonWithinFuel, joint_row_trace_within_fuel rowVisit, ih]
+      have hrow := joint_row_trace_within_fuel rowVisit
+      have htail : rawTail.all (rawJsonWithinFuel 4) = true := by
+        simpa [rawJsonWithinFuel] using ih
+      simp [rawJsonWithinFuel, hrow, htail]
 
 theorem rows_statement_trace_within_fuel
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :

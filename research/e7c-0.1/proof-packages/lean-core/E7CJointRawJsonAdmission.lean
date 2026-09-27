@@ -69,23 +69,6 @@ theorem rawJsonWithinFuel_mono
             simpa [rawJsonWithinFuel] using safe
           exact ih ((List.all_eq_true.mp hAll) field membership)
 
-theorem rawJsonWithinFuel_mono_of_le
-    {small large : Nat} {value : RawJson}
-    (bound : small ≤ large)
-    (safe : rawJsonWithinFuel small value = true) :
-    rawJsonWithinFuel large value = true := by
-  induction large generalizing small with
-  | zero =>
-      have hsmall : small = 0 := by omega
-      subst small
-      simpa using safe
-  | succ large ih =>
-      by_cases hsmall : small ≤ large
-      · exact rawJsonWithinFuel_mono (ih hsmall safe)
-      · have hEq : small = large + 1 := by omega
-        subst small
-        simpa using safe
-
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
   | (key, value) :: rest, wanted =>
@@ -159,58 +142,13 @@ def exactInteger : RawJson → Option Int
   | .integer value => some value
   | _ => none
 
-def decodeStringValues : List RawJson → Option (List String)
-  | [] => some []
-  | .string text :: rest => do
-      let tail ← decodeStringValues rest
-      pure (text :: tail)
-  | _ :: _ => none
-
 def decodeStringList : RawJson → Option (List String)
-  | .array values => decodeStringValues values
+  | .array values =>
+      values.mapM fun value =>
+        match value with
+        | .string text => some text
+        | _ => none
   | _ => none
-
-theorem decodeStringValues_members_are_strings
-    {values : List RawJson} {strings : List String}
-    (decoded : decodeStringValues values = some strings) :
-    ∀ value ∈ values, ∃ text, value = .string text := by
-  induction values generalizing strings with
-  | nil =>
-      intro value membership
-      simp at membership
-  | cons head tail ih =>
-      cases head with
-      | string text =>
-          cases htail : decodeStringValues tail with
-          | none => simp [decodeStringValues, htail] at decoded
-          | some tailStrings =>
-              simp [decodeStringValues, htail] at decoded
-              intro value membership
-              simp only [List.mem_cons] at membership
-              rcases membership with rfl | membership
-              · exact ⟨text, rfl⟩
-              · exact ih htail value membership
-      | null => simp [decodeStringValues] at decoded
-      | boolean value => simp [decodeStringValues] at decoded
-      | integer value => simp [decodeStringValues] at decoded
-      | nonIntegerNumber lexeme => simp [decodeStringValues] at decoded
-      | array values => simp [decodeStringValues] at decoded
-      | object fields => simp [decodeStringValues] at decoded
-
-theorem decodeStringList_members_are_strings
-    {raw : RawJson} {strings : List String}
-    (decoded : decodeStringList raw = some strings) :
-    ∀ value ∈ (match raw with | .array values => values | _ => []),
-      ∃ text, value = .string text := by
-  cases raw with
-  | array values =>
-      simpa [decodeStringList] using decodeStringValues_members_are_strings decoded
-  | null => simp [decodeStringList] at decoded
-  | boolean value => simp [decodeStringList] at decoded
-  | integer value => simp [decodeStringList] at decoded
-  | nonIntegerNumber lexeme => simp [decodeStringList] at decoded
-  | string value => simp [decodeStringList] at decoded
-  | object fields => simp [decodeStringList] at decoded
 
 def edgeRank : String → Option Nat
   | "AB" => some 0
