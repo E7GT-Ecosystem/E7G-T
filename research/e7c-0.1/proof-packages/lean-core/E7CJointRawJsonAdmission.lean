@@ -72,7 +72,7 @@ theorem rawJsonWithinFuel_mono
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
   | (key, value) :: rest, wanted =>
-      if key == wanted then some value else lookupField rest wanted
+      if key = wanted then some value else lookupField rest wanted
 
 def distinctObjectKeys : List (String × RawJson) → Bool
   | [] => true
@@ -126,11 +126,11 @@ theorem exactKeys_two_layout
         · subst fk; subst gk
           exfalso; exact fgNe rfl
         · subst fk; subst gk
-          simp [lookupField, beq_iff_eq, distinct] at firstRead secondRead
+          simp [lookupField, distinct] at firstRead secondRead
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
-          simp [lookupField, beq_iff_eq, distinct] at firstRead secondRead
+          simp [lookupField, distinct] at firstRead secondRead
           cases firstRead; cases secondRead
           simp
         · subst fk; subst gk
