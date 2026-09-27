@@ -254,7 +254,7 @@ theorem edgeRank_registered_lt_iff (left right : String)
   have hright := (edgeRank_isSome_iff_registered right).mp rightRegistered
   rcases hleft with hleft | hleft | hleft <;>
     rcases hright with hright | hright | hright <;>
-    subst left <;> subst right <;> norm_num [edgeRank]
+    subst left <;> subst right <;> simp [edgeRank]
 
 theorem canonicalEdges_implies_canonicalGraph
     {edges : List String} {tag : Option String}
