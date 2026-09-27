@@ -67,11 +67,13 @@ def InterpretationStatementTrace.output
 theorem interpretation_decoder_follows_statement_trace
     {raw : RawJson} (trace : InterpretationStatementTrace raw) :
     decodeInterpretation raw = some trace.output := by
-  cases trace.resolved <;>
-    simp [decodeInterpretation, guard, trace.objectRead, trace.keyCheck,
-      trace.capabilityFieldRead, trace.obligationFieldRead,
-      trace.capabilityBoolean, trace.obligationString,
-      InterpretationStatementTrace.output]
+  rcases trace with ⟨fields, objectRead, keyCheck, rawCapability,
+    rawObligation, capabilityFieldRead, obligationFieldRead, capability,
+    capabilityBoolean, resolved, obligationString⟩
+  cases resolved <;>
+    simp [decodeInterpretation, guard, objectRead, keyCheck,
+      capabilityFieldRead, obligationFieldRead, capabilityBoolean,
+      obligationString, InterpretationStatementTrace.output]
 
 /-- All top-level and row-level checks are represented separately. The
 32-fuel guard remains an explicit model-domain condition in the rows trace;
