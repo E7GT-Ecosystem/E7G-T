@@ -26,6 +26,7 @@ import E7CJointSortConstructorSemantics
 import E7CJointRawJsonAdmission
 import E7CJointCPythonNormalReturnTrace
 import E7CJointAdmissionStatementTrace
+import E7CJointFirstStageNormalReturnComposition
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
