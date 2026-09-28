@@ -340,7 +340,7 @@ theorem canonicalEdges_implies_canonicalGraph
   have hclass := canonicalEdges_finite_classification edges accepted
   simp [canonicalEdgeSequences] at hclass
   rcases hclass with h | h | h | h | h | h | h | h <;>
-    subst edges <;> decide
+    subst edges <;> cases tag <;> simp [toGraph, fromGraph]
 
 def decodeTag : RawJson → Option (Option String)
   | .null => some none
