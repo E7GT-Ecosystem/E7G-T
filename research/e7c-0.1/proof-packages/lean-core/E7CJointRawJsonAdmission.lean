@@ -355,6 +355,21 @@ def rawJsonEquivalent (left right : RawJson) : Prop :=
   rawJsonUniqueObjectKeys right = true ∧
   normalizeRawJson left = normalizeRawJson right
 
+/-- Test fixture nesting a JSON value under an exact number of arrays. -/
+def nestRawArrays : Nat → RawJson → RawJson
+  | 0, value => value
+  | fuel + 1, value => .array [nestRawArrays fuel value]
+
+/-- At depth 33, unrestricted normalization with fuel 32 collapses distinct
+scalar leaves to the same token stream. The bounded equality relation rejects
+both values because they exceed its no-truncation domain. -/
+theorem unrestricted_normalization_collapses_beyond_bound :
+    normalizeRawJsonFuel 32 (nestRawArrays 33 (.integer 1)) =
+      normalizeRawJsonFuel 32 (nestRawArrays 33 (.integer 2)) ∧
+    ¬ rawJsonEquivalent (nestRawArrays 33 (.integer 1))
+      (nestRawArrays 33 (.integer 2)) := by
+  decide
+
 def rawObjectForward : RawJson :=
   .object [("atoms", .integer 7), ("coefficient", .integer 11)]
 
