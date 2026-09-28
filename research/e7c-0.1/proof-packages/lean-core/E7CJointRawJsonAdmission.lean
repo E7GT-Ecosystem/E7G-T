@@ -368,7 +368,14 @@ theorem unrestricted_normalization_collapses_beyond_bound :
       normalizeRawJsonFuel 32 (nestRawArrays 33 (.integer 2)) ∧
     ¬ rawJsonEquivalent (nestRawArrays 33 (.integer 1))
       (nestRawArrays 33 (.integer 2)) := by
-  decide
+  constructor
+  · decide
+  · intro h
+    have hunsafe :
+        rawJsonWithinFuel 32 (nestRawArrays 33 (.integer 1)) = false := by
+      decide
+    rw [hunsafe] at h
+    contradiction
 
 def rawObjectForward : RawJson :=
   .object [("atoms", .integer 7), ("coefficient", .integer 11)]
