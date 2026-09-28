@@ -381,27 +381,6 @@ def normalizeRawJsonFuel : Nat → RawJson → List Nat
 def normalizeRawJson (value : RawJson) : List Nat :=
   normalizeRawJsonFuel 32 value
 
-/- Fuel-indexed shallow-shape predicate. At fuel zero only scalars are
-   safe; each array/object layer consumes one unit, independently of
-   collection length. This definition is shared with the statement-trace
-   layer so the equality domain is available at its introduction point. -/
-def rawJsonWithinFuel : Nat → RawJson → Bool
-  | 0, .null => true
-  | 0, .boolean _ => true
-  | 0, .integer _ => true
-  | 0, .nonIntegerNumber _ => true
-  | 0, .string _ => true
-  | 0, .array _ => false
-  | 0, .object _ => false
-  | _ + 1, .null => true
-  | _ + 1, .boolean _ => true
-  | _ + 1, .integer _ => true
-  | _ + 1, .nonIntegerNumber _ => true
-  | _ + 1, .string _ => true
-  | fuel + 1, .array values => values.all (rawJsonWithinFuel fuel)
-  | fuel + 1, .object fields =>
-      fields.all (fun field => rawJsonWithinFuel fuel field.2)
-
 /-- Check pairwise distinct keys recursively through the declared
 32-level comparison domain. The equality relation also requires fuel safety,
 so no unchecked object node can lie beyond this predicate's recursion. -/
