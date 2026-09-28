@@ -190,11 +190,13 @@ theorem normal_guard_execution_yields_extensional_equality
   exact of_decide_eq_true hCompare
 
 theorem rawJsonEquivalent_of_structural_eq
-    {left right : RawJson} (h : left = right) :
+    {left right : RawJson} (h : left = right)
+    (safe : rawJsonWithinFuel 32 left = true)
+    (unique : rawJsonUniqueObjectKeys left = true) :
     rawJsonEquivalent left right := by
   unfold rawJsonEquivalent
   subst right
-  rfl
+  exact ⟨safe, safe, unique, unique, rfl⟩
 
 /-- The serializer result and equality result are derived from statement traces.
 The only equality adequacy premise is the operation-level CPython contract; the
@@ -226,6 +228,7 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hCanonical : rawJsonEquivalent output
       (encodeRawRows (result.map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
+      hGuard.1 hGuard.2.2.1
   exact ⟨hExactRows,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
 
