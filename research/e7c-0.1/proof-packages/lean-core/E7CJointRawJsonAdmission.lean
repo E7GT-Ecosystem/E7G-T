@@ -21,7 +21,9 @@ inductive RawJson where
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
 
-/- Shared supported-depth predicate and monotonicity proof from the serializer trace. -/
+/- Fuel-indexed shallow-shape predicate. At fuel zero only scalars are
+safe; each array/object layer consumes one unit, independently of collection
+length. -/
 def rawJsonWithinFuel : Nat → RawJson → Bool
   | 0, .null => true
   | 0, .boolean _ => true
@@ -67,11 +69,41 @@ theorem rawJsonWithinFuel_mono
             simpa [rawJsonWithinFuel] using safe
           exact ih ((List.all_eq_true.mp hAll) field membership)
 
+theorem rawJsonWithinFuel_mono_of_le
+    {small large : Nat} {value : RawJson}
+    (bound : small ≤ large)
+    (safe : rawJsonWithinFuel small value = true) :
+    rawJsonWithinFuel large value = true := by
+  induction large generalizing small with
+  | zero =>
+      have hsmall : small = 0 := by omega
+      subst small
+      simpa using safe
+  | succ large ih =>
+      by_cases hsmall : small ≤ large
+      · exact rawJsonWithinFuel_mono (ih hsmall safe)
+      · have hEq : small = large + 1 := by omega
+        subst small
+        simpa using safe
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
   | (key, value) :: rest, wanted =>
-      if key == wanted then some value else lookupField rest wanted
+      if key = wanted then some value else lookupField rest wanted
+
+def lookupFieldPinned : List (String × RawJson) → String → Option RawJson
+  | [], _ => none
+  | (key, value) :: rest, wanted =>
+      if key == wanted then some value else lookupFieldPinned rest wanted
+
+theorem lookupField_eq_pinned (fields : List (String × RawJson))
+    (wanted : String) :
+    lookupField fields wanted = lookupFieldPinned fields wanted := by
+  induction fields with
+  | nil => rfl
+  | cons field rest ih =>
+      rcases field with ⟨key, value⟩
+      simp [lookupField, lookupFieldPinned, ih]
 
 def distinctObjectKeys : List (String × RawJson) → Bool
   | [] => true
@@ -84,17 +116,144 @@ def exactKeys (fields : List (String × RawJson)) (expected : List String) : Boo
   fields.all (fun field => expected.contains field.1) &&
   expected.all (fun key => fields.any (fun field => field.1 == key))
 
+/-- Exact two-key admission plus both reads determines the object's complete
+field sequence up to key order. This is the structural fact used to bound the
+accepted JSON depth; it does not assume a decoded row result. -/
+theorem exactKeys_two_layout
+    {fields : List (String × RawJson)} {first second : String}
+    {firstValue secondValue : RawJson}
+    (keys : exactKeys fields [first, second] = true)
+    (distinct : first ≠ second)
+    (firstRead : lookupField fields first = some firstValue)
+    (secondRead : lookupField fields second = some secondValue) :
+    fields = [(first, firstValue), (second, secondValue)] ∨
+    fields = [(second, secondValue), (first, firstValue)] := by
+  have parts := keys
+  simp only [exactKeys, Bool.and_eq_true, decide_eq_true_eq] at parts
+  have lengthTwo : fields.length = 2 := parts.1.1.2
+  have fieldKeys := parts.1.2
+  have uniqueKeys := parts.1.1.1
+  cases fields with
+  | nil => simp at lengthTwo
+  | cons f rest =>
+    cases rest with
+    | nil => simp at lengthTwo
+    | cons g tail =>
+      cases tail with
+      | nil =>
+        rcases f with ⟨fk, fv⟩
+        rcases g with ⟨gk, gv⟩
+        have fKey : fk = first ∨ fk = second := by
+          have h := (List.all_eq_true.mp fieldKeys) (fk, fv) (by simp)
+          simpa using h
+        have gKey : gk = first ∨ gk = second := by
+          have h := (List.all_eq_true.mp fieldKeys) (gk, gv) (by simp)
+          simpa using h
+        have fgNe : fk ≠ gk := by
+          simp [distinctObjectKeys] at uniqueKeys
+          intro same
+          exact uniqueKeys same.symm
+        rcases fKey with hf | hf <;> rcases gKey with hg | hg
+        · subst fk; subst gk
+          exfalso; exact fgNe rfl
+        · subst fk; subst gk
+          simp [lookupField, distinct] at firstRead secondRead
+          cases firstRead; cases secondRead
+          simp
+        · subst fk; subst gk
+          have reverseDistinct : second ≠ first := Ne.symm distinct
+          simp [lookupField, reverseDistinct] at firstRead secondRead
+          cases firstRead; cases secondRead
+          simp
+        · subst fk; subst gk
+          exfalso; exact fgNe rfl
+      | cons _ _ => simp at lengthTwo
+
 def exactInteger : RawJson → Option Int
   | .integer value => some value
   | _ => none
 
+def decodeStringValues : List RawJson → Option (List String)
+  | [] => some []
+  | .string text :: rest => do
+      let tail ← decodeStringValues rest
+      pure (text :: tail)
+  | _ :: _ => none
+
 def decodeStringList : RawJson → Option (List String)
-  | .array values =>
-      values.mapM fun value =>
-        match value with
-        | .string text => some text
-        | _ => none
+  | .array values => decodeStringValues values
   | _ => none
+
+def decodeStringListPinned : RawJson → Option (List String)
+  | .array values => values.mapM fun value =>
+      match value with
+      | .string text => some text
+      | _ => none
+  | _ => none
+
+theorem decodeStringValues_eq_pinned_mapM (values : List RawJson) :
+    decodeStringValues values = values.mapM (fun value =>
+      match value with
+      | .string text => some text
+      | _ => none) := by
+  induction values with
+  | nil => rfl
+  | cons value rest ih =>
+      cases value <;> simp [decodeStringValues, ih]
+
+theorem decodeStringList_eq_pinned (raw : RawJson) :
+    decodeStringList raw = decodeStringListPinned raw := by
+  cases raw with
+  | array values => simp [decodeStringList, decodeStringListPinned,
+      decodeStringValues_eq_pinned_mapM]
+  | null => rfl
+  | boolean value => rfl
+  | integer value => rfl
+  | nonIntegerNumber lexeme => rfl
+  | string value => rfl
+  | object fields => rfl
+
+theorem decodeStringValues_members_are_strings
+    {values : List RawJson} {strings : List String}
+    (decoded : decodeStringValues values = some strings) :
+    ∀ value ∈ values, ∃ text, value = .string text := by
+  induction values generalizing strings with
+  | nil =>
+      intro value membership
+      simp at membership
+  | cons head tail ih =>
+      cases head with
+      | string text =>
+          cases htail : decodeStringValues tail with
+          | none => simp [decodeStringValues, htail] at decoded
+          | some tailStrings =>
+              simp [decodeStringValues, htail] at decoded
+              intro value membership
+              simp only [List.mem_cons] at membership
+              rcases membership with rfl | membership
+              · exact ⟨text, rfl⟩
+              · exact ih htail value membership
+      | null => simp [decodeStringValues] at decoded
+      | boolean value => simp [decodeStringValues] at decoded
+      | integer value => simp [decodeStringValues] at decoded
+      | nonIntegerNumber lexeme => simp [decodeStringValues] at decoded
+      | array values => simp [decodeStringValues] at decoded
+      | object fields => simp [decodeStringValues] at decoded
+
+theorem decodeStringList_members_are_strings
+    {raw : RawJson} {strings : List String}
+    (decoded : decodeStringList raw = some strings) :
+    ∀ value ∈ (match raw with | .array values => values | _ => []),
+      ∃ text, value = .string text := by
+  cases raw with
+  | array values =>
+      simpa [decodeStringList] using decodeStringValues_members_are_strings decoded
+  | null => simp [decodeStringList] at decoded
+  | boolean value => simp [decodeStringList] at decoded
+  | integer value => simp [decodeStringList] at decoded
+  | nonIntegerNumber lexeme => simp [decodeStringList] at decoded
+  | string value => simp [decodeStringList] at decoded
+  | object fields => simp [decodeStringList] at decoded
 
 def edgeRank : String → Option Nat
   | "AB" => some 0
@@ -102,6 +261,8 @@ def edgeRank : String → Option Nat
   | "BC" => some 2
   | _ => none
 
+/-- Pinned recursive validator: every edge must be registered and adjacent
+ranks must be strictly increasing. -/
 def canonicalEdges : List String → Bool
   | [] => true
   | [edge] => (edgeRank edge).isSome
@@ -110,6 +271,120 @@ def canonicalEdges : List String → Bool
       | some leftRank, some rightRank =>
           decide (leftRank < rightRank) && canonicalEdges (next :: rest)
       | _, _ => false
+
+theorem edgeRank_isSome_iff_registered (edge : String) :
+    (edgeRank edge).isSome = true ↔
+      edge = "AB" ∨ edge = "AC" ∨ edge = "BC" := by
+  unfold edgeRank
+  split <;> simp_all
+
+theorem edgeRank_eq_registered (edge : String) (rank : Nat)
+    (accepted : edgeRank edge = some rank) :
+    (edge = "AB" ∧ rank = 0) ∨
+    (edge = "AC" ∧ rank = 1) ∨
+    (edge = "BC" ∧ rank = 2) := by
+  unfold edgeRank at accepted
+  split at accepted <;> simp_all
+
+theorem edgeRank_registered_lt_iff (left right : String)
+    (leftRegistered : (edgeRank left).isSome = true)
+    (rightRegistered : (edgeRank right).isSome = true) :
+    edgeRank left < edgeRank right ↔
+      (left = "AB" ∧ right = "AC") ∨
+      (left = "AB" ∧ right = "BC") ∨
+      (left = "AC" ∧ right = "BC") := by
+  have hleft := (edgeRank_isSome_iff_registered left).mp leftRegistered
+  have hright := (edgeRank_isSome_iff_registered right).mp rightRegistered
+  rcases hleft with hleft | hleft | hleft <;>
+    rcases hright with hright | hright | hright <;>
+    subst left <;> subst right <;> simp [edgeRank]
+
+def canonicalEdgeSequences : List (List String) :=
+  [[], ["AB"], ["AC"], ["BC"], ["AB", "AC"],
+    ["AB", "BC"], ["AC", "BC"], ["AB", "AC", "BC"]]
+
+/-- Every accepted list is among the eight subsets of the three registered
+edges, written in strictly increasing rank order. This is the classification
+direction used by the graph round-trip proof. -/
+theorem canonicalEdges_finite_classification (edges : List String)
+    (accepted : canonicalEdges edges = true) :
+    edges ∈ canonicalEdgeSequences := by
+  cases edges with
+  | nil => simp [canonicalEdgeSequences]
+  | cons a tail =>
+    cases tail with
+    | nil =>
+      cases ha : edgeRank a with
+      | none => simp [canonicalEdges, ha] at accepted
+      | some ra =>
+        have hreg := edgeRank_eq_registered a ra ha
+        rcases hreg with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+          simp [canonicalEdgeSequences]
+    | cons b tail =>
+      cases tail with
+      | nil =>
+        cases ha : edgeRank a with
+        | none => simp [canonicalEdges, ha] at accepted
+        | some ra =>
+          cases hb : edgeRank b with
+          | none => simp [canonicalEdges, ha, hb] at accepted
+          | some rb =>
+            have hAre := edgeRank_eq_registered a ra ha
+            have hBre := edgeRank_eq_registered b rb hb
+            rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+              rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+              simp [canonicalEdges, canonicalEdgeSequences, edgeRank] at accepted ⊢
+      | cons c tail =>
+        cases tail with
+        | nil =>
+          cases ha : edgeRank a with
+          | none => simp [canonicalEdges, ha] at accepted
+          | some ra =>
+            cases hb : edgeRank b with
+            | none => simp [canonicalEdges, ha, hb] at accepted
+            | some rb =>
+              cases hc : edgeRank c with
+              | none => simp [canonicalEdges, ha, hb, hc] at accepted
+              | some rc =>
+                have hAre := edgeRank_eq_registered a ra ha
+                have hBre := edgeRank_eq_registered b rb hb
+                have hCre := edgeRank_eq_registered c rc hc
+                rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  rcases hCre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  simp [canonicalEdges, canonicalEdgeSequences, edgeRank] at accepted ⊢
+        | cons d rest =>
+          cases ha : edgeRank a with
+          | none => simp [canonicalEdges, ha] at accepted
+          | some ra =>
+            cases hb : edgeRank b with
+            | none => simp [canonicalEdges, ha, hb] at accepted
+            | some rb =>
+              cases hc : edgeRank c with
+              | none => simp [canonicalEdges, ha, hb, hc] at accepted
+              | some rc =>
+                cases hd : edgeRank d with
+                | none => simp [canonicalEdges, ha, hb, hc, hd] at accepted
+                | some rd =>
+                  have hAre := edgeRank_eq_registered a ra ha
+                  have hBre := edgeRank_eq_registered b rb hb
+                  have hCre := edgeRank_eq_registered c rc hc
+                  have hDre := edgeRank_eq_registered d rd hd
+                  rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hCre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hDre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    simp [canonicalEdges, edgeRank] at accepted
+
+theorem canonicalEdges_implies_canonicalGraph
+    {edges : List String} {tag : Option String}
+    (accepted : canonicalEdges edges = true) :
+    canonicalGraph (⟨edges, tag⟩ : WireGraph) := by
+  unfold canonicalGraph fromGraph toGraph
+  have hclass := canonicalEdges_finite_classification edges accepted
+  simp [canonicalEdgeSequences] at hclass
+  rcases hclass with h | h | h | h | h | h | h | h <;>
+    subst edges <;> cases tag <;> simp [toGraph, fromGraph]
 
 def decodeTag : RawJson → Option (Option String)
   | .null => some none
@@ -289,6 +564,22 @@ theorem null_tag_decodes_distinctly :
 
 theorem empty_string_tag_decodes_distinctly :
     decodeTag (.string "") = some (some "") := rfl
+
+theorem noncanonical_edge_order_is_rejected :
+    canonicalEdges ["AC", "AB"] = false := by
+  decide
+
+theorem malformed_graph_nested_edge_shape_is_rejected :
+    decodeGraph (.object
+      [("edges", .array [.integer 1]), ("tag", .null)]) = none := by
+  decide
+
+theorem malformed_row_nested_coordinate_shape_is_rejected :
+    decodeJointRow (.object
+      [("atoms", .array [.null]),
+       ("coefficient", .object
+         [("numerator", .integer 1), ("denominator", .integer 2)])]) = none := by
+  decide
 
 theorem decodeFractionPair_rejects_boolean_numerator :
     decodeFractionPair (.object
