@@ -91,6 +91,20 @@ def lookupField : List (String × RawJson) → String → Option RawJson
   | (key, value) :: rest, wanted =>
       if key = wanted then some value else lookupField rest wanted
 
+def lookupFieldPinned : List (String × RawJson) → String → Option RawJson
+  | [], _ => none
+  | (key, value) :: rest, wanted =>
+      if key == wanted then some value else lookupFieldPinned rest wanted
+
+theorem lookupField_eq_pinned (fields : List (String × RawJson))
+    (wanted : String) :
+    lookupField fields wanted = lookupFieldPinned fields wanted := by
+  induction fields with
+  | nil => rfl
+  | cons field rest ih =>
+      rcases field with ⟨key, value⟩
+      simp [lookupField, lookupFieldPinned, ih]
+
 def distinctObjectKeys : List (String × RawJson) → Bool
   | [] => true
   | (key, _) :: rest =>
@@ -169,6 +183,35 @@ def decodeStringValues : List RawJson → Option (List String)
 def decodeStringList : RawJson → Option (List String)
   | .array values => decodeStringValues values
   | _ => none
+
+def decodeStringListPinned : RawJson → Option (List String)
+  | .array values => values.mapM fun value =>
+      match value with
+      | .string text => some text
+      | _ => none
+  | _ => none
+
+theorem decodeStringValues_eq_pinned_mapM (values : List RawJson) :
+    decodeStringValues values = values.mapM (fun value =>
+      match value with
+      | .string text => some text
+      | _ => none) := by
+  induction values with
+  | nil => rfl
+  | cons value rest ih =>
+      cases value <;> simp [decodeStringValues, ih]
+
+theorem decodeStringList_eq_pinned (raw : RawJson) :
+    decodeStringList raw = decodeStringListPinned raw := by
+  cases raw with
+  | array values => simp [decodeStringList, decodeStringListPinned,
+      decodeStringValues_eq_pinned_mapM]
+  | null => rfl
+  | boolean value => rfl
+  | integer value => rfl
+  | nonIntegerNumber lexeme => rfl
+  | string value => rfl
+  | object fields => rfl
 
 theorem decodeStringValues_members_are_strings
     {values : List RawJson} {strings : List String}
@@ -260,8 +303,9 @@ def canonicalEdgeSequences : List (List String) :=
   [[], ["AB"], ["AC"], ["BC"], ["AB", "AC"],
     ["AB", "BC"], ["AC", "BC"], ["AB", "AC", "BC"]]
 
-/-- The recursive validator accepts exactly the eight subsets of the three
-registered edges, written in their strictly increasing rank order. -/
+/-- Every accepted list is among the eight subsets of the three registered
+edges, written in strictly increasing rank order. This is the classification
+direction used by the graph round-trip proof. -/
 theorem canonicalEdges_finite_classification (edges : List String)
     (accepted : canonicalEdges edges = true) :
     edges ∈ canonicalEdgeSequences := by
