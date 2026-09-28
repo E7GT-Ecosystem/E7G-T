@@ -256,24 +256,91 @@ theorem edgeRank_registered_lt_iff (left right : String)
     rcases hright with hright | hright | hright <;>
     subst left <;> subst right <;> simp [edgeRank]
 
+def canonicalEdgeSequences : List (List String) :=
+  [[], ["AB"], ["AC"], ["BC"], ["AB", "AC"],
+    ["AB", "BC"], ["AC", "BC"], ["AB", "AC", "BC"]]
+
+/-- The recursive validator accepts exactly the eight subsets of the three
+registered edges, written in their strictly increasing rank order. -/
+theorem canonicalEdges_finite_classification (edges : List String)
+    (accepted : canonicalEdges edges = true) :
+    edges ∈ canonicalEdgeSequences := by
+  cases edges with
+  | nil => simp [canonicalEdgeSequences]
+  | cons a tail =>
+    cases tail with
+    | nil =>
+      cases ha : edgeRank a with
+      | none => simp [canonicalEdges, ha] at accepted
+      | some ra =>
+        have hreg := edgeRank_eq_registered a ra ha
+        rcases hreg with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+          simp [canonicalEdgeSequences]
+    | cons b tail =>
+      cases tail with
+      | nil =>
+        cases ha : edgeRank a with
+        | none => simp [canonicalEdges, ha] at accepted
+        | some ra =>
+          cases hb : edgeRank b with
+          | none => simp [canonicalEdges, ha, hb] at accepted
+          | some rb =>
+            have hAre := edgeRank_eq_registered a ra ha
+            have hBre := edgeRank_eq_registered b rb hb
+            rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+              rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+              simp [canonicalEdges, canonicalEdgeSequences, edgeRank] at accepted ⊢
+      | cons c tail =>
+        cases tail with
+        | nil =>
+          cases ha : edgeRank a with
+          | none => simp [canonicalEdges, ha] at accepted
+          | some ra =>
+            cases hb : edgeRank b with
+            | none => simp [canonicalEdges, ha, hb] at accepted
+            | some rb =>
+              cases hc : edgeRank c with
+              | none => simp [canonicalEdges, ha, hb, hc] at accepted
+              | some rc =>
+                have hAre := edgeRank_eq_registered a ra ha
+                have hBre := edgeRank_eq_registered b rb hb
+                have hCre := edgeRank_eq_registered c rc hc
+                rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  rcases hCre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                  simp [canonicalEdges, canonicalEdgeSequences, edgeRank] at accepted ⊢
+        | cons d rest =>
+          cases ha : edgeRank a with
+          | none => simp [canonicalEdges, ha] at accepted
+          | some ra =>
+            cases hb : edgeRank b with
+            | none => simp [canonicalEdges, ha, hb] at accepted
+            | some rb =>
+              cases hc : edgeRank c with
+              | none => simp [canonicalEdges, ha, hb, hc] at accepted
+              | some rc =>
+                cases hd : edgeRank d with
+                | none => simp [canonicalEdges, ha, hb, hc, hd] at accepted
+                | some rd =>
+                  have hAre := edgeRank_eq_registered a ra ha
+                  have hBre := edgeRank_eq_registered b rb hb
+                  have hCre := edgeRank_eq_registered c rc hc
+                  have hDre := edgeRank_eq_registered d rd hd
+                  rcases hAre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hBre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hCre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    rcases hDre with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+                    simp [canonicalEdges, edgeRank] at accepted
+
 theorem canonicalEdges_implies_canonicalGraph
     {edges : List String} {tag : Option String}
     (accepted : canonicalEdges edges = true) :
     canonicalGraph (⟨edges, tag⟩ : WireGraph) := by
-  -- This direct consequence of the recursive accepted-edge cases is the
-  -- remaining canonicality lemma; the extensional replacement was removed.
   unfold canonicalGraph fromGraph toGraph
-  cases edges with
-  | nil => simp [canonicalEdges]
-  | cons edge tail =>
-      cases tail with
-      | nil =>
-          cases h : edgeRank edge <;>
-            simp_all [canonicalEdges, edgeRank]
-      | cons next rest =>
-          cases hleft : edgeRank edge <;>
-            cases hright : edgeRank next <;>
-            simp_all [canonicalEdges, edgeRank]
+  have hclass := canonicalEdges_finite_classification edges accepted
+  simp [canonicalEdgeSequences] at hclass
+  rcases hclass with h | h | h | h | h | h | h | h <;>
+    subst edges <;> decide
 
 def decodeTag : RawJson → Option (Option String)
   | .null => some none
