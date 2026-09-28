@@ -75,9 +75,9 @@ theorem interpretation_decoder_follows_statement_trace
       capabilityFieldRead, obligationFieldRead, capabilityBoolean,
       obligationString, InterpretationStatementTrace.output]
 
-/-- All top-level and row-level checks are represented separately. The
-32-fuel guard remains an explicit model-domain condition in the rows trace;
-this structure does not claim that pinned Python checks fuel. -/
+/-- All top-level and row-level checks are represented separately. No fuel
+guard is a field of the trace: successful row-schema visits derive the
+model's 32-fuel predicate. The pinned Python code does not check fuel. -/
 structure CompleteAdmissionStatementTrace (rawDocument : RawJson) where
   fields : List (String × RawJson)
   documentObjectRead : rawDocument = .object fields
@@ -137,8 +137,8 @@ theorem first_stage_host_outcomes_are_distinct :
 /-- Compose raw admission, the operation-by-operation Joint trace, the
 serializer trace, and the actual final-guard branch observation. No completed
 decoded document, Joint result equality, serialized value, equality boolean,
-or final equality is an input premise. The bounded 32-fuel admission guard
-remains explicit through CompleteAdmissionStatementTrace. -/
+or final equality is an input premise. The modeled 32-fuel condition is
+derived from the admitted row schema; pinned Python does not check it. -/
 theorem first_stage_normal_return_composition
     {rawDocument : RawJson} {ops : CPythonJointPrimitives}
     (admission : CompleteAdmissionStatementTrace rawDocument)
@@ -152,6 +152,10 @@ theorem first_stage_normal_return_composition
     (returned : finalRowsGuard contract.pythonEqual output admission.rawRows =
       .returnedNormally) :
     decodeRawDocument rawDocument = some admission.document ∧
+    CanonicalWireRows admission.rowsAdmission.rows ∧
+    ParseRowsCall admission.rowsAdmission.rows
+      (parseRows admission.rowsAdmission.rows) ∧
+    parseRows admission.rowsAdmission.rows = admission.document.rows.map toRow ∧
     runConstructorRows joint.constructorOps 2
       (materializeJointRows ops joint.preSort.finalDictionary joint.sortedKeys) =
       some (jointNormalizer ops (parseRows admission.rowsAdmission.rows)) ∧
@@ -161,18 +165,24 @@ theorem first_stage_normal_return_composition
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) := by
   have hDocument := complete_document_decoder_follows_statement_trace admission
+  have hCanonicalRows := rows_statement_trace_canonical admission.rowsAdmission
+  have hParseCall := parse_rows_call_of_canonical hCanonicalRows
+  have hDecodedTyped : parseRows admission.rowsAdmission.rows =
+      admission.document.rows.map toRow := by
+    rfl
   have hJoint := joint_statement_trace_returns_model_rows joint
   have hSerialized := rows_statement_output_exact serializer
   have hOutputFuel := rows_statement_within_fuel serializer
-  have hOriginalFuel := decodeJointRows_within_fuel
-    (rows_decoder_follows_statement_trace admission.rowsAdmission)
+  have hOriginalFuel :=
+    rows_statement_trace_within_fuel admission.rowsAdmission
   have hGuard := normal_guard_execution_yields_extensional_equality
     contract hOutputFuel hOriginalFuel returned
   have hCanonical : rawJsonEquivalent output
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
-  exact ⟨hDocument, hJoint, hSerialized,
+  exact ⟨hDocument, hCanonicalRows, hParseCall, hDecodedTyped, hJoint,
+    hSerialized,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
 
 end E7CJointFirstStageNormalReturnComposition
