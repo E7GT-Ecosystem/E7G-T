@@ -76,6 +76,41 @@ class RawJointJsonAdmission(unittest.TestCase):
         reordered_edges["rows"][0]["atoms"][0]["edges"] = ["AC", "AB"]
         self.assert_invalid(reordered_edges)
 
+    def test_final_guard_pair_equality_is_extensional_only_for_objects(self):
+        left = Config(("AB", "AC"), None)
+        right = Config(("BC",), "")
+        other_left = Config(("AC",), "x")
+        other_right = Config(("AB",), None)
+        raw = document(Joint(2, (
+            ((left, right), Fraction(1, 3)),
+            ((other_left, other_right), Fraction(-2, 5)),
+        )))
+        rows = raw["rows"]
+        rows[0]["atoms"][0]["edges"] = ["AB", "AC"]
+        reordered_object_keys = self.reverse_object_key_order(copy.deepcopy(rows))
+        self.assertEqual(rows, reordered_object_keys)
+
+        self.assertNotEqual(rows, list(reversed(rows)))
+        changed_coordinate_order = copy.deepcopy(rows)
+        changed_coordinate_order[0]["atoms"].reverse()
+        self.assertNotEqual(rows, changed_coordinate_order)
+
+        changed_edge_order = copy.deepcopy(rows)
+        changed_edge_order[0]["atoms"][0]["edges"].reverse()
+        self.assertNotEqual(rows, changed_edge_order)
+
+        null_tag = copy.deepcopy(rows)
+        empty_tag = copy.deepcopy(rows)
+        null_tag[0]["atoms"][0]["tag"] = None
+        empty_tag[0]["atoms"][0]["tag"] = ""
+        self.assertNotEqual(null_tag, empty_tag)
+
+        raw_unreduced = copy.deepcopy(rows)
+        raw_unreduced[0]["coefficient"] = {"numerator": 2, "denominator": 4}
+        raw_reduced = copy.deepcopy(rows)
+        raw_reduced[0]["coefficient"] = {"numerator": 1, "denominator": 2}
+        self.assertNotEqual(raw_unreduced, raw_reduced)
+
     def test_canonical_raw_document_preserves_null_empty_and_reduced_fraction(self):
         raw = one_row_document(Fraction(-2, 3))
         value = admit(raw)

@@ -21,6 +21,52 @@ inductive RawJson where
   | array (values : List RawJson)
   | object (fields : List (String × RawJson))
 
+/- Shared supported-depth predicate and monotonicity proof from the serializer trace. -/
+def rawJsonWithinFuel : Nat → RawJson → Bool
+  | 0, .null => true
+  | 0, .boolean _ => true
+  | 0, .integer _ => true
+  | 0, .nonIntegerNumber _ => true
+  | 0, .string _ => true
+  | 0, .array _ => false
+  | 0, .object _ => false
+  | _ + 1, .null => true
+  | _ + 1, .boolean _ => true
+  | _ + 1, .integer _ => true
+  | _ + 1, .nonIntegerNumber _ => true
+  | _ + 1, .string _ => true
+  | fuel + 1, .array values => values.all (rawJsonWithinFuel fuel)
+  | fuel + 1, .object fields =>
+      fields.all (fun field => rawJsonWithinFuel fuel field.2)
+
+theorem rawJsonWithinFuel_mono
+    {fuel : Nat} {value : RawJson}
+    (safe : rawJsonWithinFuel fuel value = true) :
+    rawJsonWithinFuel (fuel + 1) value = true := by
+  induction fuel generalizing value with
+  | zero =>
+      cases value <;> simp_all [rawJsonWithinFuel]
+  | succ fuel ih =>
+      cases value with
+      | null => rfl
+      | boolean b => rfl
+      | integer n => rfl
+      | nonIntegerNumber text => rfl
+      | string text => rfl
+      | array values =>
+          apply List.all_eq_true.mpr
+          intro child membership
+          have hAll : values.all (rawJsonWithinFuel fuel) = true := by
+            simpa [rawJsonWithinFuel] using safe
+          exact ih ((List.all_eq_true.mp hAll) child membership)
+      | object fields =>
+          apply List.all_eq_true.mpr
+          intro field membership
+          have hAll : fields.all (fun field =>
+              rawJsonWithinFuel fuel field.2) = true := by
+            simpa [rawJsonWithinFuel] using safe
+          exact ih ((List.all_eq_true.mp hAll) field membership)
+
 
 def lookupField : List (String × RawJson) → String → Option RawJson
   | [], _ => none
@@ -112,8 +158,33 @@ def decodeJointRow (raw : RawJson) : Option WireRow :=
 def decodeJointRows (raw : RawJson) : Option (List WireRow) :=
   match raw with
   | .array rows =>
-      if rows.length ≤ 64 then rows.mapM decodeJointRow else none
+      if rows.length ≤ 64 then
+        if rawJsonWithinFuel 32 (.array rows) then
+          rows.mapM decodeJointRow
+        else none
+      else none
   | _ => none
+
+/-- Successful raw-row admission proves the compared source value is within
+the normalizer's fuel. The depth guard belongs to this bounded RawJson model;
+CPython's fixed schema makes it redundant, but that adequacy link is separate. -/
+theorem decodeJointRows_within_fuel
+    {raw : RawJson} {rows : List WireRow}
+    (decoded : decodeJointRows raw = some rows) :
+    rawJsonWithinFuel 32 raw = true := by
+  cases raw with
+  | array values =>
+      by_cases hlen : values.length ≤ 64
+      · by_cases hdepth : rawJsonWithinFuel 32 (.array values) = true
+        · simpa [decodeJointRows, hlen, hdepth] using hdepth
+        · simp [decodeJointRows, hlen, hdepth] at decoded
+      · simp [decodeJointRows, hlen] at decoded
+  | null => simp [decodeJointRows] at decoded
+  | boolean value => simp [decodeJointRows] at decoded
+  | integer value => simp [decodeJointRows] at decoded
+  | nonIntegerNumber lexeme => simp [decodeJointRows] at decoded
+  | string value => simp [decodeJointRows] at decoded
+  | object fields => simp [decodeJointRows] at decoded
 
 structure DecodedRawDocument where
   rawRows : RawJson
@@ -309,27 +380,6 @@ def normalizeRawJsonFuel : Nat → RawJson → List Nat
 
 def normalizeRawJson (value : RawJson) : List Nat :=
   normalizeRawJsonFuel 32 value
-
-/- Fuel-indexed shallow-shape predicate. At fuel zero only scalars are
-   safe; each array/object layer consumes one unit, independently of
-   collection length. This definition is shared with the statement-trace
-   layer so the equality domain is available at its introduction point. -/
-def rawJsonWithinFuel : Nat → RawJson → Bool
-  | 0, .null => true
-  | 0, .boolean _ => true
-  | 0, .integer _ => true
-  | 0, .nonIntegerNumber _ => true
-  | 0, .string _ => true
-  | 0, .array _ => false
-  | 0, .object _ => false
-  | _ + 1, .null => true
-  | _ + 1, .boolean _ => true
-  | _ + 1, .integer _ => true
-  | _ + 1, .nonIntegerNumber _ => true
-  | _ + 1, .string _ => true
-  | fuel + 1, .array values => values.all (rawJsonWithinFuel fuel)
-  | fuel + 1, .object fields =>
-      fields.all (fun field => rawJsonWithinFuel fuel field.2)
 
 /-- Check pairwise distinct keys recursively through the declared
 32-level comparison domain. The equality relation also requires fuel safety,

@@ -9,6 +9,7 @@ on:
       - "research/e7c-0.1/E7C_0.1_PROOF_ASSISTANT_SELECTION.md"
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/E7C_0.1_RAW_JSON_EXTENSIONAL_EQUALITY.md"
+      - "research/e7c-0.1/E7C_0.1_CPYTHON_STATEMENT_TRACE.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - ".github/workflows/e7c-lean-core.yml"
   push:
@@ -33,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Focused pinned joint sort and constructor tests
+      - name: Focused pinned Joint operation and admission source tests
         run: |
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_sort_constructor_semantics.py
           PYTHONPATH=research/e7c-0.1/adapters python3 research/e7c-0.1/test_e7c_joint_raw_json_admission.py
@@ -66,6 +67,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
           axiom-audit-root: E7CJointRawJsonAdmission
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: E7CJointCPythonNormalReturnTrace
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
