@@ -181,6 +181,7 @@ theorem first_stage_normal_return_composition
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
+      hOutputFuel hGuard.2.2.1
   exact ⟨hDocument, hCanonicalRows, hParseCall, hDecodedTyped, hJoint,
     hSerialized,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
