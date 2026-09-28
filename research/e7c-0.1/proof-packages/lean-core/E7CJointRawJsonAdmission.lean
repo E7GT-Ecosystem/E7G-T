@@ -282,7 +282,16 @@ def sortTokenFields (fields : List (List Nat × List Nat)) :
   fields.foldr insertTokenField []
 
 def normalizeRawJsonFuel : Nat → RawJson → List Nat
-  | 0, _ => [99]
+  -- Match rawJsonWithinFuel 0: all scalar constructors retain their distinct
+  -- values, while an array/object at the boundary is outside the domain.
+  | 0, .null => [0]
+  | 0, .boolean value => [1, if value then 1 else 0]
+  | 0, .integer value =>
+      [2, if value < 0 then 1 else 0, value.natAbs]
+  | 0, .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
+  | 0, .string value => 4 :: encodeStringCodes value
+  | 0, .array _ => [99]
+  | 0, .object _ => [99]
   | fuel + 1, .null => [0]
   | fuel + 1, .boolean value => [1, if value then 1 else 0]
   | fuel + 1, .integer value =>
@@ -301,7 +310,21 @@ def normalizeRawJsonFuel : Nat → RawJson → List Nat
 def normalizeRawJson (value : RawJson) : List Nat :=
   normalizeRawJsonFuel 32 value
 
+/-- Every object node, including nodes nested inside arrays or other objects,
+has pairwise distinct keys. -/
+def rawJsonUniqueObjectKeys : RawJson → Bool
+  | .array values => values.all rawJsonUniqueObjectKeys
+  | .object fields =>
+      distinctObjectKeys fields &&
+        fields.all (fun field => rawJsonUniqueObjectKeys field.2)
+  | _ => true
+
+/-- The bounded equality relation is defined only for values whose object
+keys are unique at every depth. Fuel safety is a separate compared-pair
+condition supplied by the serializer/admission trace. -/
 def rawJsonEquivalent (left right : RawJson) : Prop :=
+  rawJsonUniqueObjectKeys left = true ∧
+  rawJsonUniqueObjectKeys right = true ∧
   normalizeRawJson left = normalizeRawJson right
 
 def rawObjectForward : RawJson :=
@@ -342,13 +365,13 @@ theorem duplicate_object_multiplicity_remains_distinct :
 
 theorem rawJsonEquivalent_symmetric {left right : RawJson}
     (h : rawJsonEquivalent left right) : rawJsonEquivalent right left :=
-  h.symm
+  ⟨h.2.1, h.1, h.2.2.symm⟩
 
 theorem rawJsonEquivalent_trans {left middle right : RawJson}
     (h₁ : rawJsonEquivalent left middle)
     (h₂ : rawJsonEquivalent middle right) :
     rawJsonEquivalent left right :=
-  h₁.trans h₂
+  ⟨h₁.1, h₂.2.1, h₁.2.2.trans h₂.2.2⟩
 
 /- The raw serializer and equality link remain operation-level host premises.
    This theorem composes them using Python-shaped recursive equality rather
