@@ -644,7 +644,16 @@ def sortTokenFields (fields : List (List Nat × List Nat)) :
   fields.foldr insertTokenField []
 
 def normalizeRawJsonFuel : Nat → RawJson → List Nat
-  | 0, _ => [99]
+  -- Match rawJsonWithinFuel 0: all scalar constructors retain their distinct
+  -- values, while an array/object at the boundary is outside the domain.
+  | 0, .null => [0]
+  | 0, .boolean value => [1, if value then 1 else 0]
+  | 0, .integer value =>
+      [2, if value < 0 then 1 else 0, value.natAbs]
+  | 0, .nonIntegerNumber lexeme => 3 :: encodeStringCodes lexeme
+  | 0, .string value => 4 :: encodeStringCodes value
+  | 0, .array _ => [99]
+  | 0, .object _ => [99]
   | fuel + 1, .null => [0]
   | fuel + 1, .boolean value => [1, if value then 1 else 0]
   | fuel + 1, .integer value =>
@@ -663,8 +672,52 @@ def normalizeRawJsonFuel : Nat → RawJson → List Nat
 def normalizeRawJson (value : RawJson) : List Nat :=
   normalizeRawJsonFuel 32 value
 
+/-- Check pairwise distinct keys recursively through the declared
+32-level comparison domain. The equality relation also requires fuel safety,
+so no unchecked object node can lie beyond this predicate's recursion. -/
+def rawJsonUniqueObjectKeysFuel : Nat → RawJson → Bool
+  | 0, _ => true
+  | fuel + 1, .array values =>
+      values.all (rawJsonUniqueObjectKeysFuel fuel)
+  | fuel + 1, .object fields =>
+      distinctObjectKeys fields &&
+        fields.all (fun field => rawJsonUniqueObjectKeysFuel fuel field.2)
+  | fuel + 1, _ => true
+
+def rawJsonUniqueObjectKeys (value : RawJson) : Bool :=
+  rawJsonUniqueObjectKeysFuel 32 value
+
+/-- The bounded equality relation is restricted to unique-key values with
+no array/object truncation at normalization fuel 32. -/
 def rawJsonEquivalent (left right : RawJson) : Prop :=
+  rawJsonWithinFuel 32 left = true ∧
+  rawJsonWithinFuel 32 right = true ∧
+  rawJsonUniqueObjectKeys left = true ∧
+  rawJsonUniqueObjectKeys right = true ∧
   normalizeRawJson left = normalizeRawJson right
+
+/-- Test fixture nesting a JSON value under an exact number of arrays. -/
+def nestRawArrays : Nat → RawJson → RawJson
+  | 0, value => value
+  | fuel + 1, value => .array [nestRawArrays fuel value]
+
+/-- At depth 33, unrestricted normalization with fuel 32 collapses distinct
+scalar leaves to the same token stream. The bounded equality relation rejects
+both values because they exceed its no-truncation domain. -/
+theorem unrestricted_normalization_collapses_beyond_bound :
+    normalizeRawJsonFuel 32 (nestRawArrays 33 (.integer 1)) =
+      normalizeRawJsonFuel 32 (nestRawArrays 33 (.integer 2)) ∧
+    ¬ rawJsonEquivalent (nestRawArrays 33 (.integer 1))
+      (nestRawArrays 33 (.integer 2)) := by
+  constructor
+  · decide
+  · intro h
+    have hunsafe :
+        rawJsonWithinFuel 32 (nestRawArrays 33 (.integer 1)) = false := by
+      decide
+    have hleft := h.1
+    rw [hunsafe] at hleft
+    contradiction
 
 def rawObjectForward : RawJson :=
   .object [("atoms", .integer 7), ("coefficient", .integer 11)]
@@ -674,43 +727,43 @@ def rawObjectReordered : RawJson :=
 
 theorem raw_object_key_order_is_extensional :
     rawJsonEquivalent rawObjectForward rawObjectReordered  := by
-  unfold rawJsonEquivalent
+  unfold rawJsonEquivalent rawJsonUniqueObjectKeys
   decide
 
 theorem raw_array_order_remains_significant :
     ¬ rawJsonEquivalent (.array [.integer 1, .integer 2])
       (.array [.integer 2, .integer 1])  := by
-  unfold rawJsonEquivalent
+  unfold rawJsonEquivalent rawJsonUniqueObjectKeys
   decide
 
 theorem raw_null_and_empty_string_remain_distinct :
     ¬ rawJsonEquivalent .null (.string "")  := by
-  unfold rawJsonEquivalent
+  unfold rawJsonEquivalent rawJsonUniqueObjectKeys
   decide
 
 theorem raw_fraction_pairs_remain_exact :
     ¬ rawJsonEquivalent
       (.object [("numerator", .integer 2), ("denominator", .integer 4)])
       (.object [("numerator", .integer 1), ("denominator", .integer 2)])  := by
-  unfold rawJsonEquivalent
+  unfold rawJsonEquivalent rawJsonUniqueObjectKeys
   decide
 
 theorem duplicate_object_multiplicity_remains_distinct :
     ¬ rawJsonEquivalent
       (.object [("k", .integer 1), ("k", .integer 1)])
       (.object [("k", .integer 1)])  := by
-  unfold rawJsonEquivalent
+  unfold rawJsonEquivalent rawJsonUniqueObjectKeys
   decide
 
 theorem rawJsonEquivalent_symmetric {left right : RawJson}
     (h : rawJsonEquivalent left right) : rawJsonEquivalent right left :=
-  h.symm
+  ⟨h.2.1, h.1, h.2.2.2.1, h.2.2.1, h.2.2.2.2.symm⟩
 
 theorem rawJsonEquivalent_trans {left middle right : RawJson}
     (h₁ : rawJsonEquivalent left middle)
     (h₂ : rawJsonEquivalent middle right) :
     rawJsonEquivalent left right :=
-  h₁.trans h₂
+  ⟨h₁.1, h₂.2.1, h₁.2.2.1, h₂.2.2.2.1, h₁.2.2.2.2.trans h₂.2.2.2.2⟩
 
 /- The raw serializer and equality link remain operation-level host premises.
    This theorem composes them using Python-shaped recursive equality rather
