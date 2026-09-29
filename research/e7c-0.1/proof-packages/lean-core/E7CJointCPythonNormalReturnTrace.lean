@@ -148,6 +148,47 @@ theorem encodeRawRows_unique_keys (rows : List WireRow) :
   intro row membership
   exact encodeRawRow_unique_keys_fuel 27 row
 
+def selectedGraphFromWire (graph : WireGraph) : SelectedRawGraph :=
+  ⟨graph.edges, graph.tag, false⟩
+
+def selectedFractionFromRat (coefficient : Rat) : SelectedRawFraction :=
+  ⟨coefficient.num, Int.ofNat coefficient.den,
+    by exact_mod_cast coefficient.den_pos, false⟩
+
+def selectedRowFromWire (row : WireRow) : SelectedRawRow :=
+  ⟨selectedGraphFromWire row.left, selectedGraphFromWire row.right,
+    selectedFractionFromRat row.coefficient, false⟩
+
+theorem encoded_graph_selected_raw (graph : WireGraph) :
+    encodeRawGraph graph = rawSelectedGraph (selectedGraphFromWire graph) := by
+  cases graph with
+  | mk edges tag => cases tag <;> rfl
+
+theorem encoded_fraction_selected_raw (coefficient : Rat) :
+    encodeRawFraction coefficient =
+      rawSelectedFraction (selectedFractionFromRat coefficient) := by
+  rfl
+
+theorem encoded_row_selected_raw (row : WireRow) :
+    encodeRawRow row = rawSelectedRow (selectedRowFromWire row) := by
+  cases row with
+  | mk left right coefficient =>
+      simp [encodeRawRow, rawSelectedRow, rawJsonTwoKeyObject,
+        selectedRowFromWire, encoded_graph_selected_raw,
+        encoded_fraction_selected_raw]
+
+theorem encoded_rows_selected_raw (rows : List WireRow) :
+    encodeRawRows rows = rawSelectedRows (rows.map selectedRowFromWire) := by
+  induction rows with
+  | nil => rfl
+  | cons row rest ih =>
+      have htail : rest.map encodeRawRow =
+          (rest.map selectedRowFromWire).map rawSelectedRow := by
+        injection ih with htail
+        exact htail
+      simp only [encodeRawRows, rawSelectedRows, List.map_cons]
+      rw [encoded_row_selected_raw row, htail]
+
 theorem graph_statement_output_exact
     {graph : WireGraph} {output : RawJson}
     (trace : GraphFieldStatementTrace graph output) :

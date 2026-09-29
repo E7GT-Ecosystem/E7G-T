@@ -190,4 +190,47 @@ theorem first_stage_normal_return_composition
     hSerialized, hOriginalUnique,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
 
+/-- The actual compared pair in the modeled first-stage guard belongs to
+the selected raw carrier. Thus #148's two-way agreement applies to it,
+retaining each fraction's original numerator and denominator independently.
+The CPython equality observation remains an explicit operation premise. -/
+theorem first_stage_guard_recursive_equality
+    {rawDocument : RawJson} {ops : CPythonJointPrimitives}
+    (admission : CompleteAdmissionStatementTrace rawDocument)
+    (joint : JointNormalizerStatementTrace ops
+      (parseRows admission.rowsAdmission.rows))
+    {output : RawJson}
+    (serializer : RowsStatementTrace
+      ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)
+      output)
+    (contract : CPythonJsonEqualityContract output admission.rawRows)
+    (returned : finalRowsGuard contract.pythonEqual output admission.rawRows =
+      .returnedNormally) :
+    rawJsonObjectKeyExtEq output admission.rawRows := by
+  rcases rows_statement_trace_selected_raw admission.rowsAdmission with
+    ⟨input, hInput⟩
+  let outputRows :=
+    (jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow
+  have hOutput : output = rawSelectedRows
+      (outputRows.map selectedRowFromWire) := by
+    rw [rows_statement_output_exact serializer, encoded_rows_selected_raw]
+  have hOutputFuel : rawJsonWithinFuel 32 output = true :=
+    rows_statement_within_fuel serializer
+  have hInputFuel : rawJsonWithinFuel 32 admission.rawRows = true :=
+    rows_statement_trace_within_fuel admission.rowsAdmission
+  have hOutputUnique : rawJsonUniqueObjectKeys output = true :=
+    rows_statement_unique_keys serializer
+  have hInputUnique : rawJsonUniqueObjectKeys admission.rawRows = true :=
+    rows_statement_trace_unique_keys admission.rowsAdmission
+  have hGuard : rawJsonEquivalent output admission.rawRows :=
+    normal_guard_execution_yields_extensional_equality contract
+      hOutputFuel hInputFuel returned
+  rw [hOutput, hInput] at hGuard ⊢
+  exact (selectedRawRows_rawJsonEquivalent_iff_recursiveEquality
+    (outputRows.map selectedRowFromWire) input
+    (by simpa only [hOutput] using hOutputFuel)
+    (by simpa only [hInput] using hInputFuel)
+    (by simpa only [hOutput] using hOutputUnique)
+    (by simpa only [hInput] using hInputUnique)).mp hGuard
+
 end E7CJointFirstStageNormalReturnComposition

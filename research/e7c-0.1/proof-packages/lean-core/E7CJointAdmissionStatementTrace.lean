@@ -384,6 +384,151 @@ theorem rows_statement_trace_unique_keys
   rw [trace.arrayRead]
   exact raw_rows_visits_unique_keys trace.visits
 
+/- The selected carrier retains the original raw integer pair. In particular,
+   these witnesses do not pass through the decoded Rat coefficient. -/
+theorem decoded_string_values_exact
+    {values : List RawJson} {strings : List String}
+    (decoded : decodeStringValues values = some strings) :
+    values = strings.map RawJson.string := by
+  induction values generalizing strings with
+  | nil =>
+      simp [decodeStringValues] at decoded
+      cases decoded
+      rfl
+  | cons value rest ih =>
+      cases value with
+      | string text =>
+          cases hrest : decodeStringValues rest with
+          | none => simp [decodeStringValues, hrest] at decoded
+          | some tail =>
+              simp [decodeStringValues, hrest] at decoded
+              cases decoded
+              simp [ih hrest]
+      | null => simp [decodeStringValues] at decoded
+      | boolean value => simp [decodeStringValues] at decoded
+      | integer value => simp [decodeStringValues] at decoded
+      | nonIntegerNumber lexeme => simp [decodeStringValues] at decoded
+      | array values => simp [decodeStringValues] at decoded
+      | object fields => simp [decodeStringValues] at decoded
+
+theorem decoded_string_list_exact
+    {raw : RawJson} {strings : List String}
+    (decoded : decodeStringList raw = some strings) :
+    raw = .array (strings.map RawJson.string) := by
+  cases raw with
+  | array values =>
+      have h := decoded_string_values_exact (by simpa [decodeStringList] using decoded)
+      simpa using congrArg RawJson.array h
+  | null => simp [decodeStringList] at decoded
+  | boolean value => simp [decodeStringList] at decoded
+  | integer value => simp [decodeStringList] at decoded
+  | nonIntegerNumber lexeme => simp [decodeStringList] at decoded
+  | string value => simp [decodeStringList] at decoded
+  | object fields => simp [decodeStringList] at decoded
+
+theorem decoded_tag_exact
+    {raw : RawJson} {tag : Option String}
+    (decoded : decodeTag raw = some tag) :
+    raw = tag.elim RawJson.null RawJson.string := by
+  cases raw with
+  | null =>
+      simp [decodeTag] at decoded
+      cases decoded
+      rfl
+  | string value =>
+      simp [decodeTag] at decoded
+      cases decoded
+      rfl
+  | boolean value => simp [decodeTag] at decoded
+  | integer value => simp [decodeTag] at decoded
+  | nonIntegerNumber lexeme => simp [decodeTag] at decoded
+  | array values => simp [decodeTag] at decoded
+  | object fields => simp [decodeTag] at decoded
+
+theorem exact_integer_raw
+    {raw : RawJson} {value : Int}
+    (decoded : exactInteger raw = some value) : raw = .integer value := by
+  cases raw with
+  | integer actual =>
+      simp [exactInteger] at decoded
+      cases decoded
+      rfl
+  | null => simp [exactInteger] at decoded
+  | boolean actual => simp [exactInteger] at decoded
+  | nonIntegerNumber lexeme => simp [exactInteger] at decoded
+  | string actual => simp [exactInteger] at decoded
+  | array values => simp [exactInteger] at decoded
+  | object fields => simp [exactInteger] at decoded
+
+theorem graph_trace_selected_raw
+    {raw : RawJson} (trace : GraphAdmissionStatementTrace raw) :
+    ∃ selected : SelectedRawGraph, raw = rawSelectedGraph selected := by
+  have hEdges := decoded_string_list_exact trace.stringArrayDecode
+  have hTag := decoded_tag_exact trace.tagDecode
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.edgesFieldRead trace.tagFieldRead
+  rcases layout with layout | layout
+  · refine ⟨⟨trace.edges, trace.tag, false⟩, ?_⟩
+    rw [trace.objectRead, layout, hEdges, hTag]
+    cases trace.tag <;> rfl
+  · refine ⟨⟨trace.edges, trace.tag, true⟩, ?_⟩
+    rw [trace.objectRead, layout, hEdges, hTag]
+    cases trace.tag <;> rfl
+
+theorem fraction_trace_selected_raw
+    {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
+    ∃ selected : SelectedRawFraction, raw = rawSelectedFraction selected := by
+  have hNumerator := exact_integer_raw trace.numeratorExactInt
+  have hDenominator := exact_integer_raw trace.denominatorExactInt
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.numeratorFieldRead trace.denominatorFieldRead
+  rcases layout with layout | layout
+  · refine ⟨⟨trace.numerator, trace.denominator,
+        trace.positiveDenominator, false⟩, ?_⟩
+    rw [trace.objectRead, layout, hNumerator, hDenominator]
+    rfl
+  · refine ⟨⟨trace.numerator, trace.denominator,
+        trace.positiveDenominator, true⟩, ?_⟩
+    rw [trace.objectRead, layout, hNumerator, hDenominator]
+    rfl
+
+theorem row_trace_selected_raw
+    {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
+    ∃ selected : SelectedRawRow, raw = rawSelectedRow selected := by
+  rcases graph_trace_selected_raw trace.leftGraph with ⟨left, hleft⟩
+  rcases graph_trace_selected_raw trace.rightGraph with ⟨right, hright⟩
+  rcases fraction_trace_selected_raw trace.coefficient with ⟨fraction, hfraction⟩
+  have layout := exactKeys_two_layout trace.keyCheck (by decide)
+    trace.atomsFieldRead trace.coefficientFieldRead
+  rcases layout with layout | layout
+  · refine ⟨⟨left, right, fraction, false⟩, ?_⟩
+    rw [trace.objectRead, layout, trace.twoCoordinateArrayRead,
+      hleft, hright, hfraction]
+    rfl
+  · refine ⟨⟨left, right, fraction, true⟩, ?_⟩
+    rw [trace.objectRead, layout, trace.twoCoordinateArrayRead,
+      hleft, hright, hfraction]
+    rfl
+
+theorem raw_rows_visits_selected_raw
+    {rawRows : List RawJson} {rows : List WireRow}
+    (visits : RawRowsVisitTrace rawRows rows) :
+    ∃ selected : List SelectedRawRow,
+      rawRows = selected.map rawSelectedRow := by
+  induction visits with
+  | nil => exact ⟨[], rfl⟩
+  | @cons rawRow rawTail tail rowVisit tailVisits ih =>
+      rcases row_trace_selected_raw rowVisit with ⟨row, hrow⟩
+      rcases ih with ⟨selectedTail, htail⟩
+      exact ⟨row :: selectedTail, by simp [hrow, htail]⟩
+
+theorem rows_statement_trace_selected_raw
+    {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
+    ∃ selected : List SelectedRawRow,
+      raw = rawSelectedRows selected := by
+  rcases raw_rows_visits_selected_raw trace.visits with ⟨selected, hselected⟩
+  exact ⟨selected, by rw [trace.arrayRead, hselected]; rfl⟩
+
 theorem rows_decoder_follows_statement_trace
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
     decodeJointRows raw = some trace.rows := by
