@@ -174,6 +174,7 @@ theorem first_stage_normal_return_composition
   have hJoint := joint_statement_trace_returns_model_rows joint
   have hSerialized := rows_statement_output_exact serializer
   have hOutputFuel := rows_statement_within_fuel serializer
+  have hOutputUnique := rows_statement_unique_keys serializer
   have hOriginalFuel :=
     rows_statement_trace_within_fuel admission.rowsAdmission
   have hOriginalUnique :=
@@ -184,7 +185,7 @@ theorem first_stage_normal_return_composition
       (encodeRawRows
         ((jointNormalizer ops (parseRows admission.rowsAdmission.rows)).map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
-      hOutputFuel hGuard.2.2.1
+      hOutputFuel hOutputUnique
   exact ⟨hDocument, hCanonicalRows, hParseCall, hDecodedTyped, hJoint,
     hSerialized, hOriginalUnique,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
