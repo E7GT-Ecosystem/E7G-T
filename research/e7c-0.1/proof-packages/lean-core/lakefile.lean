@@ -43,3 +43,4 @@ lean_lib E7CJointFirstStageNormalReturnComposition
 lean_lib E7CJointSerializerSourceSyntax
 lean_lib E7CJointSerializerSourceGenerated
 lean_lib E7CJointSerializerSourceSemantics
+lean_lib E7CJointSerializerSourceGuardBridge

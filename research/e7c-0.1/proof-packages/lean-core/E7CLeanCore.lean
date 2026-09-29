@@ -28,6 +28,7 @@ import E7CJointCPythonNormalReturnTrace
 import E7CJointAdmissionStatementTrace
 import E7CJointFirstStageNormalReturnComposition
 import E7CJointSerializerSourceSemantics
+import E7CJointSerializerSourceGuardBridge
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
