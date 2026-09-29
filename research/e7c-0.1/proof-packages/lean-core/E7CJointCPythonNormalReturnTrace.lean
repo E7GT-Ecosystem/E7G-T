@@ -107,6 +107,47 @@ theorem encodeRawRows_within_32 (rows : List WireRow) :
     rawJsonWithinFuel 32 (encodeRawRows rows) = true :=
   rawJsonWithinFuel_mono_of_le (by omega) (encodeRawRows_within_fuel rows)
 
+theorem rawJsonUniqueObjectKeysFuel_string (fuel : Nat) (value : String) :
+    rawJsonUniqueObjectKeysFuel fuel (.string value) = true := by
+  cases fuel <;> rfl
+
+theorem rawJsonUniqueObjectKeysFuel_integer (fuel : Nat) (value : Int) :
+    rawJsonUniqueObjectKeysFuel fuel (.integer value) = true := by
+  cases fuel <;> rfl
+
+theorem encodeRawGraph_unique_keys_fuel (fuel : Nat) (graph : WireGraph) :
+    rawJsonUniqueObjectKeysFuel (fuel + 2) (encodeRawGraph graph) = true := by
+  cases graph with
+  | mk edges tag =>
+      cases tag <;>
+        simp [encodeRawGraph, rawJsonUniqueObjectKeysFuel,
+          distinctObjectKeys, List.all_map,
+          rawJsonUniqueObjectKeysFuel_string]
+
+theorem encodeRawFraction_unique_keys_fuel (fuel : Nat) (coefficient : Rat) :
+    rawJsonUniqueObjectKeysFuel (fuel + 1)
+      (encodeRawFraction coefficient) = true := by
+  simp [encodeRawFraction, rawJsonUniqueObjectKeysFuel,
+    distinctObjectKeys, rawJsonUniqueObjectKeysFuel_integer]
+
+theorem encodeRawRow_unique_keys_fuel (fuel : Nat) (row : WireRow) :
+    rawJsonUniqueObjectKeysFuel (fuel + 4) (encodeRawRow row) = true := by
+  cases row with
+  | mk left right coefficient =>
+      have hleft := encodeRawGraph_unique_keys_fuel fuel left
+      have hright := encodeRawGraph_unique_keys_fuel fuel right
+      have hcoeff := encodeRawFraction_unique_keys_fuel (fuel + 2) coefficient
+      simpa [encodeRawRow, rawJsonUniqueObjectKeysFuel,
+        distinctObjectKeys, hleft, hright, hcoeff]
+
+theorem encodeRawRows_unique_keys (rows : List WireRow) :
+    rawJsonUniqueObjectKeys (encodeRawRows rows) = true := by
+  simp only [encodeRawRows, rawJsonUniqueObjectKeys, rawJsonUniqueObjectKeysFuel]
+  rw [List.all_map]
+  apply List.all_eq_true.mpr
+  intro row membership
+  exact encodeRawRow_unique_keys_fuel 27 row
+
 theorem graph_statement_output_exact
     {graph : WireGraph} {output : RawJson}
     (trace : GraphFieldStatementTrace graph output) :
@@ -150,6 +191,13 @@ theorem rows_statement_within_fuel
     rawJsonWithinFuel 32 output = true := by
   rw [rows_statement_output_exact trace]
   exact encodeRawRows_within_32 rows
+
+theorem rows_statement_unique_keys
+    {rows : List WireRow} {output : RawJson}
+    (trace : RowsStatementTrace rows output) :
+    rawJsonUniqueObjectKeys output = true := by
+  rw [rows_statement_output_exact trace]
+  exact encodeRawRows_unique_keys rows
 
 inductive FinalGuardOutcome where
   | returnedNormally
@@ -220,6 +268,8 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
     rows_statement_output_exact serializer
   have hOutputFuel : rawJsonWithinFuel 32 output = true :=
     rows_statement_within_fuel serializer
+  have hOutputUnique : rawJsonUniqueObjectKeys output = true :=
+    rows_statement_unique_keys serializer
   have hOriginalFuel : rawJsonWithinFuel 32 originalRows = true :=
     decodeJointRows_within_fuel admittedRows
   have hGuard : rawJsonEquivalent output originalRows :=
@@ -228,7 +278,7 @@ theorem pinned_statement_suffix_yields_canonical_raw_rows
   have hCanonical : rawJsonEquivalent output
       (encodeRawRows (result.map fromRow)) :=
     rawJsonEquivalent_of_structural_eq hSerialized
-      hGuard.1 hGuard.2.2.1
+      hOutputFuel hOutputUnique
   exact ⟨hExactRows,
     rawJsonEquivalent_trans (rawJsonEquivalent_symmetric hGuard) hCanonical⟩
 
