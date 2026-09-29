@@ -469,11 +469,17 @@ theorem graph_trace_selected_raw
     trace.edgesFieldRead trace.tagFieldRead
   rcases layout with layout | layout
   · refine ⟨⟨trace.edges, trace.tag, false⟩, ?_⟩
-    rw [trace.objectRead, layout, hEdges, hTag]
-    cases trace.tag <;> rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedGraph ⟨trace.edges, trace.tag, false⟩ := by
+        rw [layout, hEdges, hTag]
+        cases trace.tag <;> rfl
   · refine ⟨⟨trace.edges, trace.tag, true⟩, ?_⟩
-    rw [trace.objectRead, layout, hEdges, hTag]
-    cases trace.tag <;> rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedGraph ⟨trace.edges, trace.tag, true⟩ := by
+        rw [layout, hEdges, hTag]
+        cases trace.tag <;> rfl
 
 theorem fraction_trace_selected_raw
     {raw : RawJson} (trace : FractionAdmissionStatementTrace raw) :
@@ -485,12 +491,20 @@ theorem fraction_trace_selected_raw
   rcases layout with layout | layout
   · refine ⟨⟨trace.numerator, trace.denominator,
         trace.positiveDenominator, false⟩, ?_⟩
-    rw [trace.objectRead, layout, hNumerator, hDenominator]
-    rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedFraction ⟨trace.numerator, trace.denominator,
+          trace.positiveDenominator, false⟩ := by
+        rw [layout, hNumerator, hDenominator]
+        rfl
   · refine ⟨⟨trace.numerator, trace.denominator,
         trace.positiveDenominator, true⟩, ?_⟩
-    rw [trace.objectRead, layout, hNumerator, hDenominator]
-    rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedFraction ⟨trace.numerator, trace.denominator,
+          trace.positiveDenominator, true⟩ := by
+        rw [layout, hNumerator, hDenominator]
+        rfl
 
 theorem row_trace_selected_raw
     {raw : RawJson} (trace : JointRowAdmissionStatementTrace raw) :
@@ -502,13 +516,19 @@ theorem row_trace_selected_raw
     trace.atomsFieldRead trace.coefficientFieldRead
   rcases layout with layout | layout
   · refine ⟨⟨left, right, fraction, false⟩, ?_⟩
-    rw [trace.objectRead, layout, trace.twoCoordinateArrayRead,
-      hleft, hright, hfraction]
-    rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedRow ⟨left, right, fraction, false⟩ := by
+        rw [layout, trace.twoCoordinateArrayRead,
+          hleft, hright, hfraction]
+        rfl
   · refine ⟨⟨left, right, fraction, true⟩, ?_⟩
-    rw [trace.objectRead, layout, trace.twoCoordinateArrayRead,
-      hleft, hright, hfraction]
-    rfl
+    calc
+      raw = .object trace.fields := trace.objectRead
+      _ = rawSelectedRow ⟨left, right, fraction, true⟩ := by
+        rw [layout, trace.twoCoordinateArrayRead,
+          hleft, hright, hfraction]
+        rfl
 
 theorem raw_rows_visits_selected_raw
     {rawRows : List RawJson} {rows : List WireRow}
@@ -527,7 +547,10 @@ theorem rows_statement_trace_selected_raw
     ∃ selected : List SelectedRawRow,
       raw = rawSelectedRows selected := by
   rcases raw_rows_visits_selected_raw trace.visits with ⟨selected, hselected⟩
-  exact ⟨selected, by rw [trace.arrayRead, hselected]; rfl⟩
+  refine ⟨selected, ?_⟩
+  calc
+    raw = .array trace.rawRows := trace.arrayRead
+    _ = rawSelectedRows selected := by rw [hselected]; rfl
 
 theorem rows_decoder_follows_statement_trace
     {raw : RawJson} (trace : RawRowsAdmissionStatementTrace raw) :
