@@ -1573,7 +1573,13 @@ theorem rawObjectKeyExtEq_reordered_example :
         cases hleft
         cases hright
         exact rawJsonObjectKeyExtEq.integer 11
-      · simp [lookupField, rawObjectForward, hAtoms, hCoefficient] at hleft
+      · have hnAtoms : "atoms" ≠ key := by
+          intro h
+          exact hAtoms (by simpa [h])
+        have hnCoefficient : "coefficient" ≠ key := by
+          intro h
+          exact hCoefficient (by simpa [h])
+        simp [lookupField, rawObjectForward, hnAtoms, hnCoefficient] at hleft
 
 theorem raw_object_key_order_is_extensional :
     rawJsonEquivalent rawObjectForward rawObjectReordered  := by
