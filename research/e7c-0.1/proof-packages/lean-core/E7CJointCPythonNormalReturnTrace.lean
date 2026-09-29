@@ -153,7 +153,7 @@ def selectedGraphFromWire (graph : WireGraph) : SelectedRawGraph :=
 
 def selectedFractionFromRat (coefficient : Rat) : SelectedRawFraction :=
   ⟨coefficient.num, Int.ofNat coefficient.den,
-    by have h := coefficient.den_pos; omega, false⟩
+    by simpa using (Int.ofNat_lt.mpr coefficient.den_pos), false⟩
 
 def selectedRowFromWire (row : WireRow) : SelectedRawRow :=
   ⟨selectedGraphFromWire row.left, selectedGraphFromWire row.right,
