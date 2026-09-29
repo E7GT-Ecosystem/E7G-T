@@ -153,7 +153,7 @@ def selectedGraphFromWire (graph : WireGraph) : SelectedRawGraph :=
 
 def selectedFractionFromRat (coefficient : Rat) : SelectedRawFraction :=
   ⟨coefficient.num, Int.ofNat coefficient.den,
-    by exact_mod_cast coefficient.den_pos, false⟩
+    by have h := coefficient.den_pos; omega, false⟩
 
 def selectedRowFromWire (row : WireRow) : SelectedRawRow :=
   ⟨selectedGraphFromWire row.left, selectedGraphFromWire row.right,
@@ -185,7 +185,6 @@ theorem encoded_rows_selected_raw (rows : List WireRow) :
       have htail : rest.map encodeRawRow =
           (rest.map selectedRowFromWire).map rawSelectedRow := by
         injection ih with htail
-        exact htail
       simp only [encodeRawRows, rawSelectedRows, List.map_cons]
       rw [encoded_row_selected_raw row, htail]
 
