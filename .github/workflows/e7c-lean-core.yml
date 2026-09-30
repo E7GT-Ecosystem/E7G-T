@@ -15,6 +15,8 @@ on:
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - "research/e7c-0.1/e7c_joint_serializer_source.py"
       - "research/e7c-0.1/test_e7c_joint_serializer_source.py"
+      - "research/e7c-0.1/test_e7c_joint_serializer_operations.py"
+      - "research/e7c-0.1/E7C_0.1_SERIALIZER_OPERATION_RELATION.md"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_SOURCE_SEMANTICS.md"
       - ".github/workflows/e7c-lean-core.yml"
   push:
@@ -31,6 +33,8 @@ on:
       - "research/e7c-0.1/test_wp4_metatheory.py"
       - "research/e7c-0.1/e7c_joint_serializer_source.py"
       - "research/e7c-0.1/test_e7c_joint_serializer_source.py"
+      - "research/e7c-0.1/test_e7c_joint_serializer_operations.py"
+      - "research/e7c-0.1/E7C_0.1_SERIALIZER_OPERATION_RELATION.md"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_SOURCE_SEMANTICS.md"
       - ".github/workflows/e7c-lean-core.yml"
 
@@ -51,6 +55,7 @@ jobs:
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_edition_source_audit.py'
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 research/e7c-0.1/e7c_joint_serializer_source.py
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_serializer_source.py'
+          PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_serializer_operations.py'
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
           lake-package-directory: research/e7c-0.1/proof-packages/lean-core
@@ -356,4 +361,22 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Classical.choice,Quot.sound"
           axiom-audit-root: E7CJointSerializerSourceGuardBridge
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Quot.sound"
+          axiom-audit-root: E7CJointSerializerOperationRelation
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: E7CJointSerializerOperationGuardBridge
           use-mathlib-cache: false

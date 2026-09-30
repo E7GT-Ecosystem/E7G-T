@@ -44,3 +44,6 @@ lean_lib E7CJointSerializerSourceSyntax
 lean_lib E7CJointSerializerSourceGenerated
 lean_lib E7CJointSerializerSourceSemantics
 lean_lib E7CJointSerializerSourceGuardBridge
+
+lean_lib E7CJointSerializerOperationRelation
+lean_lib E7CJointSerializerOperationGuardBridge
