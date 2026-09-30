@@ -32,6 +32,7 @@ import E7CJointSerializerSourceGuardBridge
 import E7CJointSerializerOperationGuardBridge
 import E7CJointSerializerObservedFixtures
 import E7CJointGraphBytecodeSemantics
+import E7CJointTupleCellCopy
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
