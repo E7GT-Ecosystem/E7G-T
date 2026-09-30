@@ -338,9 +338,13 @@ def certificate_text(packets):
         for row in packet["input"]:
             left, right = row["atoms"]
             coefficient = row["coefficient"]
-            rows.append("⟨" + graph_term(left) + ", " + graph_term(right) + ", (" +
-                        "(" + str(coefficient["numerator"]) + " : Rat) / (" +
-                        str(coefficient["denominator"]) + " : Rat))⟩")
+            # Preserve reported canonical components directly. Rat division
+            # contains opaque arithmetic helpers, so it is not suitable for
+            # definitional equality certificates. Lean checks both invariants.
+            rows.append("⟨" + graph_term(left) + ", " + graph_term(right) + ", " +
+                        "({ num := (" + str(coefficient["numerator"]) + "), den := " +
+                        str(coefficient["denominator"]) +
+                        ", den_nz := by decide, reduced := by decide } : Rat)⟩")
         lines.extend([f"def rows{index} : List WireRow := [" + ", ".join(rows) + "]",
                       f"def output{index} : RawJson := " + raw_term(packet["output"]),
                       f"def ledger{index} : FrameLedger := [" + ", ".join(
