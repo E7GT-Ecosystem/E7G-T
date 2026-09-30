@@ -23,12 +23,12 @@ theorem graph_bytecode_exact {read : Value → String → Option Value}
     (attributes : GraphReads read) (graph : WireGraph) :
     execute read [.graph graph] graphProgram [] =
       some (.data (encodeRawGraph graph)) := by
-  have edgesRaw : toRaw (graphItems graph) =
-      some (.array (graph.edges.map RawJson.string)) := by
-    simpa [graphItems, List.map_map, Function.comp_def] using
-      toRaw_data_sequence (graph.edges.map RawJson.string)
+  have edgesMap : graph.edges.mapM (fun edge => some (RawJson.string edge)) =
+      some (graph.edges.map RawJson.string) :=
+    mapM_of_some _ _ (by intro; rfl) graph.edges
   simp [graphProgram, execute, step, attributes.edges, attributes.tag,
-    graphItems, copy_tuple_exact, edgesRaw, encodeRawGraph, toRaw]
+    graphItems, copy_tuple_exact, encodeRawGraph, toRaw,
+    List.mapM_map, Function.comp_def, edgesMap]
 
 /-- The ordered-append construction replaces the modeled list-copy result
 premise. It still needs a separate native tuple/list adequacy theorem. -/
