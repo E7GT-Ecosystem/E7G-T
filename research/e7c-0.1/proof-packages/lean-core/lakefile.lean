@@ -47,3 +47,6 @@ lean_lib E7CJointSerializerSourceGuardBridge
 
 lean_lib E7CJointSerializerOperationRelation
 lean_lib E7CJointSerializerOperationGuardBridge
+
+lean_lib E7CJointSerializerObservedCertificate
+lean_lib E7CJointSerializerObservedFixtures

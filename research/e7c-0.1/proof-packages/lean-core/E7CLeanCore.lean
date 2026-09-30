@@ -30,6 +30,7 @@ import E7CJointFirstStageNormalReturnComposition
 import E7CJointSerializerSourceSemantics
 import E7CJointSerializerSourceGuardBridge
 import E7CJointSerializerOperationGuardBridge
+import E7CJointSerializerObservedFixtures
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
