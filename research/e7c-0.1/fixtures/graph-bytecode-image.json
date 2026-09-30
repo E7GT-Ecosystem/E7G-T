@@ -1,0 +1,300 @@
+{
+  "edition": "E7C-graph-bytecode/0.1-provisional",
+  "runtime": {
+    "edition": "E7C-serializer-observation/0.1-provisional",
+    "implementation": "cpython",
+    "version": [
+      3,
+      12,
+      14,
+      "final",
+      0
+    ],
+    "version_string": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "cache_tag": "cpython-312",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "optimize": 0,
+    "source_operation_pins": {
+      "EDITION": "E7C-EECQ-JOINT-RESTRICT/0.1-provisional",
+      "SOURCE_BLOB": "a84da2c4de2ada23577cde4512a10c3369aba2b5",
+      "MODEL_BLOB": "6c624fcd49b95e473a3e80160979183e8d3b58aa"
+    },
+    "executable_sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7",
+    "fraction_module_sha256": "d52d1ab9d5be26924e4914a5e40069c992bbfa68f773694c2e5ee8452d0766a0",
+    "files": {
+      "e7c_eecq_joint_restrict_b1.py": "c24a8e2e4cb5c4cfddb2638725825e51cd9256c30ae9b0d621d8ca37f6e27ada",
+      "adapters/eec_q_fg3_b1.py": "ea321cd61fe0d1e3a55b49bb4f853addbec637533004df273f63d6cb597b80c9",
+      "adapters/eec_q_fg3_joint_b1.py": "cc0e9b9c0f56d733a9aed6671229f73968de3f189e71a90bdb4b1ba319398a85"
+    },
+    "helpers": {
+      "_graph": "03fcea64edff4238c1c143f1cf3dfa281447d8f64d126dbadfa9a6781ec59a6b",
+      "_row": "8b97daefd7b05e4b6793ddb19153b2c0c906cf32bd67e594ff27cafbe6ed0740",
+      "rows": "3c7a1ea5ab30c2bd76aa4e15827ed802a8c679d45c47629fbee150eb24ac33d2"
+    }
+  },
+  "co_code_sha256": "2c0bf971eaf5def661a6fa7ab9dd89775d671e8c4be9ce7c985c5855c32cac4e",
+  "stacksize": 3,
+  "flags": 16777219,
+  "exception_table_hex": "",
+  "instructions_with_caches": [
+    {
+      "offset": 0,
+      "opname": "RESUME",
+      "arg": 0,
+      "argval": 0
+    },
+    {
+      "offset": 2,
+      "opname": "LOAD_GLOBAL",
+      "arg": 1,
+      "argval": "list"
+    },
+    {
+      "offset": 4,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 6,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 8,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 10,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 12,
+      "opname": "LOAD_FAST",
+      "arg": 0,
+      "argval": "g"
+    },
+    {
+      "offset": 14,
+      "opname": "LOAD_ATTR",
+      "arg": 2,
+      "argval": "edges"
+    },
+    {
+      "offset": 16,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 18,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 20,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 22,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 24,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 26,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 28,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 30,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 32,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 34,
+      "opname": "CALL",
+      "arg": 1,
+      "argval": 1
+    },
+    {
+      "offset": 36,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 38,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 40,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 42,
+      "opname": "LOAD_FAST",
+      "arg": 0,
+      "argval": "g"
+    },
+    {
+      "offset": 44,
+      "opname": "LOAD_ATTR",
+      "arg": 4,
+      "argval": "tag"
+    },
+    {
+      "offset": 46,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 48,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 50,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 52,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 54,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 56,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 58,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 60,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 62,
+      "opname": "CACHE",
+      "arg": 0,
+      "argval": null
+    },
+    {
+      "offset": 64,
+      "opname": "LOAD_CONST",
+      "arg": 1,
+      "argval": [
+        "edges",
+        "tag"
+      ]
+    },
+    {
+      "offset": 66,
+      "opname": "BUILD_CONST_KEY_MAP",
+      "arg": 2,
+      "argval": 2
+    },
+    {
+      "offset": 68,
+      "opname": "RETURN_VALUE",
+      "arg": null,
+      "argval": null
+    }
+  ],
+  "program": [
+    [
+      "resume",
+      0
+    ],
+    [
+      "loadGlobal",
+      "list",
+      true
+    ],
+    [
+      "loadFast",
+      0
+    ],
+    [
+      "loadAttr",
+      "edges"
+    ],
+    [
+      "call",
+      1
+    ],
+    [
+      "loadFast",
+      0
+    ],
+    [
+      "loadAttr",
+      "tag"
+    ],
+    [
+      "loadKeys",
+      [
+        "edges",
+        "tag"
+      ]
+    ],
+    [
+      "buildConstKeyMap",
+      2
+    ],
+    [
+      "returnValue"
+    ]
+  ],
+  "execution_adequacy": "unproved; unspecialized instruction model only"
+}
