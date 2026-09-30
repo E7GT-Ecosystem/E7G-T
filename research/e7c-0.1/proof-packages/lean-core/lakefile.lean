@@ -54,3 +54,5 @@ lean_lib E7CJointSerializerObservedFixtures
 lean_lib E7CJointGraphBytecodeSyntax
 lean_lib E7CJointGraphBytecodeGenerated
 lean_lib E7CJointGraphBytecodeSemantics
+
+lean_lib E7CJointTupleCellCopy

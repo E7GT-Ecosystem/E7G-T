@@ -25,6 +25,10 @@ on:
       - "research/e7c-0.1/test_e7c_joint_graph_bytecode.py"
       - "research/e7c-0.1/fixtures/graph-bytecode-image.json"
       - "research/e7c-0.1/E7C_0.1_GRAPH_BYTECODE_SEMANTICS.md"
+      - "research/e7c-0.1/E7C_0.1_TUPLE_CELL_COPY.md"
+      - "research/e7c-0.1/e7c_joint_tuple_cell_copy.py"
+      - "research/e7c-0.1/test_e7c_joint_tuple_cell_copy.py"
+      - "research/e7c-0.1/fixtures/tuple-cell-copy-source.json"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_OPERATION_RELATION.md"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_SOURCE_SEMANTICS.md"
       - ".github/workflows/e7c-lean-core.yml"
@@ -52,6 +56,10 @@ on:
       - "research/e7c-0.1/test_e7c_joint_graph_bytecode.py"
       - "research/e7c-0.1/fixtures/graph-bytecode-image.json"
       - "research/e7c-0.1/E7C_0.1_GRAPH_BYTECODE_SEMANTICS.md"
+      - "research/e7c-0.1/E7C_0.1_TUPLE_CELL_COPY.md"
+      - "research/e7c-0.1/e7c_joint_tuple_cell_copy.py"
+      - "research/e7c-0.1/test_e7c_joint_tuple_cell_copy.py"
+      - "research/e7c-0.1/fixtures/tuple-cell-copy-source.json"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_OPERATION_RELATION.md"
       - "research/e7c-0.1/E7C_0.1_SERIALIZER_SOURCE_SEMANTICS.md"
       - ".github/workflows/e7c-lean-core.yml"
@@ -77,6 +85,8 @@ jobs:
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_serializer_observer.py'
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_graph_bytecode.py'
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 research/e7c-0.1/e7c_joint_graph_bytecode.py
+          PYTHONPATH=research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_tuple_cell_copy.py'
+          python3 research/e7c-0.1/e7c_joint_tuple_cell_copy.py
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
           lake-package-directory: research/e7c-0.1/proof-packages/lean-core
@@ -85,6 +95,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CLeanCore
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Quot.sound"
+          axiom-audit-root: E7CJointTupleCellCopy
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
