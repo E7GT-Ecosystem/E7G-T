@@ -29,9 +29,9 @@ theorem graph_bytecode_exact {read : Value → String → Option Value}
   have distinctKeys : ("edges" : String) ≠ "tag" := by decide
   simp only [graphProgram, execute, step, attributes.edges, attributes.tag,
     graphItems, copy_tuple_exact, encodeRawGraph, toRaw,
-    List.mapM_map, Function.comp_def, edgesMap, Option.bind_some,
-    Option.map_some, Option.pure_def, List.getElem?_cons_zero,
-    List.isEmpty_nil, if_neg distinctKeys]
+    List.mapM_map, Function.comp_def, edgesMap, Option.bind_eq_bind, Option.bind_some,
+    Option.map_eq_map, Option.map_some, Option.pure_def, List.getElem?_cons_zero,
+    List.isEmpty_nil, Bool.true_eq_true, ite_true, if_neg distinctKeys]
 
 /-- The ordered-append construction replaces the modeled list-copy result
 premise. It still needs a separate native tuple/list adequacy theorem. -/
