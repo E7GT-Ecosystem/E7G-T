@@ -67,8 +67,7 @@ theorem plan_length (cells : List Pointer) (index : Nat) :
   induction cells generalizing index with
   | nil => rfl
   | cons pointer rest ih =>
-      simp only [cellPlan, List.length_cons, ih, Nat.mul_add, Nat.mul_one]
-      omega
+      simp only [cellPlan, List.length_cons, ih, Nat.mul_add, Nat.mul_one] <;> omega
 
 /-- Denotation uses one stable pointer interpretation for both containers.
 Duplicate pointers, order and every cell's complete value are retained. -/
