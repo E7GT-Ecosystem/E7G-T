@@ -50,3 +50,7 @@ lean_lib E7CJointSerializerOperationGuardBridge
 
 lean_lib E7CJointSerializerObservedCertificate
 lean_lib E7CJointSerializerObservedFixtures
+
+lean_lib E7CJointGraphBytecodeSyntax
+lean_lib E7CJointGraphBytecodeGenerated
+lean_lib E7CJointGraphBytecodeSemantics
