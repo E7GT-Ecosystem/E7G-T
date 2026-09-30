@@ -6,6 +6,7 @@ establish that native C memory or the installed runtime supplies those steps. -/
 namespace E7CJointTupleCellCopy
 open E7CJointSerializerSourceSyntax E7CJointGraphBytecodeSyntax
 
+/-- Logical non-null object identifiers, not machine addresses or C NULL. -/
 abbrev Pointer := Nat
 
 inductive Event where
@@ -65,7 +66,9 @@ theorem plan_length (cells : List Pointer) (index : Nat) :
     (cellPlan index cells).length = 3 * cells.length := by
   induction cells generalizing index with
   | nil => rfl
-  | cons pointer rest ih => simp [cellPlan, ih, Nat.mul_add, Nat.add_comm]
+  | cons pointer rest ih =>
+      simp only [cellPlan, List.length_cons, ih, Nat.mul_add, Nat.mul_one]
+      omega
 
 /-- Denotation uses one stable pointer interpretation for both containers.
 Duplicate pointers, order and every cell's complete value are retained. -/
