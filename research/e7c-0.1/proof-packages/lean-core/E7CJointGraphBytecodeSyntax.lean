@@ -32,9 +32,9 @@ tuple iteration/list allocation following this loop remains an open link. -/
 def copyTuple (cells : List Value) : List Value :=
   cells.foldl (fun allocated cell => allocated ++ [cell]) []
 
-theorem copy_tuple_with_prefix (cells prefix : List Value) :
-    cells.foldl (fun allocated cell => allocated ++ [cell]) prefix = prefix ++ cells := by
-  induction cells generalizing prefix with
+theorem copy_tuple_with_prefix (cells allocated : List Value) :
+    cells.foldl (fun buffer cell => buffer ++ [cell]) allocated = allocated ++ cells := by
+  induction cells generalizing allocated with
   | nil => simp
   | cons cell rest ih => simp [List.foldl_cons, ih, List.append_assoc]
 
