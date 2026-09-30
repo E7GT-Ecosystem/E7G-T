@@ -26,9 +26,12 @@ theorem graph_bytecode_exact {read : Value → String → Option Value}
   have edgesMap : graph.edges.mapM (fun edge => some (RawJson.string edge)) =
       some (graph.edges.map RawJson.string) :=
     mapM_of_some _ _ (by intro; rfl) graph.edges
-  simp [graphProgram, execute, step, attributes.edges, attributes.tag,
+  have distinctKeys : ("edges" : String) ≠ "tag" := by decide
+  simp only [graphProgram, execute, step, attributes.edges, attributes.tag,
     graphItems, copy_tuple_exact, encodeRawGraph, toRaw,
-    List.mapM_map, Function.comp_def, edgesMap]
+    List.mapM_map, Function.comp_def, edgesMap, Option.bind_some,
+    Option.map_some, Option.pure_def, List.getElem?_cons_zero,
+    List.isEmpty_nil, if_neg distinctKeys]
 
 /-- The ordered-append construction replaces the modeled list-copy result
 premise. It still needs a separate native tuple/list adequacy theorem. -/
