@@ -272,7 +272,7 @@ theorem progress_transport_roundtrip (p : Progress) :
   | mk steps ledger first second =>
       cases first <;>
         simp [decodeProgress, encodeProgress, rows_transport_roundtrip,
-          events_transport_roundtrip]
+          events_transport_roundtrip, Function.comp_def, row_roundtrip, event_roundtrip]
 
 inductive WireTerminal where
   | success (retained firstExcluded secondExcluded : List WireRow)
@@ -298,7 +298,8 @@ def encodeTerminal : Terminal → WireTerminal
 theorem terminal_transport_roundtrip (t : Terminal) :
     decodeTerminal (encodeTerminal t) = t := by
   cases t with
-  | success p => cases p; simp [decodeTerminal, encodeTerminal, rows_transport_roundtrip]
+  | success p => cases p; simp [decodeTerminal, encodeTerminal, rows_transport_roundtrip,
+      Function.comp_def, row_roundtrip]
   | resourceLimit p => simp [decodeTerminal, encodeTerminal, progress_transport_roundtrip]
   | unsupported stage => rfl
   | undetermined stage => rfl
@@ -322,7 +323,7 @@ theorem observation_transport_roundtrip (o : Observation) :
     decodeObservation (encodeObservation o) = o := by
   cases o
   simp [decodeObservation, encodeObservation, terminal_transport_roundtrip,
-    events_transport_roundtrip, progress_transport_roundtrip]
+    events_transport_roundtrip, progress_transport_roundtrip, Function.comp_def, event_roundtrip]
 
 inductive TerminalPacket where
   | charge (steps : Nat) (secondStarted : Bool)
