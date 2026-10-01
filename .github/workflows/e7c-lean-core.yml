@@ -13,6 +13,9 @@ on:
       - "research/e7c-0.1/E7C_0.1_ADMISSION_STATEMENT_TRACE.md"
       - "research/e7c-0.1/E7C_0.1_FIRST_STAGE_NORMAL_RETURN_COMPOSITION.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
+      - "research/e7c-0.1/check_e7c_ir_observations.py"
+      - "research/e7c-0.1/test_e7c_ir_observations.py"
+      - "research/e7c-0.1/E7C_0.1_IR_OBSERVATION_CHECKER.md"
       - ".github/workflows/e7c-lean-core.yml"
   push:
     branches:
@@ -26,6 +29,9 @@ on:
       - "research/e7c-0.1/E7C_0.1_CURRENT_STATE.md"
       - "research/e7c-0.1/E7C_0.1_RAW_JSON_EXTENSIONAL_EQUALITY.md"
       - "research/e7c-0.1/test_wp4_metatheory.py"
+      - "research/e7c-0.1/check_e7c_ir_observations.py"
+      - "research/e7c-0.1/test_e7c_ir_observations.py"
+      - "research/e7c-0.1/E7C_0.1_IR_OBSERVATION_CHECKER.md"
       - ".github/workflows/e7c-lean-core.yml"
 
 permissions:
@@ -43,6 +49,7 @@ jobs:
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_first_helper_sites.py'
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_joint_admission_translation.py'
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest discover -s research/e7c-0.1 -p 'test_e7c_edition_source_audit.py'
+          PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest test_e7c_ir_observations test_e7c_joint_second_control_translation
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
           lake-package-directory: research/e7c-0.1/proof-packages/lean-core
@@ -51,6 +58,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CLeanCore
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Quot.sound"
+          axiom-audit-root: E7CEECQIRObservationChecker
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
@@ -313,3 +329,6 @@ jobs:
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CEECQTwoStageImplementationPath
           use-mathlib-cache: false
+
+      - name: Check fresh source and independent IR observation literals
+        run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python3 research/e7c-0.1/check_e7c_ir_observations.py
