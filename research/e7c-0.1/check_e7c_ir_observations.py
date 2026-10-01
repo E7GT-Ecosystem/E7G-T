@@ -13,7 +13,7 @@ from eec_q_fg3_joint_b1 import joint
 from e7c_eecq_two_stage_b1 import document, evaluate
 from e7_ir_eecq_two_stage_b1 import lower, execute, serialize
 from e7_ir_eecq_joint_restrict_b1 import serialize as serialize_first
-from e7c_eecq_two_stage_exact_codec import rows, policy, row as decode_row, observation as project_observation
+from e7c_eecq_two_stage_exact_codec import rows, policy, row as decode_row, LeanEvent
 
 
 def package_gate(nested_bytes, outer_bytes):
@@ -51,27 +51,28 @@ def row(value, wire=False):
     return "⟨" + selected_graph(value.left) + ", " + selected_graph(value.right) + ", " + rat + "⟩"
 
 
-def event(value):
+def event(value, wire=False):
     if value.index is None:
         return "(.attempt ." + value.stage + ")"
-    return "(.row ." + value.stage + " " + str(value.index) + " (" + row(value.row) + ") " + boolean(value.excluded) + ")"
+    return "(.row ." + value.stage + " " + str(value.index) + " (" + row(value.row, wire=wire) + ") " + boolean(value.excluded) + ")"
 
 
-def progress(value):
-    first = "none" if value["firstExcluded"] is None else "some " + seq(row(r) for r in value["firstExcluded"])
-    return "{ completedSteps := " + str(value["completedSteps"]) + ", ledgerPrefix := " + seq(event(e) for e in value["orderedLedger"]) + ", firstExcluded := " + first + ", secondExcludedPrefix := " + seq(row(r) for r in value["secondExcludedPrefix"]) + " }"
+def progress(value, wire=False):
+    first = "none" if value["firstExcluded"] is None else "some " + seq(row(r, wire=wire) for r in value["firstExcluded"])
+    return "{ completedSteps := " + natural(value["completedSteps"]) + ", ledgerPrefix := " + seq(event(e, wire=wire) for e in value["progressLedger"]) + ", firstExcluded := " + first + ", secondExcludedPrefix := " + seq(row(r, wire=wire) for r in value["secondExcludedPrefix"]) + " }"
 
 
-def observation(value):
-    p = progress(value)
+def observation(value, wire=False):
+    p = progress(value, wire=wire)
     if value["terminal"] == "success":
-        terminal = "(.success ⟨" + ", ".join(seq(row(r) for r in part)
-                                             for part in value["partition"]) + "⟩)"
+        parts = [seq(row(r, wire=wire) for r in part) for part in value["partition"]]
+        terminal = ("(.success " + " ".join(parts) + ")" if wire else
+                    "(.success ⟨" + ", ".join(parts) + "⟩)")
     elif value["terminal"] == "resource_limit":
-        terminal = "(.resourceLimit (" + p + "))"
+        terminal = "(.resourceLimit (" + progress(value["resourceTerminalProgress"], wire=wire) + "))"
     else:
         terminal = "(." + value["terminal"] + " ." + value["terminalStage"] + ")"
-    return "{ terminal := " + terminal + ", orderedLedger := " + seq(event(e) for e in value["orderedLedger"]) + ", progress := " + p + ", secondStarted := " + boolean(value["secondStarted"]) + " }"
+    return "{ terminal := " + terminal + ", orderedLedger := " + seq(event(e, wire=wire) for e in value["orderedLedger"]) + ", progress := " + p + ", secondStarted := " + boolean(value["secondStarted"]) + " }"
 
 
 def natural(value):
@@ -80,15 +81,15 @@ def natural(value):
     return str(value)
 
 
-def transport_event(entry):
+def project_event(entry):
     """Read the emitted payload itself; never substitute an expected row.
 
-    Static effect/edition validation remains in observation projection. This
-    transport preserves the dynamic stage, index, decision and full row.
+    Static effect/edition and ordinal metadata are outside this selected
+    carrier. It preserves dynamic stage, index, decision and the full row.
     """
     kind = entry["event"]
     if kind in ("restriction_attempt", "second_restriction_attempt"):
-        return "(.attempt ." + ("first" if kind == "restriction_attempt" else "second") + ")"
+        return LeanEvent("first" if kind == "restriction_attempt" else "second")
     if kind not in ("joint_row_checked", "second_joint_row_checked"):
         raise ValueError("unknown emitted event")
     stage = "first" if kind == "joint_row_checked" else "second"
@@ -98,12 +99,60 @@ def transport_event(entry):
         raise ValueError("unknown row decision")
     raw = json.loads(entry["row_key"])
     value = decode_row(raw)
-    return ("(.row ." + stage + " " + natural(entry["row_index"]) + " (" +
-            row(value, wire=True) + ") " + boolean(decision != "retained") + ")")
+    natural(entry["row_index"])
+    return LeanEvent(stage, entry["row_index"], value, decision != "retained")
+
+
+def transport_event(entry):
+    return event(project_event(entry), wire=True)
+
+
+def project_progress(raw):
+    natural(raw["completed_steps"])
+    natural(raw["completed_ledger_entries"])
+    if raw["completed_ledger_entries"] != len(raw["ledger_prefix"]):
+        raise ValueError("progress entry count differs from its own ledger")
+    return {"completedSteps": raw["completed_steps"],
+            "progressLedger": tuple(project_event(e) for e in raw["ledger_prefix"]),
+            "firstExcluded": None if raw["first_excluded"] is None else
+                tuple(decode_row(r) for r in raw["first_excluded"]),
+            "secondExcludedPrefix": tuple(decode_row(r) for r in raw["second_excluded_prefix"])}
+
+
+def project_result(result, terminal_record):
+    """Structural projection only: no expected partition, policy or plan."""
+    value = project_progress(result["resource_progress"])
+    terminal = result["terminal_outcome"]
+    kind = terminal["tag"]
+    value.update(terminal=kind, partition=None, terminalStage=None,
+                 orderedLedger=tuple(project_event(e) for e in result["ordered_ledger"]))
+    if kind == "success":
+        value["partition"] = tuple(tuple(decode_row(r) for r in terminal["value"][key])
+                                   for key in ("retained", "first_excluded", "second_excluded"))
+    elif kind == "resource_limit":
+        value["resourceTerminalProgress"] = project_progress(terminal["progress"])
+    elif kind in ("unsupported", "undetermined"):
+        diagnostics = {"joint_restriction_unavailable": ("unsupported", "first"),
+                       "joint_predicate_unresolved": ("undetermined", "first"),
+                       "second_joint_restriction_unavailable": ("unsupported", "second"),
+                       "second_joint_predicate_unresolved": ("undetermined", "second")}
+        if diagnostics.get(terminal["diagnostic"], (None, None))[0] != kind:
+            raise ValueError("unknown terminal diagnostic")
+        value["terminalStage"] = diagnostics[terminal["diagnostic"]][1]
+    else:
+        raise ValueError("unknown terminal outcome")
+    started = terminal_record["second_started"]
+    if type(started) is not bool:
+        raise ValueError("Boolean terminal second_started required")
+    value["secondStarted"] = started
+    return value
 
 
 def packets(source, result, transcript):
-    projected = project_observation(source, result)
+    terminals = [item for item in transcript if item["action"] == "terminal"]
+    if not terminals:
+        raise ValueError("terminal observation needed for projection")
+    projected = project_result(result, terminals[-1])
     output = []
     for item in transcript:
         if item["action"] == "charge":
@@ -119,7 +168,7 @@ def packets(source, result, transcript):
             if (item["terminal_outcome"] != result["terminal_outcome"] or
                     item["progress"] != result["resource_progress"]):
                 raise ValueError("terminal record differs from returned observation")
-            output.append("(.terminal (" + observation(projected) + "))")
+            output.append("(.terminal (" + observation(projected, wire=True) + "))")
         else:
             raise ValueError("unknown transition action")
     return output, projected
@@ -143,11 +192,11 @@ def capture_text(source):
                                ("ir", ir_result, ir_trace)):
         encoded, projected = packets(source, result, trace)
         args = "." + first + " ." + second + " " + str(step) + " " + str(ledger)
-        stream = "checkTransport ." + path + " " + args + " (initial (" + wire + ")) " + seq(encoded)
+        stream = "checkTerminalTransport ." + path + " " + args + " (initial (" + wire + ")) " + seq(encoded)
         lines.append("example : " + stream + " = some (" +
                      observation(projected) + ") := by decide")
         if path == "ir":
-            bounded = "checkTransportIR " + str(nested) + " " + str(outer) + " ." + first + " ." + second + " (" + wire_rows + ") ⟨" + str(step) + ", " + str(ledger) + "⟩ " + seq(encoded)
+            bounded = "checkTerminalTransportIR " + str(nested) + " " + str(outer) + " ." + first + " ." + second + " (" + wire_rows + ") ⟨" + str(step) + ", " + str(ledger) + "⟩ " + seq(encoded)
             lines.append("example : " + bounded + " = some (" +
                          observation(projected) + ") := by decide")
     return "\n".join(lines)
@@ -184,10 +233,37 @@ def rejection_text():
     forged[3]["event"]["row_key"] = json.dumps(raw)
     variants.append(forged)
     initial_rows = seq(row(r) for r in rows(source))
-    return "\n".join("example : checkTransport .source .ready .ready 4 2 " +
+    return "\n".join("example : checkTerminalTransport .source .ready .ready 4 2 " +
                      "(initial (" + initial_rows + ")) " +
                      seq(packets(source, result, variant)[0]) + " = none := by decide"
                      for variant in variants)
+
+
+def terminal_rejection_text():
+    lines = []
+    for variant in range(5):
+        source = examples()[0] if variant in (0, 1, 4) else examples()[-1]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        if variant == 0:
+            result["terminal_outcome"]["value"]["retained"][0]["coefficient"]["numerator"] = 2
+        elif variant == 1:
+            result["ordered_ledger"] = result["ordered_ledger"][:-1]
+        elif variant == 2:
+            result["terminal_outcome"]["progress"]["completed_steps"] += 1
+        elif variant == 3:
+            trace[-1]["second_started"] = False
+        else:
+            result["terminal_outcome"] = {"tag": "undetermined", "diagnostic": "joint_predicate_unresolved"}
+        trace[-1]["terminal_outcome"] = copy.deepcopy(result["terminal_outcome"])
+        trace[-1]["progress"] = copy.deepcopy(result["resource_progress"])
+        encoded, _ = packets(source, result, trace)
+        budget = source["first"]["resource_policy"]
+        lines.append("example : checkTerminalTransport .source .ready .ready " +
+                     str(budget["step_bound"]) + " " + str(budget["ledger_bound"]) +
+                     " (initial (" + seq(row(r) for r in rows(source)) + ")) " +
+                     seq(encoded) + " = none := by decide")
+    return "\n".join(lines)
 
 
 def main():
@@ -197,7 +273,8 @@ open E7CEECQTwoStageExactCodec E7CEECQTwoStageImplementationPath
 open E7CEECQIRObservationChecker
 """
     sources = examples()
-    text = header + "\n".join(capture_text(source) for source in sources) + "\n" + rejection_text() + "\n"
+    text = (header + "\n".join(capture_text(source) for source in sources) + "\n" +
+            rejection_text() + "\n" + terminal_rejection_text() + "\n")
     package = Path(__file__).parent / "proof-packages" / "lean-core"
     with tempfile.TemporaryDirectory(prefix="e7c-ir-observations-") as directory:
         target = Path(directory) / "ObservedIR.lean"
@@ -206,6 +283,7 @@ open E7CEECQIRObservationChecker
     print(json.dumps({"fresh_documents_checked": len(sources),
                       "source_ir_kernel_checks": 3 * len(sources),
                       "forged_transport_kernel_rejections": 5,
+                      "forged_terminal_kernel_rejections": 5,
                       "native_trace_and_decoder_adequacy": "trusted/open"}))
 
 

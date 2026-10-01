@@ -237,4 +237,126 @@ theorem accepted_ir_transport (nested outer : Nat) (first second : Policy)
     check_ir_refines_run nested outer first second rs budget
       (packets.map decodePacket) out accepted⟩
 
+/- Terminal observations now retain their own wire rows and event payloads.
+Resource progress is decoded independently of the top-level progress. -/
+structure WireProgress where
+  completedSteps : Nat
+  ledgerPrefix : List WireEvent
+  firstExcluded : Option (List WireRow)
+  secondExcludedPrefix : List WireRow
+  deriving DecidableEq, Repr
+
+def decodeProgress (p : WireProgress) : Progress :=
+  ⟨p.completedSteps, p.ledgerPrefix.map decodeEvent,
+    p.firstExcluded.map (List.map toRow), p.secondExcludedPrefix.map toRow⟩
+
+def encodeProgress (p : Progress) : WireProgress :=
+  ⟨p.completedSteps, p.ledgerPrefix.map encodeEvent,
+    p.firstExcluded.map (List.map fromRow), p.secondExcludedPrefix.map fromRow⟩
+
+theorem rows_transport_roundtrip (rs : List Row) :
+    (rs.map fromRow).map toRow = rs := by
+  induction rs with
+  | nil => rfl
+  | cons r rs ih => simp [row_roundtrip, ih]
+
+theorem events_transport_roundtrip (es : List Event) :
+    (es.map encodeEvent).map decodeEvent = es := by
+  induction es with
+  | nil => rfl
+  | cons e es ih => simp [event_roundtrip, ih]
+
+theorem progress_transport_roundtrip (p : Progress) :
+    decodeProgress (encodeProgress p) = p := by
+  cases p with
+  | mk steps ledger first second =>
+      cases first <;>
+        simp [decodeProgress, encodeProgress, rows_transport_roundtrip,
+          events_transport_roundtrip]
+
+inductive WireTerminal where
+  | success (retained firstExcluded secondExcluded : List WireRow)
+  | resourceLimit (progress : WireProgress)
+  | unsupported (stage : Stage)
+  | undetermined (stage : Stage)
+  deriving DecidableEq, Repr
+
+def decodeTerminal : WireTerminal → Terminal
+  | .success retained first second =>
+      .success ⟨retained.map toRow, first.map toRow, second.map toRow⟩
+  | .resourceLimit progress => .resourceLimit (decodeProgress progress)
+  | .unsupported stage => .unsupported stage
+  | .undetermined stage => .undetermined stage
+
+def encodeTerminal : Terminal → WireTerminal
+  | .success p => .success (p.retained.map fromRow) (p.firstExcluded.map fromRow)
+      (p.secondExcluded.map fromRow)
+  | .resourceLimit progress => .resourceLimit (encodeProgress progress)
+  | .unsupported stage => .unsupported stage
+  | .undetermined stage => .undetermined stage
+
+theorem terminal_transport_roundtrip (t : Terminal) :
+    decodeTerminal (encodeTerminal t) = t := by
+  cases t with
+  | success p => cases p; simp [decodeTerminal, encodeTerminal, rows_transport_roundtrip]
+  | resourceLimit p => simp [decodeTerminal, encodeTerminal, progress_transport_roundtrip]
+  | unsupported stage => rfl
+  | undetermined stage => rfl
+
+structure WireObservation where
+  terminal : WireTerminal
+  orderedLedger : List WireEvent
+  progress : WireProgress
+  secondStarted : Bool
+  deriving DecidableEq, Repr
+
+def decodeObservation (o : WireObservation) : Observation :=
+  ⟨decodeTerminal o.terminal, o.orderedLedger.map decodeEvent,
+    decodeProgress o.progress, o.secondStarted⟩
+
+def encodeObservation (o : Observation) : WireObservation :=
+  ⟨encodeTerminal o.terminal, o.orderedLedger.map encodeEvent,
+    encodeProgress o.progress, o.secondStarted⟩
+
+theorem observation_transport_roundtrip (o : Observation) :
+    decodeObservation (encodeObservation o) = o := by
+  cases o
+  simp [decodeObservation, encodeObservation, terminal_transport_roundtrip,
+    events_transport_roundtrip, progress_transport_roundtrip]
+
+inductive TerminalPacket where
+  | charge (steps : Nat) (secondStarted : Bool)
+  | append (event : WireEvent) (entries : Nat)
+  | terminal (result : WireObservation)
+  deriving DecidableEq, Repr
+
+def decodeTerminalPacket : TerminalPacket → Packet
+  | .charge steps started => .charge steps started
+  | .append event entries => .append (decodeEvent event) entries
+  | .terminal result => .terminal (decodeObservation result)
+
+def checkTerminalTransport (path : Path) (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine) (packets : List TerminalPacket) : Option Observation :=
+  checkStream path first second fuel capacity machine (packets.map decodeTerminalPacket)
+
+theorem accepted_terminal_transport_refines_drive
+    {path first second fuel capacity machine packets out}
+    (accepted : checkTerminalTransport path first second fuel capacity machine packets = some out) :
+    out = drive fuel capacity first second machine := checked_refines_drive accepted
+
+def checkTerminalTransportIR (nested outer : Nat) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List TerminalPacket) : Option Observation :=
+  checkIR nested outer first second rs budget (packets.map decodeTerminalPacket)
+
+theorem accepted_terminal_ir_transport (nested outer : Nat) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List TerminalPacket) (out : Observation)
+    (accepted : checkTerminalTransportIR nested outer first second rs budget packets = some out) :
+    nested ≤ 1000000 ∧ outer ≤ 1000000 ∧ out = run (rs.map toRow) first second budget :=
+  ⟨(check_ir_requires_both_bounds nested outer first second rs budget
+      (packets.map decodeTerminalPacket) out accepted).1,
+    (check_ir_requires_both_bounds nested outer first second rs budget
+      (packets.map decodeTerminalPacket) out accepted).2,
+    check_ir_refines_run nested outer first second rs budget
+      (packets.map decodeTerminalPacket) out accepted⟩
+
 end E7CEECQIRObservationChecker
