@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from check_e7c_ir_observations import package_gate, examples, capture_text, packets
+from check_e7c_ir_observations import package_gate, examples, capture_text, packets, project_result
 from e7c_eecq_two_stage_b1 import evaluate
 
 
@@ -21,9 +21,9 @@ class IRObservationTests(unittest.TestCase):
         for source in examples():
             text = capture_text(source)
             self.assertEqual(text.count("example :"), 3)
-            self.assertIn("checkTransport .source", text)
-            self.assertIn("checkTransport .ir", text)
-            self.assertIn("checkTransportIR", text)
+            self.assertIn("checkTerminalTransport .source", text)
+            self.assertIn("checkTerminalTransport .ir", text)
+            self.assertIn("checkTerminalTransportIR", text)
             self.assertNotIn("sorry", text)
 
     def test_forged_charge_reaches_kernel_unchanged(self):
@@ -75,6 +75,30 @@ class IRObservationTests(unittest.TestCase):
         encoded, projected = packets(source, result, trace)
         self.assertTrue(projected["secondStarted"])
         self.assertEqual(encoded[-2], "(.charge 3 true)")
+
+    def test_wrong_success_coefficient_survives_structural_projection(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        result["terminal_outcome"]["value"]["retained"][0]["coefficient"]["numerator"] = 2
+        projected = project_result(result, trace[-1])
+        self.assertEqual(projected["partition"][0][0].coefficient.numerator, 2)
+
+    def test_resource_terminal_progress_is_not_replaced(self):
+        source = examples()[-1]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        result["terminal_outcome"]["progress"]["completed_steps"] = 4
+        projected = project_result(result, trace[-1])
+        self.assertEqual(projected["completedSteps"], 3)
+        self.assertEqual(projected["resourceTerminalProgress"]["completedSteps"], 4)
+
+    def test_terminal_start_bit_is_observed_not_inferred(self):
+        source = examples()[-1]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        trace[-1]["second_started"] = False
+        self.assertFalse(project_result(result, trace[-1])["secondStarted"])
 
 
 if __name__ == "__main__":
