@@ -39,3 +39,5 @@ lean_lib E7CJointCPythonNormalReturnTrace
 lean_lib E7CJointAdmissionStatementTrace
 
 lean_lib E7CJointFirstStageNormalReturnComposition
+
+lean_lib E7CEECQIRObservationChecker
