@@ -106,7 +106,24 @@ def packageGate (nestedBytes outerBytes : Nat) : PackageGate :=
 
 theorem package_gate_admitted_iff (nested outer : Nat) :
     packageGate nested outer = .admitted ↔ nested ≤ 1000000 ∧ outer ≤ 1000000 := by
-  simp [packageGate]
+  unfold packageGate
+  split
+  · rename_i nestedWithin
+    split
+    · rename_i outerWithin
+      exact ⟨fun _ => ⟨nestedWithin, outerWithin⟩, fun _ => rfl⟩
+    · rename_i outerExceeded
+      constructor
+      · intro impossible
+        cases impossible
+      · intro bounds
+        exact False.elim (outerExceeded bounds.2)
+  · rename_i nestedExceeded
+    constructor
+    · intro impossible
+      cases impossible
+    · intro bounds
+      exact False.elim (nestedExceeded bounds.1)
 
 def checkIR (nestedBytes outerBytes : Nat) (first second : Policy)
     (rs : List WireRow) (budget : Budget) (packets : List Packet) : Option Observation :=
@@ -139,6 +156,11 @@ theorem check_ir_refines_run (nested outer : Nat) (first second : Policy)
 example : packageGate 1000001 1 = .nestedLimit := rfl
 example : packageGate 1 1000001 = .outerLimit := rfl
 example : packageGate 1000000 1000000 = .admitted := rfl
+
+example : checkStream .ir .ready .ready 1 0 (initial [])
+    [.charge 1 true] = none := by decide
+example : checkStream .ir .ready .ready 1 1 (initial [])
+    [.append (.attempt .first) 1] = none := rfl
 
 /-- Failed second append from any selected retained/excluded lists: a charged
 step is required, the ledger cannot grow, and secondStarted is true. -/
