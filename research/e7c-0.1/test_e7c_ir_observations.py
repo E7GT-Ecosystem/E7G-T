@@ -21,19 +21,49 @@ class IRObservationTests(unittest.TestCase):
         for source in examples():
             text = capture_text(source)
             self.assertEqual(text.count("example :"), 3)
-            self.assertIn("checkStream .source", text)
-            self.assertIn("checkStream .ir", text)
-            self.assertIn("checkIR", text)
+            self.assertIn("checkTransport .source", text)
+            self.assertIn("checkTransport .ir", text)
+            self.assertIn("checkTransportIR", text)
             self.assertNotIn("sorry", text)
 
-    def test_forged_charge_is_not_projected(self):
+    def test_forged_charge_reaches_kernel_unchanged(self):
         source = examples()[0]
         trace = []
         result = evaluate(source, _transition_sink=trace.append)
         forged = copy.deepcopy(trace)
         forged[0]["steps"] += 1
+        encoded, _ = packets(source, result, forged)
+        self.assertEqual(encoded[0], "(.charge 2 false)")
+
+    def test_forged_row_payload_is_not_replaced_by_input_row(self):
+        import json
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        forged = copy.deepcopy(trace)
+        item = next(i for i in forged if i["action"] == "append" and
+                    i["event"]["event"] == "joint_row_checked")
+        raw = json.loads(item["event"]["row_key"])
+        raw["coefficient"]["numerator"] *= 2
+        item["event"]["row_key"] = json.dumps(raw)
+        encoded, _ = packets(source, result, forged)
+        self.assertIn("num := -4", " ".join(encoded))
+
+    def test_unknown_action_is_not_a_terminal(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        trace[0]["action"] = "forged"
         with self.assertRaises(ValueError):
-            packets(source, result, forged)
+            packets(source, result, trace)
+
+    def test_boolean_charge_is_not_a_natural(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        trace[0]["steps"] = True
+        with self.assertRaises(ValueError):
+            packets(source, result, trace)
 
     def test_failed_second_append_exact_boundary(self):
         source = examples()[-1]

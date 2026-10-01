@@ -172,4 +172,69 @@ theorem failed_second_append_checked (kept excluded : List Row) (steps fuel : Na
       [.charge (steps + 1) true, .terminal out]).map Subtype.val = some out := by
   simp [certify, finished, charge, attemptingSecond, finishChecked, observe]
 
+/- Selected structural transport carrier. Native JSON parsing and terminal
+observation decoding are still outside Lean. Row payloads are carried from
+the emitted event, never recovered by indexing the expected input table. -/
+inductive WireEvent where
+  | attempt (stage : Stage)
+  | row (stage : Stage) (index : Nat) (value : WireRow) (excluded : Bool)
+  deriving DecidableEq, Repr
+
+def decodeEvent : WireEvent → Event
+  | .attempt stage => .attempt stage
+  | .row stage index value excluded => .row stage index (toRow value) excluded
+
+def encodeEvent : Event → WireEvent
+  | .attempt stage => .attempt stage
+  | .row stage index value excluded => .row stage index (fromRow value) excluded
+
+theorem event_roundtrip (event : Event) : decodeEvent (encodeEvent event) = event := by
+  cases event <;> simp [decodeEvent, encodeEvent, row_roundtrip]
+
+theorem row_event_transport (stage : Stage) (index : Nat) (value : WireRow)
+    (excluded : Bool) :
+    decodeEvent (.row stage index value excluded) =
+      .row stage index ⟨toGraph value.left, toGraph value.right, value.coefficient⟩ excluded := rfl
+
+theorem canonical_row_event_recovered (stage : Stage) (index : Nat) (value : WireRow)
+    (excluded : Bool) (hl : canonicalGraph value.left) (hr : canonicalGraph value.right) :
+    encodeEvent (decodeEvent (.row stage index value excluded)) =
+      .row stage index value excluded := by
+  simp [decodeEvent, encodeEvent, canonical_row_roundtrip value hl hr]
+
+inductive WirePacket where
+  | charge (steps : Nat) (secondStarted : Bool)
+  | append (event : WireEvent) (entries : Nat)
+  | terminal (result : Observation)
+  deriving DecidableEq, Repr
+
+def decodePacket : WirePacket → Packet
+  | .charge steps started => .charge steps started
+  | .append event entries => .append (decodeEvent event) entries
+  | .terminal result => .terminal result
+
+def checkTransport (path : Path) (first second : Policy) (fuel capacity : Nat)
+    (machine : Machine) (packets : List WirePacket) : Option Observation :=
+  checkStream path first second fuel capacity machine (packets.map decodePacket)
+
+theorem accepted_transport_refines_drive {path first second fuel capacity machine packets out}
+    (accepted : checkTransport path first second fuel capacity machine packets = some out) :
+    out = drive fuel capacity first second machine :=
+  checked_refines_drive accepted
+
+def checkTransportIR (nested outer : Nat) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List WirePacket) : Option Observation :=
+  checkIR nested outer first second rs budget (packets.map decodePacket)
+
+theorem accepted_ir_transport (nested outer : Nat) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List WirePacket) (out : Observation)
+    (accepted : checkTransportIR nested outer first second rs budget packets = some out) :
+    nested ≤ 1000000 ∧ outer ≤ 1000000 ∧ out = run (rs.map toRow) first second budget :=
+  ⟨(check_ir_requires_both_bounds nested outer first second rs budget
+      (packets.map decodePacket) out accepted).1,
+    (check_ir_requires_both_bounds nested outer first second rs budget
+      (packets.map decodePacket) out accepted).2,
+    check_ir_refines_run nested outer first second rs budget
+      (packets.map decodePacket) out accepted⟩
+
 end E7CEECQIRObservationChecker
