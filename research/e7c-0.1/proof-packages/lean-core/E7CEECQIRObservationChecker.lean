@@ -360,4 +360,70 @@ theorem accepted_terminal_ir_transport (nested outer : Nat) (first second : Poli
     check_ir_refines_run nested outer first second rs budget
       (packets.map decodeTerminalPacket) out accepted⟩
 
+/- Selected event metadata contract. The native JSON-to-envelope parser is
+external; successful envelope admission retains its original typed payload. -/
+def declaredEffect : WireEvent → String
+  | .attempt .first => "evidence:joint_restrict_attempt"
+  | .attempt .second => "evidence:joint_restrict_second_attempt"
+  | .row .first _ _ _ => "restriction:joint_coordinate_0_absent_AB"
+  | .row .second _ _ _ => "restriction:joint_coordinate_1_absent_BC"
+
+def declaredPredicate : WireEvent → Option String
+  | .attempt .first => some "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional"
+  | .attempt .second => some "FG3-JOINT-COORD1-ABSENT-BC/0.1-provisional"
+  | .row _ _ _ _ => none
+
+structure EventEnvelope where
+  ordinal : Nat
+  effect : String
+  predicate : Option String
+  payload : WireEvent
+  deriving DecidableEq, Repr
+
+def envelopeValid (expectedOrdinal : Nat) (e : EventEnvelope) : Prop :=
+  e.ordinal = expectedOrdinal ∧ e.effect = declaredEffect e.payload ∧
+    e.predicate = declaredPredicate e.payload
+
+def admitEnvelope (expectedOrdinal : Nat) (e : EventEnvelope) : Option WireEvent :=
+  if envelopeValid expectedOrdinal e then some e.payload else none
+
+theorem admitted_envelope_metadata (ordinal : Nat) (e : EventEnvelope) (out : WireEvent)
+    (accepted : admitEnvelope ordinal e = some out) :
+    envelopeValid ordinal e := by
+  by_cases h : envelopeValid ordinal e
+  · exact h
+  · simp [admitEnvelope, h] at accepted
+
+theorem admitted_envelope_payload (ordinal : Nat) (e : EventEnvelope) (out : WireEvent)
+    (accepted : admitEnvelope ordinal e = some out) : out = e.payload := by
+  have h := admitted_envelope_metadata ordinal e out accepted
+  have same : e.payload = out := by simpa [admitEnvelope, h] using accepted
+  exact same.symm
+
+example : admitEnvelope 0
+    ⟨0, "forged", some "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional", .attempt .first⟩ =
+    none := by decide
+example : admitEnvelope 0
+    ⟨1, "evidence:joint_restrict_attempt",
+      some "FG3-JOINT-COORD0-ABSENT-AB/0.1-provisional", .attempt .first⟩ = none := by decide
+
+/- Lengths come from retained byte arrays, not arbitrary numeric reports.
+The assumption that these arrays are the actual native serializer returns
+is deliberately not asserted by the following model theorem. -/
+structure CapturedPackages where
+  nested : ByteArray
+  outer : ByteArray
+
+def checkCapturedIR (capture : CapturedPackages) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List TerminalPacket) : Option Observation :=
+  checkTerminalTransportIR capture.nested.size capture.outer.size first second rs budget packets
+
+theorem accepted_captured_ir (capture : CapturedPackages) (first second : Policy)
+    (rs : List WireRow) (budget : Budget) (packets : List TerminalPacket) (out : Observation)
+    (accepted : checkCapturedIR capture first second rs budget packets = some out) :
+    capture.nested.size ≤ 1000000 ∧ capture.outer.size ≤ 1000000 ∧
+      out = run (rs.map toRow) first second budget :=
+  accepted_terminal_ir_transport capture.nested.size capture.outer.size
+    first second rs budget packets out accepted
+
 end E7CEECQIRObservationChecker

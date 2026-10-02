@@ -3,6 +3,9 @@ import unittest
 
 from check_e7c_ir_observations import package_gate, examples, capture_text, packets, project_result
 from e7c_eecq_two_stage_b1 import evaluate
+from check_e7c_ir_observations import admit_raw_capture, PackageCapture, capture_packages
+from e7_ir_eecq_two_stage_b1 import lower, serialize
+from e7_ir_eecq_joint_restrict_b1 import serialize as serialize_first
 
 
 class IRObservationTests(unittest.TestCase):
@@ -20,10 +23,10 @@ class IRObservationTests(unittest.TestCase):
     def test_all_fresh_literal_captures_render(self):
         for source in examples():
             text = capture_text(source)
-            self.assertEqual(text.count("example :"), 3)
+            self.assertEqual(text.count("example : check"), 3)
             self.assertIn("checkTerminalTransport .source", text)
             self.assertIn("checkTerminalTransport .ir", text)
-            self.assertIn("checkTerminalTransportIR", text)
+            self.assertIn("checkCapturedIR", text)
             self.assertNotIn("sorry", text)
 
     def test_forged_charge_reaches_kernel_unchanged(self):
@@ -32,7 +35,7 @@ class IRObservationTests(unittest.TestCase):
         result = evaluate(source, _transition_sink=trace.append)
         forged = copy.deepcopy(trace)
         forged[0]["steps"] += 1
-        encoded, _ = packets(source, result, forged)
+        encoded, _ = packets(source, result, forged, admit_raw=False)
         self.assertEqual(encoded[0], "(.charge 2 false)")
 
     def test_forged_row_payload_is_not_replaced_by_input_row(self):
@@ -45,7 +48,8 @@ class IRObservationTests(unittest.TestCase):
                     i["event"]["event"] == "joint_row_checked")
         raw = json.loads(item["event"]["row_key"])
         raw["coefficient"]["numerator"] *= 2
-        item["event"]["row_key"] = json.dumps(raw)
+        from e7c_b1_canonical import canonical_key
+        item["event"]["row_key"] = canonical_key(raw)
         encoded, _ = packets(source, result, forged)
         self.assertIn("num := -4", " ".join(encoded))
 
@@ -99,6 +103,82 @@ class IRObservationTests(unittest.TestCase):
         result = evaluate(source, _transition_sink=trace.append)
         trace[-1]["second_started"] = False
         self.assertFalse(project_result(result, trace[-1])["secondStarted"])
+
+    def test_raw_metadata_mutations_reject(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        variants = []
+        for key, value in (("effect", "forged"), ("predicate_edition", "forged"),
+                           ("ordinal", 1), ("ordinal", True), ("extra", "forged")):
+            changed = copy.deepcopy(trace)
+            changed[1]["event"][key] = value
+            variants.append(changed)
+        for key, value in (("stage", "second"), ("row_index", 0),
+                           ("extra", "forged"), ("steps", True),
+                           ("steps", 99), ("ledger_entries", 99)):
+            changed = copy.deepcopy(trace)
+            changed[1][key] = value
+            variants.append(changed)
+        changed = copy.deepcopy(trace)
+        changed[3]["event"]["row_key"] = '{"atoms":[],"atoms":[],"coefficient":{}}'
+        variants.append(changed)
+        changed = copy.deepcopy(trace)
+        changed[3]["event"]["decision"] = "second_excluded"
+        variants.append(changed)
+        for number, changed in enumerate(variants):
+            with self.subTest(number=number), self.assertRaises(ValueError):
+                admit_raw_capture(result, changed)
+
+    def test_missing_duplicate_and_nonfinal_terminal_reject(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        for changed in (trace[:-1], trace + [trace[-1]], trace + [trace[0]]):
+            with self.assertRaises(ValueError):
+                packets(source, result, changed)
+
+    def test_terminal_metadata_mutations_reject(self):
+        source = examples()[0]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        for key, value in (("stage", "first"), ("row_index", 0), ("steps", True),
+                           ("second_started", 1), ("event", {}), ("extra", 1)):
+            changed = copy.deepcopy(trace)
+            changed[-1][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                admit_raw_capture(result, changed)
+
+    def test_byte_capture_uses_actual_serializer_returns(self):
+        package = lower(examples()[0])
+        capture = capture_packages(package)
+        self.assertEqual(capture.nested, serialize_first(package["first_ir"]))
+        self.assertEqual(capture.outer, serialize(package))
+        self.assertEqual(capture.receipt()["nested_bytes"], len(capture.nested))
+        self.assertEqual(capture.receipt()["outer_bytes"], len(capture.outer))
+        capture.verify_receipt(capture.receipt())
+
+    def test_capture_rejects_mutable_or_reported_lengths(self):
+        for first, second in ((1, b"x"), (b"x", 1), (bytearray(b"x"), b"x")):
+            with self.assertRaises(ValueError):
+                PackageCapture(first, second)
+
+    def test_byte_receipt_tampering_rejects(self):
+        capture = PackageCapture(b"x", b"y")
+        for key, value in (("nested_bytes", 0), ("outer_bytes", True),
+                           ("nested_sha256", "forged"), ("outer_sha256", "forged")):
+            receipt = capture.receipt()
+            receipt[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                capture.verify_receipt(receipt)
+
+    def test_byte_boundary_is_independent_and_inclusive(self):
+        # Synthetic bytes exercise the capture contract, not admitted IR packages.
+        for nested, outer, expected in ((1000000, 1000000, "admitted"),
+                                        (1000001, 1, "nested_limit"),
+                                        (1, 1000001, "outer_limit")):
+            capture = PackageCapture(bytes(nested), bytes(outer))
+            self.assertEqual(package_gate(len(capture.nested), len(capture.outer)), expected)
 
 
 if __name__ == "__main__":
