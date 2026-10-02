@@ -55,7 +55,17 @@ def capture_packages(package):
 def lean_bytes(value):
     if type(value) is not bytes:
         raise ValueError("serialized bytes required")
-    return "⟨#[" + ",".join(str(byte) for byte in value) + "]⟩"
+    chunks = ["#[" + ",".join(str(byte) for byte in value[start:start + 128]) + "]"
+              for start in range(0, len(value), 128)]
+    def balanced(parts):
+        if not parts:
+            return "#[]"
+        if len(parts) == 1:
+            return parts[0]
+        mid = len(parts) // 2
+        return "(" + balanced(parts[:mid]) + " ++ " + balanced(parts[mid:]) + ")"
+    # Retain every byte in order while avoiding one deeply nested array literal.
+    return "⟨" + balanced(chunks) + "⟩"
 
 
 def shape(value, fields):
