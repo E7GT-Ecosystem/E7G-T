@@ -518,6 +518,10 @@ def main():
 open E7CEECQTwoStageAllInput E7CEECQTwoStageOperational
 open E7CEECQTwoStageExactCodec E7CEECQTwoStageImplementationPath
 open E7CEECQIRObservationChecker
+-- Driver-only limits for checking seven finite captured byte-array literals.
+-- These are not EEC-Q operational budgets or native-host resource premises.
+set_option maxRecDepth 32768
+set_option maxHeartbeats 4000000
 """
     sources = examples()
     text = (header + "\n".join(capture_text(source) for source in sources) + "\n" +
