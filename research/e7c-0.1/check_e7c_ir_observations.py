@@ -443,7 +443,7 @@ def capture_text(source):
             captured = "⟨" + lean_bytes(capture.nested) + ", " + lean_bytes(capture.outer) + "⟩"
             bounded = "checkCapturedIR (" + captured + ") ." + first + " ." + second + " (" + wire_rows + ") ⟨" + str(step) + ", " + str(ledger) + "⟩ " + seq(encoded)
             lines.append("example : " + bounded + " = some (" +
-                         observation(projected) + ") := by decide")
+                         observation(projected) + ") := by\n  simp only [checkCapturedIR, ByteArray.size, Array.size_append]\n  decide")
             lines.append("-- byte capture receipt: " + json.dumps(capture.receipt(), sort_keys=True))
     return "\n".join(lines)
 
