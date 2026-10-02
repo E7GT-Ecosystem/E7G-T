@@ -158,6 +158,19 @@ class IRObservationTests(unittest.TestCase):
         self.assertEqual(capture.receipt()["outer_bytes"], len(capture.outer))
         capture.verify_receipt(capture.receipt())
 
+    def test_unknown_returned_fields_and_diagnostics_reject(self):
+        source = examples()[4]
+        trace = []
+        result = evaluate(source, _transition_sink=trace.append)
+        changed = copy.deepcopy(result)
+        changed["extra"] = "forged"
+        with self.assertRaises(ValueError):
+            admit_raw_capture(changed, trace)
+        changed = copy.deepcopy(trace)
+        changed[-1]["terminal_outcome"]["diagnostic"] = "forged"
+        with self.assertRaises(ValueError):
+            admit_raw_capture(result, changed)
+
     def test_capture_rejects_mutable_or_reported_lengths(self):
         for first, second in ((1, b"x"), (b"x", 1), (bytearray(b"x"), b"x")):
             with self.assertRaises(ValueError):

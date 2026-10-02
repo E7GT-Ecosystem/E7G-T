@@ -145,7 +145,11 @@ def admit_terminal(raw):
         admit_progress(raw["progress"])
     elif kind in ("unsupported", "undetermined"):
         shape(raw, ("tag", "diagnostic"))
-        # Diagnostic/stage interpretation is checked by structural projection.
+        allowed = (("joint_restriction_unavailable", "second_joint_restriction_unavailable")
+                   if kind == "unsupported" else
+                   ("joint_predicate_unresolved", "second_joint_predicate_unresolved"))
+        if raw["diagnostic"] not in allowed:
+            raise ValueError("terminal diagnostic mismatch")
     else:
         raise ValueError("unknown terminal kind")
 
@@ -156,6 +160,12 @@ def _admit_raw_capture(result, transcript):
     Checks frame counters and charge/append pairing without computing expected
     row routing. Capture origin/completeness against execution is not proved.
     """
+    if type(result) is not dict:
+        raise ValueError("returned observation object required")
+    fields = {"terminal_outcome", "ordered_ledger", "resource_progress"}
+    if "witness" in result:
+        fields.add("witness")  # Native witness validation stays outside this wire carrier.
+    shape(result, fields)
     if type(transcript) is not list or not transcript:
         raise ValueError("nonempty transition array required")
     terminal_positions = [i for i, item in enumerate(transcript)

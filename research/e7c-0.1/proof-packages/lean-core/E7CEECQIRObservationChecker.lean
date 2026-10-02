@@ -384,6 +384,10 @@ def envelopeValid (expectedOrdinal : Nat) (e : EventEnvelope) : Prop :=
   e.ordinal = expectedOrdinal ∧ e.effect = declaredEffect e.payload ∧
     e.predicate = declaredPredicate e.payload
 
+instance (expectedOrdinal : Nat) (e : EventEnvelope) : Decidable (envelopeValid expectedOrdinal e) := by
+  unfold envelopeValid
+  infer_instance
+
 def admitEnvelope (expectedOrdinal : Nat) (e : EventEnvelope) : Option WireEvent :=
   if envelopeValid expectedOrdinal e then some e.payload else none
 
