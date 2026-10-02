@@ -55,8 +55,12 @@ def capture_packages(package):
 def lean_bytes(value):
     if type(value) is not bytes:
         raise ValueError("serialized bytes required")
-    chunks = ["#[" + ",".join(str(byte) for byte in value[start:start + 128]) + "]"
-              for start in range(0, len(value), 128)]
+    chunks = []
+    for start in range(0, len(value), 128):
+        chunk = value[start:start + 128]
+        literal = "#[" + ",".join(str(byte) for byte in chunk) + "]"
+        chunks.append("(Array.ofFn (fun i : Fin " + str(len(chunk)) +
+                      " => (" + literal + " : Array UInt8)[i.val]!))")
     def balanced(parts):
         if not parts:
             return "#[]"
@@ -443,7 +447,7 @@ def capture_text(source):
             captured = "⟨" + lean_bytes(capture.nested) + ", " + lean_bytes(capture.outer) + "⟩"
             bounded = "checkCapturedIR (" + captured + ") ." + first + " ." + second + " (" + wire_rows + ") ⟨" + str(step) + ", " + str(ledger) + "⟩ " + seq(encoded)
             lines.append("example : " + bounded + " = some (" +
-                         observation(projected) + ") := by\n  simp only [checkCapturedIR, ByteArray.size, Array.size_append]\n  decide")
+                         observation(projected) + ") := by\n  simp only [checkCapturedIR, ByteArray.size, Array.size_append, Array.size_ofFn]\n  decide")
             lines.append("-- byte capture receipt: " + json.dumps(capture.receipt(), sort_keys=True))
     return "\n".join(lines)
 
