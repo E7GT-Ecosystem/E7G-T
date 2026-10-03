@@ -75,13 +75,22 @@ theorem emitted_certificate (path : Path) (first second : Policy)
           rw [emit]
           simp only [modelOps, hf]
           unfold certify
-          split <;> simp_all [finishChecked]
+          split
+          · rename_i terminal hm
+            cases hf.symm.trans hm
+          · simp [finishChecked]
       | some terminal =>
           refine ⟨⟨observe machine terminal, Trace.terminal 0 capacity machine terminal hf⟩, ?_⟩
           rw [emit]
           simp only [modelOps, hf]
           unfold certify
-          split <;> simp_all [finishChecked]
+          split
+          · rename_i other hm
+            have same : other = terminal := Option.some.inj (hm.symm.trans hf)
+            subst other
+            simp [finishChecked]
+          · rename_i hm
+            cases hf.symm.trans hm
   | succ fuel ih =>
       cases hf : finished machine.cursor with
       | some terminal =>
@@ -90,7 +99,13 @@ theorem emitted_certificate (path : Path) (first second : Policy)
           rw [emit]
           simp only [modelOps, hf]
           unfold certify
-          split <;> simp_all [finishChecked]
+          split
+          · rename_i other hm
+            have same : other = terminal := Option.some.inj (hm.symm.trans hf)
+            subst other
+            simp [finishChecked]
+          · rename_i hm
+            cases hf.symm.trans hm
       | none =>
           cases capacity with
           | zero =>
@@ -99,7 +114,10 @@ theorem emitted_certificate (path : Path) (first second : Policy)
               rw [emit]
               simp only [modelOps, hf]
               unfold certify
-              split <;> simp_all [finishChecked]
+              split
+              · rename_i terminal hm
+                cases hf.symm.trans hm
+              · simp [finishChecked]
           | succ capacity =>
               obtain ⟨checked, hc⟩ := ih capacity (append first second machine)
               refine ⟨⟨checked.val,
@@ -107,7 +125,12 @@ theorem emitted_certificate (path : Path) (first second : Policy)
               rw [emit]
               simp only [modelOps, hf]
               unfold certify
-              split <;> simp_all [finishChecked]
+              split
+              · rename_i terminal hm
+                cases hf.symm.trans hm
+              · simp only [and_self, eq_self_iff_true, ite_true]
+                rw [hc]
+                rfl
 
 theorem emitted_stream_accepted (path : Path) (first second : Policy)
     (fuel capacity : Nat) (machine : Machine) :
