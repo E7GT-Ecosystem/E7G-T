@@ -72,27 +72,42 @@ theorem emitted_certificate (path : Path) (first second : Policy)
       | none =>
           refine ⟨⟨observe machine (.resourceLimit (snapshot machine)),
             Trace.noFuel capacity machine hf⟩, ?_⟩
-          simp [certify, emit, modelOps, hf, finishChecked]
+          rw [emit]
+          simp only [modelOps, hf]
+          unfold certify
+          split <;> simp_all [finishChecked]
       | some terminal =>
           refine ⟨⟨observe machine terminal, Trace.terminal 0 capacity machine terminal hf⟩, ?_⟩
-          simp [certify, emit, modelOps, hf, finishChecked]
+          rw [emit]
+          simp only [modelOps, hf]
+          unfold certify
+          split <;> simp_all [finishChecked]
   | succ fuel ih =>
       cases hf : finished machine.cursor with
       | some terminal =>
           refine ⟨⟨observe machine terminal,
             Trace.terminal (fuel + 1) capacity machine terminal hf⟩, ?_⟩
-          simp [certify, emit, modelOps, hf, finishChecked]
+          rw [emit]
+          simp only [modelOps, hf]
+          unfold certify
+          split <;> simp_all [finishChecked]
       | none =>
           cases capacity with
           | zero =>
               refine ⟨⟨observe (charge machine) (.resourceLimit (snapshot (charge machine))),
                 Trace.noLedger fuel machine hf⟩, ?_⟩
-              simp [certify, emit, modelOps, hf, finishChecked]
+              rw [emit]
+              simp only [modelOps, hf]
+              unfold certify
+              split <;> simp_all [finishChecked]
           | succ capacity =>
               obtain ⟨checked, hc⟩ := ih capacity (append first second machine)
               refine ⟨⟨checked.val,
                 Trace.visited fuel capacity machine checked.val hf checked.property⟩, ?_⟩
-              simp [certify, emit, modelOps, hf, hc]
+              rw [emit]
+              simp only [modelOps, hf]
+              unfold certify
+              split <;> simp_all [finishChecked]
 
 theorem emitted_stream_accepted (path : Path) (first second : Policy)
     (fuel capacity : Nat) (machine : Machine) :
@@ -131,8 +146,9 @@ theorem local_operations_supply_accepted_transport (ops : HostOps) (law : LocalC
       (wireEmission ops first second fuel capacity machine) =
       some (drive fuel capacity first second machine) := by
   rw [operations_identified ops law]
-  simpa [checkTerminalTransport, wireEmission, packets_roundtrip] using
-    emitted_stream_accepted path first second fuel capacity machine
+  unfold checkTerminalTransport wireEmission
+  rw [packets_roundtrip]
+  exact emitted_stream_accepted path first second fuel capacity machine
 
 theorem emitted_ir_with_separate_captured_bounds (ops : HostOps) (law : LocalContract ops)
     (capture : CapturedPackages) (nestedBound : capture.nested.size ≤ 1000000)
