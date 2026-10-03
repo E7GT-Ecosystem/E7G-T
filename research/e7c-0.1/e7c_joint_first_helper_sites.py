@@ -65,14 +65,22 @@ def checked_sites(files=None):
     admit = nodes["admit"]
     # The source only returns the Joint after this explicit ordered wire-row
     # equality guard; a helper return bypassing it invalidates the contract.
-    guards = [n for n in ast.walk(admit) if isinstance(n, ast.If)
-              and ast.unparse(n.test) == "rows(value) != source['rows']"]
-    if len(guards) != 1 or not any(isinstance(n, ast.Raise) for n in guards[0].body):
-        raise ValueError("admission lacks ordered-row postcondition")
-    if not isinstance(admit.body[-1], ast.Try) or not any(
-            isinstance(n, ast.Return) and ast.unparse(n.value) == "value"
-            for n in admit.body[-1].body):
+    if not isinstance(admit.body[-1], ast.Try):
         raise ValueError("admission return moved outside checked path")
+    body = admit.body[-1].body
+    # The final three statements form a code-level postcondition: the exact
+    # value returned by the normal branch is the value serialized and checked.
+    # No alternate normal return may bypass the check. The full AST hash pins
+    # statements before this suffix, including the typed parse of each row.
+    if (len(body) < 3 or not exact(body[-3], "value = joint(parsed, arity=2)")
+            or not isinstance(body[-2], ast.If)
+            or ast.unparse(body[-2].test) != "rows(value) != source['rows']"
+            or len(body[-2].body) != 1
+            or not exact(body[-2].body[0],
+                         'raise JointRestrictionAdmission("uncanonical, duplicate or cancelled joint rows")')
+            or body[-2].orelse or not exact(body[-1], "return value")
+            or len([n for n in ast.walk(admit) if isinstance(n, ast.Return)]) != 1):
+        raise ValueError("normal admission return is not guarded by exact rows")
 
     restrict = nodes["restrict_joint_absent"]
     comprehensions = [n for n in ast.walk(restrict) if isinstance(n, ast.GeneratorExp)]

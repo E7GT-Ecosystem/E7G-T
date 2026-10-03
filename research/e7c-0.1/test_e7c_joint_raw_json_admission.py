@@ -1,0 +1,215 @@
+"""Focused raw-shape, key-set and Fraction checks for pinned EEC-Q admission."""
+
+from __future__ import annotations
+
+import copy
+import unittest
+from fractions import Fraction
+
+from eec_q_fg3_b1 import Config
+from eec_q_fg3_joint_b1 import Joint
+from e7c_eecq_joint_restrict_b1 import (
+    JointRestrictionAdmission,
+    admit,
+    document,
+)
+
+
+def one_row_document(coefficient=Fraction(1, 3)):
+    left = Config(("AB",), None)
+    right = Config(("BC",), "")
+    joint = Joint(2, (((left, right), coefficient),))
+    return document(joint)
+
+
+class RawJointJsonAdmission(unittest.TestCase):
+    def assert_invalid(self, value):
+        with self.assertRaises(JointRestrictionAdmission):
+            admit(value)
+
+    @staticmethod
+    def reverse_object_key_order(value):
+        if type(value) is dict:
+            return {key: RawJointJsonAdmission.reverse_object_key_order(item)
+                    for key, item in reversed(list(value.items()))}
+        if type(value) is list:
+            return [RawJointJsonAdmission.reverse_object_key_order(item)
+                    for item in value]
+        return value
+
+    def test_recursive_object_key_permutations_are_accepted(self):
+        source = one_row_document(Fraction(1, 2))
+        permuted = self.reverse_object_key_order(copy.deepcopy(source))
+        self.assertEqual(admit(permuted), admit(source))
+
+    def test_array_order_and_exact_fraction_pair_remain_distinct(self):
+        source = one_row_document(Fraction(1, 2))
+        unreduced = copy.deepcopy(source)
+        unreduced["rows"][0]["coefficient"] = {
+            "numerator": 2, "denominator": 4}
+        self.assert_invalid(unreduced)
+
+        left = Config(("AB",), None)
+        right = Config(("BC",), "")
+        joint = Joint(2, (((left, right), Fraction(1, 3)),
+                          ((right, left), Fraction(2, 5))))
+        reordered_rows = document(joint)
+        reordered_rows["rows"].reverse()
+        self.assert_invalid(reordered_rows)
+
+        swapped_coordinates = copy.deepcopy(source)
+        swapped_coordinates["rows"][0]["atoms"].reverse()
+        original_value = admit(source)
+        swapped_value = admit(swapped_coordinates)
+        self.assertEqual(swapped_value.terms[0][0],
+                         tuple(reversed(original_value.terms[0][0])))
+        self.assertNotEqual(swapped_value.terms[0][0],
+                            original_value.terms[0][0])
+
+    def test_null_empty_tags_and_edge_order_are_not_normalized_away(self):
+        source = one_row_document()
+        value = admit(source)
+        self.assertIsNone(value.terms[0][0][0].tag)
+        self.assertEqual(value.terms[0][0][1].tag, "")
+
+        reordered_edges = copy.deepcopy(source)
+        reordered_edges["rows"][0]["atoms"][0]["edges"] = ["AC", "AB"]
+        self.assert_invalid(reordered_edges)
+
+    def test_final_guard_pair_equality_is_extensional_only_for_objects(self):
+        left = Config(("AB", "AC"), None)
+        right = Config(("BC",), "")
+        other_left = Config(("AC",), "x")
+        other_right = Config(("AB",), None)
+        raw = document(Joint(2, (
+            ((left, right), Fraction(1, 3)),
+            ((other_left, other_right), Fraction(-2, 5)),
+        )))
+        rows = raw["rows"]
+        rows[0]["atoms"][0]["edges"] = ["AB", "AC"]
+        reordered_object_keys = self.reverse_object_key_order(copy.deepcopy(rows))
+        self.assertEqual(rows, reordered_object_keys)
+
+        self.assertNotEqual(rows, list(reversed(rows)))
+        changed_coordinate_order = copy.deepcopy(rows)
+        changed_coordinate_order[0]["atoms"].reverse()
+        self.assertNotEqual(rows, changed_coordinate_order)
+
+        changed_edge_order = copy.deepcopy(rows)
+        changed_edge_order[0]["atoms"][0]["edges"].reverse()
+        self.assertNotEqual(rows, changed_edge_order)
+
+        null_tag = copy.deepcopy(rows)
+        empty_tag = copy.deepcopy(rows)
+        null_tag[0]["atoms"][0]["tag"] = None
+        empty_tag[0]["atoms"][0]["tag"] = ""
+        self.assertNotEqual(null_tag, empty_tag)
+
+        raw_unreduced = copy.deepcopy(rows)
+        raw_unreduced[0]["coefficient"] = {"numerator": 2, "denominator": 4}
+        raw_reduced = copy.deepcopy(rows)
+        raw_reduced[0]["coefficient"] = {"numerator": 1, "denominator": 2}
+        self.assertNotEqual(raw_unreduced, raw_reduced)
+
+    def test_canonical_raw_document_preserves_null_empty_and_reduced_fraction(self):
+        raw = one_row_document(Fraction(-2, 3))
+        value = admit(raw)
+        self.assertEqual(value.terms[0][0][0].tag, None)
+        self.assertEqual(value.terms[0][0][1].tag, "")
+        self.assertEqual(value.terms[0][1], Fraction(-2, 3))
+        self.assertEqual(raw["rows"][0]["coefficient"],
+                         {"numerator": -2, "denominator": 3})
+
+    def test_exact_top_level_and_nested_key_sets(self):
+        raw = one_row_document()
+        extra = copy.deepcopy(raw)
+        extra["unexpected"] = 1
+        self.assert_invalid(extra)
+        missing = copy.deepcopy(raw)
+        del missing["interpretation"]
+        self.assert_invalid(missing)
+        bad_row = copy.deepcopy(raw)
+        bad_row["rows"][0]["extra"] = 1
+        self.assert_invalid(bad_row)
+        bad_graph = copy.deepcopy(raw)
+        bad_graph["rows"][0]["atoms"][0]["extra"] = 1
+        self.assert_invalid(bad_graph)
+        bad_fraction = copy.deepcopy(raw)
+        bad_fraction["rows"][0]["coefficient"]["extra"] = 1
+        self.assert_invalid(bad_fraction)
+
+    def test_raw_fraction_requires_exact_integers_positive_denominator_and_nonzero(self):
+        for numerator, denominator in ((True, 2), (1, True), (1, 0), (1, -2), (0, 3)):
+            with self.subTest(numerator=numerator, denominator=denominator):
+                raw = one_row_document()
+                raw["rows"][0]["coefficient"] = {
+                    "numerator": numerator, "denominator": denominator}
+                self.assert_invalid(raw)
+
+    def test_fraction_pair_must_match_fraction_reduction(self):
+        raw = one_row_document(Fraction(1, 2))
+        raw["rows"][0]["coefficient"] = {"numerator": 2, "denominator": 4}
+        self.assert_invalid(raw)
+
+    def test_graph_edges_must_already_be_canonical(self):
+        raw = one_row_document()
+        raw["rows"][0]["atoms"][0]["edges"] = ["AC", "AB"]
+        self.assert_invalid(raw)
+        raw = one_row_document()
+        raw["rows"][0]["atoms"][0]["edges"] = ["AB", "AB"]
+        self.assert_invalid(raw)
+
+    def test_joint_guard_rejects_duplicate_reordered_and_cancelled_rows(self):
+        raw = one_row_document()
+        raw["rows"] = raw["rows"] * 2
+        self.assert_invalid(raw)
+
+        p = Config(("AB",), None)
+        q = Config(("BC",), "")
+        terms = (
+            (((p, q), Fraction(1, 3))),
+            (((q, p), Fraction(2, 5))),
+        )
+        ordered = document(Joint(2, terms))
+        ordered["rows"].reverse()
+        self.assert_invalid(ordered)
+
+        raw = one_row_document()
+        raw["rows"] = [
+            {"atoms": raw["rows"][0]["atoms"],
+             "coefficient": {"numerator": 1, "denominator": 3}},
+            {"atoms": raw["rows"][0]["atoms"],
+             "coefficient": {"numerator": -1, "denominator": 3}},
+        ]
+        self.assert_invalid(raw)
+
+    def test_row_cap_is_admission_failure_not_evaluation_resource_outcome(self):
+        terms = tuple(
+            ((Config(("AB",), f"tag-{index:02d}"),
+              Config(("BC",), None)), Fraction(1, index + 1))
+            for index in range(65)
+        )
+        raw = one_row_document()
+        raw["rows"] = raw["rows"] * 65
+        self.assert_invalid(raw)
+
+    def test_policy_key_sets_and_exact_integer_bounds(self):
+        raw = one_row_document()
+        raw["resource_policy"]["extra"] = 1
+        self.assert_invalid(raw)
+        raw = one_row_document()
+        raw["resource_policy"]["step_bound"] = True
+        self.assert_invalid(raw)
+        raw = one_row_document()
+        raw["resource_policy"]["ledger_bound"] = -1
+        self.assert_invalid(raw)
+        raw = one_row_document()
+        raw["interpretation"]["capability"] = 1
+        self.assert_invalid(raw)
+        raw = one_row_document()
+        raw["interpretation"]["obligation"] = "unknown"
+        self.assert_invalid(raw)
+
+
+if __name__ == "__main__":
+    unittest.main()

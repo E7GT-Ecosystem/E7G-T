@@ -23,6 +23,23 @@ lean_lib E7CMSCFiniteClosure
 lean_lib E7CJointFirstCodeSkeleton
 lean_lib E7CJointFirstExecutionRelation
 lean_lib E7CJointFirstHelperSelection
+lean_lib E7CJointAdmissionGenerated
+lean_lib E7CJointAdmissionSemantics
+lean_lib E7CJointAdmissionCalls
+lean_lib E7CJointAdmissionExecution
+lean_lib E7CJointAdmissionCPythonBridge
+lean_lib E7CJointAdmissionPythonOperations
+lean_lib E7CJointSortConstructorSemantics
+lean_lib E7CJointRawJsonAdmission
 
 @[default_target]
 lean_lib E7CLeanCore
+lean_lib E7CJointCPythonNormalReturnTrace
+
+lean_lib E7CJointAdmissionStatementTrace
+
+lean_lib E7CJointFirstStageNormalReturnComposition
+
+lean_lib E7CEECQIRObservationChecker
+
+lean_lib E7CEECQEmitterTransport

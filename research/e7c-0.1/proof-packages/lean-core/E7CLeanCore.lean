@@ -12,11 +12,23 @@ import E7CEECQTwoStageAllInput
 import E7CEECQTwoStageOperational
 import E7CEECQTwoStageExactCodec
 import E7CEECQTwoStageImplementationPath
+import E7CEECQIRObservationChecker
+import E7CEECQEmitterTransport
 import E7CMSCObstruction
 import E7CMSCFiniteClosure
 import E7CJointFirstCodeSkeleton
 import E7CJointFirstExecutionRelation
 import E7CJointFirstHelperSelection
+import E7CJointAdmissionSemantics
+import E7CJointAdmissionCalls
+import E7CJointAdmissionExecution
+import E7CJointAdmissionCPythonBridge
+import E7CJointAdmissionPythonOperations
+import E7CJointSortConstructorSemantics
+import E7CJointRawJsonAdmission
+import E7CJointCPythonNormalReturnTrace
+import E7CJointAdmissionStatementTrace
+import E7CJointFirstStageNormalReturnComposition
 
 /-!
 E7C/0.1 WP4 bounded Lean core extension.
