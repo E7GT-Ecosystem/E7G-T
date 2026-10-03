@@ -411,11 +411,13 @@ def packets(source, result, transcript, *, admit_raw=True):
 
 
 def capture_text(source):
-    source_trace, ir_trace = [], []
+    from e7c_ir_execution_capture import capture_execution
+    source_trace = []
     source_result = evaluate(source, _transition_sink=source_trace.append)
     package = lower(source)
-    ir_result = execute(package, _transition_sink=ir_trace.append)
-    capture = capture_packages(package)
+    executed = capture_execution(package)
+    ir_result, ir_trace = executed.result, list(executed.transitions)
+    capture = PackageCapture(executed.nested, executed.outer)
     nested, outer = len(capture.nested), len(capture.outer)
     if package_gate(nested, outer) != "admitted":
         raise ValueError("independent package bounds not met")
