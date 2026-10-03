@@ -129,6 +129,7 @@ theorem emitted_certificate (path : Path) (first second : Policy)
               · rename_i terminal hm
                 cases hf.symm.trans hm
               · simp only [and_self, eq_self_iff_true, ite_true]
+                simp only [modelOps] at hc
                 rw [hc]
                 rfl
 
