@@ -16,6 +16,8 @@ import E7CEECQIRObservationChecker
 import E7CEECQEmitterTransport
 import E7CJointSerializerSourceSemantics
 import E7CJointNativeSerializerCapture
+import E7CJointNativeAdmissionCapture
+import E7CJointNativeAdmissionComposition
 import E7CMSCObstruction
 import E7CMSCFiniteClosure
 import E7CJointFirstCodeSkeleton
