@@ -28,6 +28,7 @@ import E7CJointAdmissionCalls
 import E7CJointAdmissionExecution
 import E7CJointAdmissionCPythonBridge
 import E7CJointAdmissionPythonOperations
+import E7CJointNativeDictionaryTrace
 import E7CJointSortConstructorSemantics
 import E7CJointRawJsonAdmission
 import E7CJointCPythonNormalReturnTrace
