@@ -48,3 +48,5 @@ lean_lib E7CJointSerializerSourceSyntax
 lean_lib E7CJointSerializerSourceGenerated
 lean_lib E7CJointSerializerSourceSemantics
 lean_lib E7CJointNativeSerializerCapture
+lean_lib E7CJointNativeAdmissionCapture
+lean_lib E7CJointNativeAdmissionComposition
