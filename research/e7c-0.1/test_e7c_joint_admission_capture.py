@@ -69,6 +69,16 @@ class AdmissionCaptureTests(unittest.TestCase):
         self.assertTrue(packet["observed_admit_exit"]["exception_type"].endswith("JointRestrictionAdmission"))
         self.assertIn(".integer (4)", certificate_text([packet]))
 
+    def test_normal_observations_match_unwrapped_sibling_profiler(self):
+        from check_e7c_admission_certificates import compare_unwrapped
+        count = 0
+        for document in fixture_documents():
+            packet = capture(document)
+            if packet["observed_admit_exit"]["returned"]:
+                self.assertGreater(compare_unwrapped(document, packet), 0)
+                count += 1
+        self.assertEqual(count, 6)
+
     def test_duplicate_cancelled_and_reordered_inputs_keep_prefix_identity(self):
         duplicate, cancelled, reverse = [capture(d) for d in fixture_documents()[6:9]]
         for packet in (duplicate, cancelled, reverse):

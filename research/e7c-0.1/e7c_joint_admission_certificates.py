@@ -98,7 +98,7 @@ def certificate_text(packets):
     lines = ["import E7CJointNativeAdmissionCapture", "",
              "namespace E7CJointNativeAdmissionFixtures",
              "open E7CEECQTwoStageExactCodec E7CJointRawJsonAdmission",
-             "open E7CJointNativeAdmissionCapture", ""]
+             "open E7CJointNativeAdmissionComposition", ""]
     for index, packet in enumerate(packets):
         validate_literals(packet)
         names = []
@@ -120,7 +120,7 @@ def certificate_text(packets):
                           ", (" + str(fraction["numerator"]) + "), (" + str(fraction["denominator"]) +
                           "), " + ratio_term(fraction["output"]) + "⟩",
                           f"theorem {fname}Checked : FractionReceipt {fname} := by",
-                          "  constructor <;> first | rfl | decide", "",
+                          "  constructor <;> first | rfl | decide | (simp [Rat.div, Rat.inv_def] <;> decide)", "",
                           f"def {prefix} : RowCapture :=",
                           "  ⟨(" + raw_term(row["input"]) + "), " + fields_term(row["input"]) +
                           f", {prefix}left, {prefix}right, {fname}⟩",

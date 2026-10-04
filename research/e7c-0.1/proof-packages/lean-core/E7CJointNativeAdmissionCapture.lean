@@ -5,10 +5,37 @@ import E7CJointNativeSerializerCapture
 admission trace. Its native origin, dispatch, object denotation and stability
 remain trusted. In particular these theorems do not classify host exits. -/
 namespace E7CJointNativeAdmissionCapture
+open E7CJointRawJsonAdmission
+
+/-- A strict integer check for observed Fraction fields. This layer does not
+invoke the legacy Rat division primitive used by the raw decoder. -/
+def fractionFieldsChecked (inputNumerator inputDenominator outputNumerator : Int)
+    (outputDenominator : Nat) : Bool :=
+  decide (inputDenominator > 0) && (decide (inputNumerator ≠ 0) &&
+    (decide (outputDenominator > 0) && decide
+      (outputNumerator * inputDenominator = inputNumerator * Int.ofNat outputDenominator)))
+
+theorem checked_fraction_fields (inputNumerator inputDenominator outputNumerator : Int)
+    (outputDenominator : Nat)
+    (checked : fractionFieldsChecked inputNumerator inputDenominator outputNumerator
+      outputDenominator = true) :
+    inputDenominator > 0 ∧ inputNumerator ≠ 0 ∧ outputDenominator > 0 ∧
+      outputNumerator * inputDenominator = inputNumerator * Int.ofNat outputDenominator := by
+  simpa [fractionFieldsChecked, Bool.and_eq_true] using checked
+
+theorem exact_integer_kind_excludes_boolean (value : Bool) :
+    exactInteger (.boolean value) = none := rfl
+
+end E7CJointNativeAdmissionCapture
+
+/- Composition retains the inherited raw decoder's Rat-division axiom
+dependencies. Its audit is separate from the strict integer receipt above. -/
+namespace E7CJointNativeAdmissionComposition
 open E7CEECQTwoStageExactCodec E7CJointRawJsonAdmission
 open E7CJointAdmissionExecution
 open E7CJointAdmissionStatementTrace
 open E7CJointNativeSerializerCapture
+open E7CJointNativeAdmissionCapture
 
 structure ConfigCapture where
   input : RawJson
@@ -71,6 +98,8 @@ structure FractionReceipt (capture : FractionCapture) : Prop where
   denominatorRead : lookupField capture.fields "denominator" = some (.integer capture.denominatorOperand)
   denominatorPositive : capture.denominatorOperand > 0
   numeratorNonzero : capture.numeratorOperand ≠ 0
+  nativeFields : fractionFieldsChecked capture.numeratorOperand capture.denominatorOperand
+    capture.output.num capture.output.den = true
   constructorValue : capture.output =
     (capture.numeratorOperand : Rat) / (capture.denominatorOperand : Rat)
 
@@ -228,4 +257,4 @@ theorem changed_fraction_value_rejected (capture : FractionCapture)
   intro checked
   exact changed checked.constructorValue
 
-end E7CJointNativeAdmissionCapture
+end E7CJointNativeAdmissionComposition
