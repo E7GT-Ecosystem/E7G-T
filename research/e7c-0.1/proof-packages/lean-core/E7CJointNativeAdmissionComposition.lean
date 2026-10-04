@@ -74,8 +74,23 @@ structure FractionReceipt (capture : FractionCapture) : Prop where
   numeratorNonzero : capture.numeratorOperand ≠ 0
   nativeFields : fractionFieldsChecked capture.numeratorOperand capture.denominatorOperand
     capture.output.num capture.output.den = true
-  constructorValue : capture.output =
-    (capture.numeratorOperand : Rat) / (capture.denominatorOperand : Rat)
+
+/-- The rational constructor equation is derived from the strict integer
+cross-product receipt, rather than supplied as an additional result premise. -/
+theorem checked_fraction_value (capture : FractionCapture) (checked : FractionReceipt capture) :
+    capture.output = (capture.numeratorOperand : Rat) / (capture.denominatorOperand : Rat) := by
+  have fields := checked_fraction_fields capture.numeratorOperand capture.denominatorOperand
+    capture.output.num capture.output.den checked.nativeFields
+  have inputDenNZ : capture.denominatorOperand ≠ 0 := Int.ne_of_gt fields.1
+  have outputDenNZ : (capture.output.den : Int) ≠ 0 :=
+    Int.ne_of_gt (Int.natCast_pos.mpr fields.2.2.1)
+  calc
+    capture.output = Rat.divInt capture.output.num (capture.output.den : Int) :=
+      (Rat.num_divInt_den capture.output).symm
+    _ = Rat.divInt capture.numeratorOperand capture.denominatorOperand :=
+      (Rat.divInt_eq_divInt_iff outputDenNZ inputDenNZ).2 fields.2.2.2
+    _ = (capture.numeratorOperand : Rat) / (capture.denominatorOperand : Rat) :=
+      Rat.divInt_eq_div _ _
 
 def fraction_trace (capture : FractionCapture) (checked : FractionReceipt capture) :
     FractionAdmissionStatementTrace capture.input where
@@ -94,7 +109,7 @@ def fraction_trace (capture : FractionCapture) (checked : FractionReceipt captur
   nonzeroNumerator := checked.numeratorNonzero
 
 theorem fraction_trace_output (capture : FractionCapture) (checked : FractionReceipt capture) :
-    (fraction_trace capture checked).output = capture.output := checked.constructorValue.symm
+    (fraction_trace capture checked).output = capture.output := (checked_fraction_value capture checked).symm
 
 theorem checked_fraction_decodes (capture : FractionCapture) (checked : FractionReceipt capture) :
     decodeFractionPair capture.input = some capture.output := by
@@ -229,6 +244,6 @@ theorem changed_fraction_value_rejected (capture : FractionCapture)
       (capture.numeratorOperand : Rat) / (capture.denominatorOperand : Rat)) :
     ¬ FractionReceipt capture := by
   intro checked
-  exact changed checked.constructorValue
+  exact changed (checked_fraction_value capture checked)
 
 end E7CJointNativeAdmissionComposition
