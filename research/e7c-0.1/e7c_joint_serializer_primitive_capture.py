@@ -123,7 +123,7 @@ def _capture(value, row_limit, event_limit, byte_limit):
                     if type(returned) is not tuple or any(type(x) is not str for x in returned):
                         raise ValueError("exact native edge tuple required")
                     ctx["edges"] = returned
-                    payload = NATIVE_LIST(returned)
+                    payload = [edge for edge in returned]
                 else:
                     if returned is not None and type(returned) is not str:
                         raise ValueError("native optional string tag required")
@@ -146,7 +146,7 @@ def _capture(value, row_limit, event_limit, byte_limit):
         if (type(operand) is not tuple or operand is not ctx.get("edges")
                 or ctx["reads"] != ["edges"] or ctx["copied"]):
             raise ValueError("list operand is not its unique actual edge read")
-        record("list.call", NATIVE_LIST(operand))
+        record("list.call", [edge for edge in operand])
         returned = NATIVE_LIST(operand)
         if (type(returned) is not list or len(returned) != len(operand)
                 or any(a is not b for a, b in zip(operand, returned))):

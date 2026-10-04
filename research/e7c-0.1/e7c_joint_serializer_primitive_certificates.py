@@ -71,5 +71,9 @@ def certificate_text(packets):
                       f"def capture{index} : Capture :=",
                       "  ⟨(" + raw_term(packet["output"]) + "), [" + events + "], [" + copies + "]⟩",
                       f"theorem checked{index} : Certificate rows{index} capture{index} := by",
-                      "  refine ⟨?_, ?_, ?_, ?_⟩ <;> rfl", ""])
+                      "  refine ⟨?_, ?_, ?_, ?_⟩",
+                      "  · rw [E7CJointSerializerSourceSemantics.rows_source_run_exact",
+                      "      E7CJointSerializerSourceSyntax.native_attributes_contracts]",
+                      "    rfl",
+                      "  · rfl", "  · rfl", "  · rfl", ""])
     return "\n".join(lines + ["end E7CJointNativeSerializerFixtures", ""])
