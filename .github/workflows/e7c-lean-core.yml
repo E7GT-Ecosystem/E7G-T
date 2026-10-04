@@ -18,6 +18,8 @@ on:
       - "research/e7c-0.1/test_e7c_ir_execution_capture.py"
       - "research/e7c-0.1/test_e7c_ir_observations.py"
       - "research/e7c-0.1/*serializer*"
+      - "research/e7c-0.1/*admission*capture*"
+      - "research/e7c-0.1/*admission*certificates*"
       - "research/e7c-0.1/E7C_0.1_IR_OBSERVATION_CHECKER.md"
       - ".github/workflows/e7c-lean-core.yml"
   push:
@@ -55,6 +57,7 @@ jobs:
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest test_e7c_ir_observations test_e7c_ir_execution_capture test_e7c_joint_second_control_translation
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 research/e7c-0.1/e7c_joint_serializer_source.py
           PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest test_e7c_joint_serializer_source test_e7c_joint_serializer_primitive_capture
+          PYTHONPATH=research/e7c-0.1/adapters:research/e7c-0.1 python3 -m unittest test_e7c_joint_admission_capture
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
           lake-package-directory: research/e7c-0.1/proof-packages/lean-core
@@ -117,6 +120,15 @@ jobs:
           axiom-audit: true
           axiom-audit-allow: "propext,Quot.sound"
           axiom-audit-root: E7CJointNativeSerializerCapture
+          use-mathlib-cache: false
+      - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          lake-package-directory: research/e7c-0.1/proof-packages/lean-core
+          auto-config: false
+          build: false
+          axiom-audit: true
+          axiom-audit-allow: "propext,Quot.sound"
+          axiom-audit-root: E7CJointNativeAdmissionCapture
           use-mathlib-cache: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
         with:
@@ -384,3 +396,5 @@ jobs:
         run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python3 research/e7c-0.1/check_e7c_ir_observations.py
       - name: Check fresh native serializer primitive receipts and forgeries
         run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python3 research/e7c-0.1/check_e7c_serializer_primitive_certificates.py
+      - name: Check fresh native admission prefixes and constructor receipts
+        run: PYTHONPATH=research/e7c-0.1:research/e7c-0.1/adapters python3 research/e7c-0.1/check_e7c_admission_certificates.py
