@@ -56,7 +56,7 @@ def main():
                                   capture_output=True, text=True, timeout=120)
 
         dependencies = directory / "ArithmeticDependencies.lean"
-        dependencies.write_text("import E7CJointNativeAdmissionCapture\n"
+        dependencies.write_text("import E7CJointNativeAdmissionComposition\n"
                                 "#print axioms Rat.div\n#print axioms Rat.inv\n#print axioms Rat.mul\n")
         arithmetic = subprocess.run(["lake", "env", "lean", str(dependencies)], cwd=package,
                                     capture_output=True, text=True, timeout=120)

@@ -95,7 +95,7 @@ def validate_literals(packet):
 
 
 def certificate_text(packets):
-    lines = ["import E7CJointNativeAdmissionCapture", "",
+    lines = ["import E7CJointNativeAdmissionComposition", "",
              "namespace E7CJointNativeAdmissionFixtures",
              "open E7CEECQTwoStageExactCodec E7CJointRawJsonAdmission",
              "open E7CJointNativeAdmissionComposition", ""]
