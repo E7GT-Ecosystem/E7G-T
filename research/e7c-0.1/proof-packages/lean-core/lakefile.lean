@@ -43,3 +43,8 @@ lean_lib E7CJointFirstStageNormalReturnComposition
 lean_lib E7CEECQIRObservationChecker
 
 lean_lib E7CEECQEmitterTransport
+
+lean_lib E7CJointSerializerSourceSyntax
+lean_lib E7CJointSerializerSourceGenerated
+lean_lib E7CJointSerializerSourceSemantics
+lean_lib E7CJointNativeSerializerCapture
