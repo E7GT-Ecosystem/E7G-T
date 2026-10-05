@@ -24,7 +24,10 @@ def nativeFraction (raw : RawJson) : Option Rat :=
       match rawPair with
       | .array [.integer numerator, .integer denominator] =>
           if decide (denominator > 0) then
-            pure ((numerator : Rat) / (denominator : Rat))
+            let coefficient : Rat := (numerator : Rat) / (denominator : Rat)
+            guard (coefficient.num = numerator)
+            guard (Int.ofNat coefficient.den = denominator)
+            pure coefficient
           else none
       | _ => none
   | _ => none
@@ -102,9 +105,9 @@ def decodeNativeTransition (ops : CPythonJointPrimitives)
     ["site", "index", "row", "before", "lookup_result",
      "addition_result", "dict_get_call", "after"])
   let site ← lookupField fields "site"
-  guard (match site with
-    | .string name => name == "dictionary-transition"
-    | _ => false)
+  match site with
+  | .string "dictionary-transition" => pure ()
+  | _ => none
   let rawIndex ← lookupField fields "index"
   let index ← nativeNat rawIndex
   let rawRow ← lookupField fields "row"
@@ -171,9 +174,9 @@ def decodeNativeDictionaryPacket (ops : CPythonJointPrimitives)
     ["edition", "python", "input", "events", "dictionary_transitions",
      "returned", "adequacy"])
   let rawEdition ← lookupField fields "edition"
-  guard (match rawEdition with
-    | .string edition => edition == "E7C-native-joint-dictionary-trace/0.2-provisional"
-    | _ => false)
+  match rawEdition with
+  | .string "E7C-native-joint-dictionary-trace/0.2-provisional" => pure ()
+  | _ => none
   let rawTransitions ← lookupField fields "dictionary_transitions"
   match rawTransitions with
   | .array transitions => decodeNativeTransitionTrace ops 0 [] transitions
@@ -205,15 +208,15 @@ theorem nativeConfig_preserves_null_vs_empty_tag :
       [("edges", .array []), ("tag", .string "")])]) := by
   decide
 
-theorem nativeFraction_normalizes_exact_pair :
+theorem nativeFraction_rejects_unreduced_pair :
     nativeFraction (.object [("fraction", .array [.integer 2, .integer 4])]) =
-      some ((1 : Rat) / 2) := by
+      none := by
   decide
 
 theorem acceptedPacket_has_modelled_final_dictionary
     {packet : RawJson} {rows : List Row} {final : List JointEntry}
     {trace : JointDictionaryEventTrace exactJointPrimitives rows [] final}
-    (accepted : decodeNativeDictionaryPacket exactJointPrimitives packet =
+    (_accepted : decodeNativeDictionaryPacket exactJointPrimitives packet =
       some ⟨rows, final, trace⟩) :
     final = jointDictRun exactJointPrimitives rows [] := by
   exact eventTrace_final_is_run trace
