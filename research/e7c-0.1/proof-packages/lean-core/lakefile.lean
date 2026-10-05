@@ -30,6 +30,7 @@ lean_lib E7CJointAdmissionExecution
 lean_lib E7CJointAdmissionCPythonBridge
 lean_lib E7CJointAdmissionPythonOperations
 lean_lib E7CJointNativeDictionaryTrace
+lean_lib E7CJointNativeDictionaryReceipt
 lean_lib E7CJointSortConstructorSemantics
 lean_lib E7CJointRawJsonAdmission
 

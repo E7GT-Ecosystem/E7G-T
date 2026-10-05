@@ -18,6 +18,21 @@ class JointDictionaryCapture(unittest.TestCase):
                  (Fraction(2, 5), (q, p))]
         packet = capture(terms)
         events = packet["events"]
+        transitions = packet["dictionary_transitions"]
+        self.assertEqual([event["index"] for event in transitions], [0, 1, 2, 3])
+        self.assertTrue(all(event["dict_get_call"] for event in transitions))
+        self.assertEqual([event["lookup_result"] for event in transitions], [
+            {"fraction": [0, 1]}, {"fraction": [1, 3]},
+            {"fraction": [1, 2]}, {"fraction": [0, 1]}])
+        self.assertEqual([event["addition_result"] for event in transitions], [
+            {"fraction": [1, 3]}, {"fraction": [1, 2]},
+            {"fraction": [0, 1]}, {"fraction": [2, 5]}])
+        self.assertEqual([len(event["before"]) for event in transitions], [0, 1, 1, 1])
+        self.assertEqual([len(event["after"]) for event in transitions], [1, 1, 1, 2])
+        self.assertEqual(transitions[0]["row"]["coefficient"], {"fraction": [1, 3]})
+        self.assertEqual(transitions[1]["row"]["coefficient"], {"fraction": [1, 6]})
+        self.assertEqual(transitions[2]["row"]["coefficient"], {"fraction": [-1, 2]})
+        self.assertEqual(transitions[3]["row"]["coefficient"], {"fraction": [2, 5]})
 
         updates = [event for event in events if event["site"] == "dictionary-row"]
         before = [event for event in updates if event["phase"] == "before-update"]
