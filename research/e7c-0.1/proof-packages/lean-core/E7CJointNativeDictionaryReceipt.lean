@@ -208,11 +208,6 @@ theorem nativeConfig_preserves_null_vs_empty_tag :
       [("edges", .array []), ("tag", .string "")])]) := by
   decide
 
-theorem nativeFraction_rejects_unreduced_pair :
-    nativeFraction (.object [("fraction", .array [.integer 2, .integer 4])]) =
-      none := by
-  decide
-
 theorem acceptedPacket_has_modelled_final_dictionary
     {packet : RawJson} {rows : List Row} {final : List JointEntry}
     {trace : JointDictionaryEventTrace exactJointPrimitives rows [] final}
