@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E7G-T SF/0.1, IC/0.1 exact symbolic-family prototype.
 
-Authors: Alexander Gregory Wingate and Oleksandr Razinkov.
+Author: Oleksandr Razinkov.
 Specification example, CC BY-SA 4.0.
 Python 3.10+, standard library. Run to execute the demonstration and checks.
 No point grid, random search, external solver, service or hardware is used.

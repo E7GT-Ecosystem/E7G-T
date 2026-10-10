@@ -4,6 +4,8 @@ import copy
 import subprocess
 import sys
 import unittest
+
+from adapters.source_byte_corrections import current_blob_sha
 from fractions import Fraction
 from pathlib import Path
 
@@ -74,7 +76,7 @@ class S1DynamicTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         for path, expected in (("E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md", CANONICAL_BLOB),
                                ("E7G-T_v0.12_Executable_Examples.py", FG3_BLOB)):
-            self.assertEqual(subprocess.check_output(["git", "hash-object", path], cwd=root, text=True).strip(), expected)
+            self.assertEqual(subprocess.check_output(["git", "hash-object", path], cwd=root, text=True).strip(), current_blob_sha(path, expected))
 
     def test_correlated_input_and_cancellation_preserve_joint_choice(self):
         p, q = config(["AB"]), config(["BC"])

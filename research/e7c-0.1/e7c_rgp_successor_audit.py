@@ -6,6 +6,8 @@ from hashlib import sha256
 from pathlib import Path
 import re
 
+from adapters.source_byte_corrections import matches_source_bytes
+
 ROOT = Path(__file__).resolve().parents[2]
 FILES = (
     "E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md",
@@ -71,7 +73,7 @@ def audit(texts: tuple[str, str, str]) -> dict[str, tuple[int, ...]]:
 def audit_pinned(root: Path = ROOT) -> dict[str, tuple[int, ...]]:
     raw = tuple((root / name).read_bytes() for name in FILES)
     for name, data, digest in zip(FILES, raw, DIGESTS):
-        if sha256(data).hexdigest() != digest:
+        if not matches_source_bytes(data, digest):
             raise SourceDrift(f"source digest changed: {name}")
     return audit(tuple(data.decode("utf-8") for data in raw))
 

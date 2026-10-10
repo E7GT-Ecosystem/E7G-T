@@ -342,7 +342,7 @@ def build(source: Path, output: Path):
     output.parent.mkdir(parents=True, exist_ok=True)
     c = canvas.Canvas(str(output), pagesize=A4, pageCompression=1)
     c.setTitle(meta.get("title", "E7G-T Practical Starter Kit"))
-    c.setAuthor(meta.get("author", "Alexander Gregory Wingate and Oleksandr Razinkov"))
+    c.setAuthor(meta.get("author", "Oleksandr Razinkov"))
     c.setSubject("Practical introduction to the E7G-T geometry-thinking framework")
     c.setKeywords("E7G-T, geometry-thinking, representation, projection, operational phase, worksheet")
 

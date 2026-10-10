@@ -7,8 +7,8 @@
 **Status:** use-candidate public reference kernel  
 **Project:** E7G-T — Extensional-Projective Order Geometry  
 **Public posture:** geometry-first modelling language and practical calculus  
-**Authors:** Alexander Gregory Wingate and Oleksandr Razinkov  
-**Copyright:** © 2026 Alexander Gregory Wingate and Oleksandr Razinkov  
+**Author:** Oleksandr Razinkov  
+**Copyright:** © 2026 Oleksandr Razinkov  
 **Licence:** [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)  
 
 ---

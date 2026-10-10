@@ -11,6 +11,8 @@ from hashlib import sha256
 from pathlib import Path
 import re
 
+from source_byte_corrections import matches_source_bytes
+
 from wpc_allocation_b1 import AdmissionError, IDS, Whole
 
 
@@ -30,7 +32,7 @@ EDITION = "E7C-WPC-UNENCODED-CONSTITUTION-B1/0.1-provisional"
 
 def _pinned(path: str, digest: str) -> str:
     content = (ROOT / path).read_bytes()
-    if sha256(content).hexdigest() != digest:
+    if not matches_source_bytes(content, digest):
         raise AdmissionError("WPC source digest drift")
     return content.decode("utf-8")
 

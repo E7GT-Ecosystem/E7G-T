@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E7G-T CFS/0.1, CG3/0.1 combined family-state prototype.
 
-Authors: Alexander Gregory Wingate and Oleksandr Razinkov.
+Author: Oleksandr Razinkov.
 Specification example, CC BY-SA 4.0.
 Python 3.10+, standard library only. Keep this file beside the SF and EEC
 companions. Run it to execute the demonstration and checks.

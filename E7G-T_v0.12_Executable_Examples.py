@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E7G-T v0.12 experimental: FG3/0.1 finite example evaluator.
 
-Authors: Alexander Gregory Wingate and Oleksandr Razinkov.
+Author: Oleksandr Razinkov.
 Specification companion, CC BY-SA 4.0.
 Python 3.10+, standard library only. Run this file to print its checks.
 This is a bounded example model, not a full EEC-Q interpreter or compiler.

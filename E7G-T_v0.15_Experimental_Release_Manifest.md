@@ -18,12 +18,12 @@ overwritten. See the [successor decision](docs/CANONICAL_SUCCESSOR_DECISION.md).
 
 | Repository path | Role | SHA-256 |
 |---|---|---|
-| `E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md` | Self-contained canonical source | `5b1e9913cf24b80612f81014b8cc7efc7574d43402a2a188a17daa096c0c621a` |
-| `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md` | Immutable former canonical source, revision RGP2 | `4c7784bcd653471a097329361b17b13c3b45e1592df6204243370ca0190935b1` |
-| `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md` | Immutable RWP1 draft predecessor | `ecade9da08df04d257735d399848ebf2231590cabab8e48fa0b228db3051bdbe` |
-| `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md` | Immutable REC1 draft predecessor | `a64a8d9ecbd417cbe59883e33be7529cb779354b377b3ac261488a2a81cfc43a` |
-| `packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md` | Versioned WPC companion | `e1ebd7d3b1945f816fa21aee5d1c4802486d0b7cc2e097a99c96ec1c60d1cd3c` |
-| `packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md` | Versioned REC companion | `52b88f24e8fbbd2aef7dc221978be844790ae1c476ea7133ceedef9fde0ebbc3` |
+| `E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md` | Self-contained canonical source | `2ff03589387cbd216bb2559957c1d6959ca132b251d484826168d1b19d33341a` |
+| `E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md` | Immutable former canonical source, revision RGP2 | `85e0096259c3dea36726e36a4567c7f52d8371210c523bc557d60e7030d33c67` |
+| `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md` | Immutable RWP1 draft predecessor | `3b8ed473b99e538a636b05cebb0347df48c9c85909bc8bab46bac58a29d50557` |
+| `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md` | Immutable REC1 draft predecessor | `dfaf249942c4448c04dd22e4777622f88a86406c4c27c5adceed4d97315556d7` |
+| `packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md` | Versioned WPC companion | `39cdebf8f534e6c4ac9acb16eeb41d5f7b20fdf9e675673950ba4a312f9c35c7` |
+| `packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md` | Versioned REC companion | `41cc8fd24404026b1f5354d4177335dd40f82461aff5fd912ceb3cf355050842` |
 | `proposals/msc-0.1/E7G-T_MSC_v0.1_Multi-Scope_Coherence_Proposal.md` | Exact included MSC formal body | `07dba33fe194f0a346b33941f5c7292fcf7397c9f2a22815fc8e274ca68f9cb2` |
 
 The kernel includes MSC §MSC.0–§MSC.13 as §X.21 without changing the
@@ -64,3 +64,7 @@ python3 -m unittest discover -s proposals/msc-0.1 -p 'test_*.py'
 
 Those checks assess the pinned predecessors and bounded companion packages.
 They do not verify every v0.15 operator or discharge any E7C all-input link.
+
+## Authorship correction on 10 October 2026
+
+Current-tree author credits name Oleksandr Razinkov alone. The table above identifies the corrected current bytes. Historical commits and validation records retain their original byte identities; the correction does not change profile semantics or establish new validation evidence. See [the authorship record](docs/AUTHORSHIP.md).
