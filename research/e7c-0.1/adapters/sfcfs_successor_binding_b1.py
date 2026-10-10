@@ -11,6 +11,8 @@ from hashlib import sha256
 from pathlib import Path
 import re
 
+from source_byte_corrections import matches_source_bytes
+
 from sfcfs_points_b1 import Family, Realisation, realise, restrict, shared_union
 
 
@@ -40,7 +42,7 @@ class EditionAdmission(ValueError):
 
 def _source_text(path: Path, digest: str) -> str:
     content = path.read_bytes()
-    if sha256(content).hexdigest() != digest:
+    if not matches_source_bytes(content, digest):
         raise EditionAdmission(f"source digest drift: {path.name}")
     return content.decode("utf-8")
 

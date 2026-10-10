@@ -15,8 +15,8 @@ This manifest binds the standalone v0.14 kernel draft to the REC/0.1 companion p
 
 | Repository path | Role | SHA-256 |
 |---|---|---|
-| `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md` | Self-contained successor kernel draft | `a64a8d9ecbd417cbe59883e33be7529cb779354b377b3ac261488a2a81cfc43a` |
-| `packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md` | Standalone proposed normative profile | `52b88f24e8fbbd2aef7dc221978be844790ae1c476ea7133ceedef9fde0ebbc3` |
+| `E7G-T_Kernel_v0.14_Experimental_Canonical_Draft.md` | Self-contained successor kernel draft | `dfaf249942c4448c04dd22e4777622f88a86406c4c27c5adceed4d97315556d7` |
+| `packages/rec-0.1/E7G-T_REC_v0.1_Reasoning-Evidence_Calculus_Profile.md` | Standalone proposed normative profile | `41cc8fd24404026b1f5354d4177335dd40f82461aff5fd912ceb3cf355050842` |
 | `packages/rec-0.1/reasoning-envelope-v1.schema.json` | Bounded Draft 2020-12 interchange schema | `7857ec7573f31b1304ae81ca905a100aab06af84d1a41d9caf5278c346edfd50` |
 | `packages/rec-0.1/e7gt_rec_v0_1.py` | Dependency-free bounded evaluator | `8902086db749567b0360bbb7ec4e71127f272791bf27b14d5f89b7049c197c55` |
 | `packages/rec-0.1/run_reasoning.py` | Command-line evaluator | `bd4c7abeaa5b8ae3911199dd0ecab3279d892eeaf175d4b0e432ffde0f316146` |
@@ -66,3 +66,7 @@ The first-party release run under Python 3.12.14 produced:
 REC-B1 checks a finite declared information-flow computation over opaque proposition text. It does not validate source truth, natural-language extraction, domain-rule soundness, authority legitimacy, general logical completeness, calibrated uncertainty or improved AI performance. The checker is separately implemented within the same first-party package; this is not independent reproduction.
 
 Promotion requires semantic and schema review, an external implementation, expert-reviewed domain rules and controlled baseline comparisons measuring accuracy, unsupported claims, scope errors, conflict retention, abstention, latency and cost.
+
+## Authorship correction on 10 October 2026
+
+Current-tree author credits name Oleksandr Razinkov alone. The table above identifies the corrected current bytes. Historical commits and validation records retain their original byte identities; the correction does not change profile semantics or establish new validation evidence. See [the authorship record](docs/AUTHORSHIP.md).

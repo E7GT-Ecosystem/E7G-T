@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+
+from adapters.source_byte_corrections import matches_source_bytes
 from pathlib import Path
 
 
@@ -89,7 +91,7 @@ def audit(texts: tuple[str, str, str]) -> dict[str, str]:
 def audit_pinned(root: Path = ROOT) -> dict[str, str]:
     raw = tuple((root / name).read_bytes() for name in FILES)
     for name, data, digest in zip(FILES, raw, SHA256):
-        if hashlib.sha256(data).hexdigest() != digest:
+        if not matches_source_bytes(data, digest):
             raise SourceDrift(f"source digest changed: {name}")
     return audit(tuple(data.decode("utf-8") for data in raw))
 

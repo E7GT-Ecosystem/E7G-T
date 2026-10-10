@@ -15,8 +15,8 @@ This manifest binds the standalone v0.13 kernel draft to its WPC/0.2 companion p
 
 | Repository path | Role | SHA-256 |
 |---|---|---|
-| `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md` | Self-contained successor kernel draft | `ecade9da08df04d257735d399848ebf2231590cabab8e48fa0b228db3051bdbe` |
-| `packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md` | Standalone proposed normative profile | `e1ebd7d3b1945f816fa21aee5d1c4802486d0b7cc2e097a99c96ec1c60d1cd3c` |
+| `E7G-T_Kernel_v0.13_Experimental_Canonical_Draft.md` | Self-contained successor kernel draft | `3b8ed473b99e538a636b05cebb0347df48c9c85909bc8bab46bac58a29d50557` |
+| `packages/wpc-0.2/E7G-T_WPC_v0.2_Reciprocal_Whole-Part_Profile.md` | Standalone proposed normative profile | `39cdebf8f534e6c4ac9acb16eeb41d5f7b20fdf9e675673950ba4a312f9c35c7` |
 | `packages/wpc-0.2/E7G-T_WPC_v0.2_Reference_Model.py` | Dependency-free bounded reference model | `5fe2e8d5f913f92ad8fbd0575607f569cbd211b13970174d537a9af14a493ea3` |
 | `packages/wpc-0.2/test_e7gt_wpc_v0_2.py` | Standard-library external test wrapper | `9af439dfeb6502a80a72112838a6a3476b0b008625f6c6975872c7258b5e4e43` |
 | `packages/wpc-0.2/E7G-T_WPC_v0.2_Validation.json` | First-party validation record | `230fc58a03f06a025f6ddf2017e40851205e4e953a4d27b262b31b81bd8e1b0f` |
@@ -58,3 +58,7 @@ The first-party release run under Python 3.12.14 produced:
 The results validate the stated finite allocation model only. They do not establish full WPC-Core/0.2 or WPC-Evolution/0.1 conformance, any WPC-Distributed/0.1 capability, independent reproduction, production readiness, physical instantiation, universal ontology, or superiority over simpler state-machine or event-log baselines.
 
 Promotion requires review of the formal sorts and closure laws, a normative interchange schema, implementation of each claimed capability, positive and negative conformance evidence, independent reproduction, and at least one end-to-end application comparison.
+
+## Authorship correction on 10 October 2026
+
+Current-tree author credits name Oleksandr Razinkov alone. The table above identifies the corrected current bytes. Historical commits and validation records retain their original byte identities; the correction does not change profile semantics or establish new validation evidence. See [the authorship record](docs/AUTHORSHIP.md).

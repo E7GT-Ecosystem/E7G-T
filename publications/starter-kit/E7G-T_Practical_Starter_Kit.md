@@ -2,7 +2,7 @@
 title: "E7G-T Practical Starter Kit"
 subtitle: "See what a representation preserves, what it hides, and what to do next"
 edition: "First Edition - July 2026"
-author: "Alexander Gregory Wingate and Oleksandr Razinkov"
+author: "Oleksandr Razinkov"
 kernel: "E7G-T v0.11-UC1"
 license: "CC BY-SA 4.0"
 ---
@@ -15,7 +15,7 @@ See what a representation preserves, what it hides, and what to do next.
 
 ### A concise guide, quick-check method, worked example, and reusable worksheet
 
-Alexander Gregory Wingate and Oleksandr Razinkov
+Oleksandr Razinkov
 
 First Edition - July 2026
 
@@ -435,9 +435,9 @@ For each case, record:
 
 ## Attribution and licence
 
-E7G-T and this Practical Starter Kit were created by equal co-authors Alexander Gregory Wingate and Oleksandr Razinkov.
+E7G-T and this Practical Starter Kit were created by Oleksandr Razinkov.
 
-Copyright © 2026 Alexander Gregory Wingate and Oleksandr Razinkov.
+Copyright © 2026 Oleksandr Razinkov.
 
 Licensed under the Creative Commons Attribution-ShareAlike 4.0 International Licence (CC BY-SA 4.0). You may share and adapt the material with attribution and under the same or a compatible licence. See https://creativecommons.org/licenses/by-sa/4.0/
 

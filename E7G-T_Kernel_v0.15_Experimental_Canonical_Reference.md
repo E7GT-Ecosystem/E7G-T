@@ -6,8 +6,8 @@ release_label: "v0.15-experimental-MSC1"
 date: "2026-09-25"
 revision: "MSC1"
 revision_date: "2026-09-25"
-author: "Alexander Gregory Wingate and Oleksandr Razinkov"
-copyright: "© 2026 Alexander Gregory Wingate and Oleksandr Razinkov"
+author: "Oleksandr Razinkov"
+copyright: "© 2026 Oleksandr Razinkov"
 license: "CC BY-SA 4.0"
 license_url: "https://creativecommons.org/licenses/by-sa/4.0/"
 status: "Experimental canonical reference; speculative mathematical profiles with bounded executable subsets"
@@ -37,8 +37,8 @@ ai_use: "Treat E7G-T as a geometry-first modelling language with experimental co
 
 **Executable Extension, Reciprocal Constitution and Checkable Reasoning**
 
-**Authors:** Alexander Gregory Wingate and Oleksandr Razinkov
-**Copyright:** © 2026 Alexander Gregory Wingate and Oleksandr Razinkov
+**Author:** Oleksandr Razinkov
+**Copyright:** © 2026 Oleksandr Razinkov
 **Licence:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 > **v0.15 working definition.** E7G-T is a geometry-first modelling language and practical calculus for constructing, extending, combining, transforming and viewing bounded relational entities, and for examining their preservation, loss, histories and inquiry-relative phases. Its experimental profiles distinguish constitution from representation, test coherence among independently constituted scopes, and may evaluate finite claim–evidence systems through declared rules. MSC compatibility is relative to stated carriers and maps; a REC result retains support and refutation independently and carries a replayable witness. Neither establishes external existence or source truth.
@@ -2976,7 +2976,7 @@ The minimum tangible next programme is a language implementation of this declare
 #!/usr/bin/env python3
 """E7G-T v0.12 experimental: FG3/0.1 finite example evaluator.
 
-Authors: Alexander Gregory Wingate and Oleksandr Razinkov.
+Author: Oleksandr Razinkov.
 Specification companion, CC BY-SA 4.0.
 Python 3.10+, standard library only. Run this file to print its checks.
 This is a bounded example model, not a full EEC-Q interpreter or compiler.
@@ -3425,7 +3425,7 @@ The following companion implements CG3/0.1 by importing the separately versioned
 #!/usr/bin/env python3
 """E7G-T CFS/0.1, CG3/0.1 combined family-state prototype.
 
-Authors: Alexander Gregory Wingate and Oleksandr Razinkov.
+Author: Oleksandr Razinkov.
 Specification example, CC BY-SA 4.0.
 Python 3.10+, standard library only. Keep this file beside the SF and EEC
 companions. Run it to execute the demonstration and checks.
@@ -3942,8 +3942,8 @@ title: "E7G-T Unified Geometry-Thinking Kernel"
 subtitle: "Extensional–Projective–Phase Geometry of Configurations and Time"
 version: "0.11-UC5"
 date: "2026-08-24"
-author: "Alexander Gregory Wingate and Oleksandr Razinkov"
-copyright: "© 2026 Alexander Gregory Wingate and Oleksandr Razinkov"
+author: "Oleksandr Razinkov"
+copyright: "© 2026 Oleksandr Razinkov"
 license: "CC BY-SA 4.0"
 license_url: "https://creativecommons.org/licenses/by-sa/4.0/"
 status: "Unified canonical reference candidate with restored first-class temporal geometry and informative observational-claim, temporal-orientation, topological-overlay, and relative-support pilot modules"
@@ -3959,9 +3959,9 @@ ai_use: "Load as a modular modelling and reasoning kernel. Apply the shared cons
 
 ## Extensional–Projective–Phase Geometry of Configurations and Time
 
-**Authors:** Alexander Gregory Wingate and Oleksandr Razinkov
+**Author:** Oleksandr Razinkov
 
-**Copyright:** © 2026 Alexander Gregory Wingate and Oleksandr Razinkov
+**Copyright:** © 2026 Oleksandr Razinkov
 
 **Licence:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 

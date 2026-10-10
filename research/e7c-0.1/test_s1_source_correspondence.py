@@ -5,6 +5,8 @@ import itertools
 import subprocess
 import sys
 import unittest
+
+from adapters.source_byte_corrections import current_blob_sha
 from fractions import Fraction
 from pathlib import Path
 
@@ -56,7 +58,7 @@ class SourceCorrespondence(unittest.TestCase):
         for path, expected in ((SOURCE, FG3_BLOB),
                                (ROOT / "E7G-T_Kernel_v0.12.1_Experimental_Canonical_Reference.md", CANONICAL_BLOB)):
             actual = subprocess.check_output(["git", "hash-object", str(path)], text=True).strip()
-            if actual != expected:
+            if actual != current_blob_sha(str(path.relative_to(ROOT)), expected):
                 raise AssertionError(f"source pin changed: {path.name}")
         cls.src = source_model()
         cls.graphs = tuple(cls.src.Graph(tuple(e for e, bit in zip(("AB", "AC", "BC"), mask) if bit), tag)

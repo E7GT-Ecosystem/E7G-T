@@ -5,8 +5,6 @@ title: "E7G-T Unified Geometry-Thinking Kernel: Experimental Executable Extensio
 version: "0.12-experimental"
 date-released: 2026-09-08
 authors:
-  - family-names: "Wingate"
-    given-names: "Alexander Gregory"
   - family-names: "Razinkov"
     given-names: "Oleksandr"
 license: "CC-BY-SA-4.0"
@@ -46,8 +44,6 @@ preferred-citation:
   type: generic
   title: "E7G-T Unified Geometry-Thinking Kernel: Experimental Executable Extension and Composition"
   authors:
-    - family-names: "Wingate"
-      given-names: "Alexander Gregory"
     - family-names: "Razinkov"
       given-names: "Oleksandr"
   year: 2026
