@@ -1,0 +1,127 @@
+{
+  "end_to_end": {
+    "differentiation": {
+      "digest": "630cce7afa0f349e0a8167f204b05e7b42570fc706d07bdcd95b723331c1b5d7",
+      "status": "constitutive_refinement",
+      "valid": true
+    },
+    "model_only_commit": {
+      "digest": "eaa16f23a34e2e67e7a812a22864df5a3cec4b3c868210010bc09be89789c122",
+      "status": "model_committed",
+      "valid": true
+    },
+    "selection": {
+      "digest": "077333149083ee004bbe21f444521c46b6da168cc2879e8f2ca34f4d12b58df1",
+      "status": "selected",
+      "valid": true
+    },
+    "signature_generation": {
+      "digest": "fa7802fc1a314317b529f2ff621fa140b324d73a36953ad7be2d89756d16a229",
+      "status": "expansive_signature_generation",
+      "valid": true
+    },
+    "within_signature_generation": {
+      "digest": "3307d5ee075ebcab91ee7e8a7462bb9d21f27783855d22683f726c60201c6bbd",
+      "status": "expansive_within_signature",
+      "valid": true
+    }
+  },
+  "end_to_end_receipts_checked": 5,
+  "expected_negative_receipts_checked": 15,
+  "model": "GCD-B1/0.2",
+  "negative": {
+    "choice_nonmember": {
+      "actual_status": "rejected_nonmember",
+      "expected_status": "rejected_nonmember",
+      "status_matches": true,
+      "valid": true
+    },
+    "choice_not_supplied": {
+      "actual_status": "unresolved",
+      "expected_status": "unresolved",
+      "status_matches": true,
+      "valid": true
+    },
+    "choice_unknown_policy": {
+      "actual_status": "unsupported",
+      "expected_status": "unsupported",
+      "status_matches": true,
+      "valid": true
+    },
+    "finite_rank_exceeded": {
+      "actual_status": "resource_limit",
+      "expected_status": "resource_limit",
+      "status_matches": true,
+      "valid": true
+    },
+    "model_commit_stale_family": {
+      "actual_status": "rejected",
+      "expected_status": "rejected",
+      "status_matches": true,
+      "valid": true
+    },
+    "model_commit_without_grant": {
+      "actual_status": "unauthorised",
+      "expected_status": "unauthorised",
+      "status_matches": true,
+      "valid": true
+    },
+    "no_pairwise_semantic_split": {
+      "actual_status": "not_established",
+      "expected_status": "not_established",
+      "status_matches": true,
+      "valid": true
+    },
+    "signature_extension_coarse_comparison": {
+      "actual_status": "non_expansive",
+      "expected_status": "non_expansive",
+      "status_matches": true,
+      "valid": true
+    },
+    "signature_extension_invalid_missing_relation": {
+      "actual_status": "invalid_input",
+      "expected_status": "invalid_input",
+      "status_matches": true,
+      "valid": true
+    },
+    "signature_extension_unsupported": {
+      "actual_status": "unsupported",
+      "expected_status": "unsupported",
+      "status_matches": true,
+      "valid": true
+    },
+    "unchanged_semantics_access_only": {
+      "actual_status": "access_refinement_only",
+      "expected_status": "access_refinement_only",
+      "status_matches": true,
+      "valid": true
+    },
+    "unknown_operation": {
+      "actual_status": "unsupported",
+      "expected_status": "unsupported",
+      "status_matches": true,
+      "valid": true
+    },
+    "within_generation_coarse_comparison": {
+      "actual_status": "non_expansive",
+      "expected_status": "non_expansive",
+      "status_matches": true,
+      "valid": true
+    },
+    "within_generation_existing_alternative": {
+      "actual_status": "non_expansive",
+      "expected_status": "non_expansive",
+      "status_matches": true,
+      "valid": true
+    },
+    "within_generation_wrong_candidate": {
+      "actual_status": "domain_error",
+      "expected_status": "domain_error",
+      "status_matches": true,
+      "valid": true
+    }
+  },
+  "passed": true,
+  "profile": "GCD/0.2-research",
+  "scope": "first-party deterministic interpreter replay; not independent implementation or authenticated history"
+}

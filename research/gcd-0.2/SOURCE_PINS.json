@@ -1,0 +1,25 @@
+{
+  "reference_base": "E7G-T v0.15-experimental-MSC1",
+  "source_files": [
+    {
+      "filename": "E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md",
+      "sha256": "5b1e9913cf24b80612f81014b8cc7efc7574d43402a2a188a17daa096c0c621a",
+      "status": "read-only supplied experimental canonical reference"
+    },
+    {
+      "filename": "E7GT_GCD_0.1_Research_Amendment_Proposal.md",
+      "sha256": "0c1b89610a358512c403d4c3d5d9c3da0e37bc600f0dcc28296be3182db5d2d9",
+      "status": "read-only supplied predecessor proposal"
+    },
+    {
+      "filename": "E7G-T_Ecosystem_Operating_Kernel_v0.2.md",
+      "sha256": "0684426c032ab98cc8db5cb104e12dca618534641b75dfeec9c2fcd7dc82916d",
+      "status": "read-only supplied operating kernel; historical v0.12 source pin retained"
+    }
+  ],
+  "new_profile": "GCD/0.2-research",
+  "bounded_model": "GCD-B1/0.2",
+  "source_modifications": false,
+  "product_changes": false,
+  "canonical_merge": false
+}
