@@ -10,7 +10,7 @@ source_pin: v0.15-experimental-MSC1
 canonical_change: none
 product_pin_change: none
 operating_kernel_change: none
-repository_merge: none
+repository_merge: completed as research-only PR #176; no canonical promotion
 status: First-party internally tested; independent review required
 basis: User's conditional research mandate, original GCD/0.1, provided v0.15 source
 preserves:
@@ -18,7 +18,6 @@ preserves:
   - distinction between constitutive and epistemic/access differences
   - previous alternatives and declared grounding
   - selection and commitment as separate event types
-  - philosophical motivation as separate interpretive provenance
 loses_or_defers:
   - general symbolic family and general graph carriers
   - authenticated choice occurrences and real authorisation
@@ -34,4 +33,4 @@ next_review_trigger: independent mathematical review, second implementation or a
 promotion_authority: explicit future E7G-T project decision only
 ```
 
-The separately versioned package is the approved isolation mechanism. No Git branch, repository push, PR, or canonical merge is asserted by these local file artifacts.
+The module was merged into the GitHub source repository as non-canonical research via PR #176. That integration is not canonical-profile promotion. An editorial mathematics-only presentation update supersedes its earlier framing, without changing the mathematical operators or pinned kernel.

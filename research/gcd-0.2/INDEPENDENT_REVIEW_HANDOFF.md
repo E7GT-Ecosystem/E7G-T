@@ -2,7 +2,7 @@
 
 ## Review disposition
 
-Candidate: `GCD/0.2-research`, evaluator `GCD-B1/0.2`, source `E7G-T v0.15-experimental-MSC1`. **Not canonical. Not merged. No product or operating-kernel pins changed.** Review is requested, not presumed completed.
+Candidate: `GCD/0.2-research`, evaluator `GCD-B1/0.2`, source `E7G-T v0.15-experimental-MSC1`. **Not canonical. Integrated into the repository as a research-only package via PR #176. No product or operating-kernel pins changed.** Review is requested, not presumed completed.
 
 ## Reproduce locally
 
@@ -39,4 +39,4 @@ The `SHA256SUMS.txt` check is reliable only for the exact immutable delivered pa
 
 ## Required reviewer response format
 
-Report `PASS`, `FAIL`, or `INCONCLUSIVE` per obligation with exact scope and evidence. Preserve counterexamples, failure logs, edition identity, implementation commit/digest if assigned, and differences between mathematical proof, first-party tests and independent reproduction. Do not conflate a reproduced Python run with an independently implemented mathematical checker. No merge or canonical promotion without a separate explicit project decision.
+Report `PASS`, `FAIL`, or `INCONCLUSIVE` per obligation with exact scope and evidence. Preserve counterexamples, failure logs, edition identity, implementation commit/digest if assigned, and differences between mathematical proof, first-party tests and independent reproduction. Do not conflate a reproduced Python run with an independently implemented mathematical checker. No canonical promotion without a separate explicit project decision.
