@@ -374,7 +374,7 @@ if __name__ == "__main__":
                "failures": len(run.failures), "errors": len(run.errors),
                "passed": run.wasSuccessful(), "finite_counts": COUNTS,
                "scope": "Exhaustive on specifically enumerated finite domains only",
-               "non_claims": ["full v0.15 conformance", "external verification", "physical free will",
+               "non_claims": ["full v0.15 conformance", "external verification", "external act attribution",
                               "production authorisation"]}
     if args.json_report:
         with open(args.json_report, "w", encoding="utf-8") as fh:

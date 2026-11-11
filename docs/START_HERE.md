@@ -1,6 +1,8 @@
-# Start Here — E7G-T v0.12 Experimental
+# Start Here — E7G-T Mathematical Research
 
-E7G-T now treats two questions as parts of one modelling problem:
+E7G-T is experimental mathematics for examining typed relational configurations, projections, transformations and inquiry-relative equivalence. The live source is pinned at **v0.15-experimental-MSC1**; earlier versions remain historical. See [Mathematical Scope](MATHEMATICAL_SCOPE.md).
+
+Two foundational questions are:
 
 1. **How is the thing constructed, transformed, represented, projected, or reconstructed?**
 2. **Which differences matter for the inquiry, and when has a material operational boundary been crossed?**
@@ -78,7 +80,9 @@ Take an AI-generated answer that recommends an action.
 
 ## Read next
 
-- [v0.12 Experimental Canonical Kernel](../E7G-T_Kernel_v0.12_Experimental_Canonical_Reference.md)
+- [v0.15 Experimental Canonical Kernel](../E7G-T_Kernel_v0.15_Experimental_Canonical_Reference.md)
+- [Mathematical Scope and Claim Standards](MATHEMATICAL_SCOPE.md)
+- [GCD/0.2 Non-Canonical Research Module](../research/gcd-0.2/)
 - [Architecture Overview](ARCHITECTURE.md)
 - [Migration Guide](MIGRATION_FROM_v0.9.md)
 - [Combined Worksheet](worksheets/WS-001_Representation_to_Phase_Review.md)

@@ -3,11 +3,16 @@
 **Unified Geometry-Thinking Kernel**  
 **Extensional–Projective–Phase Geometry of Configurations and Time**
 
-E7G-T is a geometry-first modelling language and practical calculus for making **structural and temporal extension, projection, preservation, loss, reconstruction, operational sameness, material boundaries, transition paths, bridge mode, and admissible use** visible.
+E7G-T (Geometry-Thinking) is an **experimental mathematical research framework** for relational configurations, transformations, structural and temporal extensions, projections, equivalence classes, composition and their preservation conditions. Its mathematical claims are tied to explicitly declared carriers, signatures, operators, laws and verification obligations.
 
+**Mathematical scope:** [Mathematical research and claim boundary](docs/MATHEMATICAL_SCOPE.md)  
 **Public site:** https://e7-g-t.vercel.app/
 
-It helps users inspect representations and histories before relying on them: AI answers, charts, dashboards, translations, proof sketches, legal summaries, models, reports, workflows, version histories, and decision documents.
+The project investigates mathematical constructions first. Software prototypes, data analysis and other applications are ways to test selected models; they are not axioms or evidence of claims outside the declared mathematics. Ideas outside mathematics may have informed the original research questions but do not determine definitions or results.
+
+## Research status and scope
+
+The project's formal content consists of model-relative definitions, propositions, proof obligations, finite reference models and versioned conformance evidence. An implementation passing bounded tests is not a proof of all-input generality. The historical E7G-T v0.15-experimental-MSC1 source remains unchanged; independently versioned projects such as [GCD/0.2](research/gcd-0.2/) are **research modules**, not automatic canonical amendments.
 
 ## Public landing page
 

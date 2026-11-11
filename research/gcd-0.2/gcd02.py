@@ -529,7 +529,7 @@ def complete_example():
             "stages": stages, "external_effects": False,
             "claims": ["bounded structural conformance", "deterministic recomputation"],
             "non_claims": ["real-world authorisation", "external enactment", "market superiority",
-                           "subjective free will", "physical ontology"]}
+                           "externally authenticated actor", "externally observed transition"]}
 
 
 if __name__ == "__main__":

@@ -35,6 +35,6 @@ test_unregistered_structural_kind_rejected (__main__.GCDTests.test_unregistered_
 test_unsupported_or_bad_dispatch_is_distinct (__main__.GCDTests.test_unsupported_or_bad_dispatch_is_distinct) ... ok
 
 ----------------------------------------------------------------------
-Ran 35 tests in 0.043s
+Ran 35 tests in 0.063s
 
 OK

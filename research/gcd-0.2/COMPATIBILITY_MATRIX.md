@@ -25,7 +25,7 @@
 4. New signature kinds are not merely RGP hosted items; generation is a versioned, typed operation with an admitted source and target.
 5. Witness receipts are computed and replayed locally; they are not domain truth, cryptographic authentication, external actor evidence or independent verification.
 6. A model-only commitment is not WPC-Evolution acceptance, production authorisation or an externally performed transition.
-7. `GenerationLayer` rank is not a D0–D7 dimension, temporal role, completed infinity or ontological hierarchy.
+7. `GenerationLayer` rank is not a D0–D7 dimension, temporal role, completed infinity or external hierarchy.
 
 ## Migration classification
 

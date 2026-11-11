@@ -2,7 +2,7 @@
 title: E7G-T Generative Choice and Differentiation — GCD/0.2
 edition: GCD/0.2-research
 model: GCD-B1/0.2
-status: Isolated mathematical research specification; not canonical or merged
+status: Experimental mathematical research specification; integrated as non-canonical research; independent review pending
 pinned_base: E7G-T v0.15-experimental-MSC1 (2026-09-25)
 predecessor: GCD/0.1 research amendment proposal
 language: British English
@@ -10,13 +10,13 @@ language: British English
 
 # GCD/0.2 — Generative Choice and Differentiation
 
-## 0. Constitutional, mathematical and use boundary
+## 0. Mathematical scope and use boundary
 
 GCD/0.2 is a **separately versioned, optional research profile** examining (i) constituted semantic distinctions, (ii) expansive generation of admitted alternatives, (iii) explicit selection within an admitted possibility family, and (iv) authorised successor commitment as a distinct capability. Selecting GCD/0.2 imposes no obligation on ordinary E7G-T v0.15 users or existing EEC-Q, SF, CFS, RGP, WPC, REC, MSC or UC5 implementations. **Nothing here amends E7G-T v0.15, changes existing product pins or constitutes a conformance claim to the complete v0.15 kernel.**
 
-The formal claims below are conditional on declared carriers, signatures, admission predicates, equivalence criteria, maps, editions and implementation limits. A formally constituted distinction is a distinction in a *model's semantic identity*, not proof of an external ontological creation. A witnessed choice occurrence is a checked model record, not proof of a human mental event, authenticated actor, spontaneous freedom or a physically executed transition.
+The formal claims below are conditional on declared carriers, signatures, admission predicates, equivalence criteria, maps, editions and implementation limits. A constituted distinction is a difference in a *model's semantic identity*, rather than a claim about changes outside its declared carrier. A choice receipt establishes a modelled selection occurrence; actor authentication, authorisation and external execution are separate properties.
 
-The motivating interpretation of the *Law of One* is isolated in `PHILOSOPHICAL_PROVENANCE.md`, outside all definitions and axioms. The interpretation is not assumed to be a correct reading of the source, and no source-text verification is claimed.
+**Scope:** GCD/0.2 is mathematical research. Its definitions, results, tests and compatibility claims depend solely on the declared formal model and evidence. Conceptual inspirations external to mathematics are excluded from the mathematical specification and from claims of validity.
 
 ## 1. Typed vocabulary and exact boundaries
 
@@ -35,7 +35,7 @@ The abstract proposal uses the following separately typed values:
 | `GenRule[Σ→Τ]` | Registered finite generator, typed domain, parameters and version | Unrestricted string evaluation |
 | `GenResult[Τ]` | New family edition, preserved/lost/new alternatives, criterion-relative witness | Unrecorded overwrite |
 | `ChosenDescription[Σ]` | Selected admitted configuration tied to a family edition and a choice act | SF `realise`, commitment or physical enactment |
-| `ChoiceAct[Σ]` | Immutable *logical* occurrence, basis, provenance, claimed actor/authority and membership witness | Authentication or subjective freedom |
+| `ChoiceAct[Σ]` | Immutable *logical* occurrence, basis, provenance, claimed actor/authority and membership witness | Authenticated actor identity or external execution |
 | `SeedAdapter[Σ]` | Explicit conversion of selected configuration into a new singleton family | Implicit type coercion |
 | `RealisationEvent[Σ]` | Modelled transition record under a separately declared commit protocol | External effect without an execution bridge |
 | `GenerationLayer[r]` | Finite-rank layer with typed parent binding | D-role, temporal role, infinite actual structure |
@@ -70,7 +70,7 @@ The first statement preserves prior distinguishability; the second exhibits a gr
 4. an admitted `X`, exact pair witness, full pair-law check in the bounded model, and proof that a target semantic distinction **does not factor through** `g` on the witnessing pair;
 5. provenance of the source and target family editions and no claim that the semantic change occurred outside the model.
 
-**Non-factorisation test.** A new target property `p` cannot be recovered solely from the previous coarse structure if `g(x)=g(y)` but `p(x)≠p(y)`. Then no function `q` on the coarse image satisfies `p=q∘g` on both `x` and `y`. This formalises *relative* semantic novelty; it does not establish ontological origin.
+**Non-factorisation test.** A new target property `p` cannot be recovered solely from the previous coarse structure if `g(x)=g(y)` but `p(x)≠p(y)`. Then no function `q` on the coarse image satisfies `p=q∘g` on both `x` and `y`. This formalises *relative* semantic novelty within the selected signatures and grounding map; it makes no claim about origins outside the model.
 
 `DifferentiateFamily : Family[Σ] × Family[Τ] × ComparisonCarrier[Τ] → DiffResult` is the primary operation. Every comparison target must ground into the supplied source family's admitted set. A proposed single-config `DifferentiateConfig` can return a constructed config, but must reference a sufficient comparison family and does **not** by itself certify strict refinement. The reference evaluator intentionally implements only the family-level version.
 
@@ -124,7 +124,7 @@ A successful selection requires exact membership `w∈⟦H⟧` under the version
 
 An immutable *semantic edition* of the source family is preserved. A choice neither deletes unchosen possibilities nor alters the modelled world. Unknown member, unprovided candidate, unsupported policy, absent authorisation and resource exhaustion are distinct statuses. The bounded model has exact finite membership, so no probabilistic, approximate or unknown-membership solver is claimed.
 
-`Choose` is **not** SF/0.1 criterion-driven `realise` with its objective ordering and residual-family semantics. Selecting a generator rule itself is meaningful in the abstract profile but is not implemented in GCD-B1 (the finite evaluator uses two fixed registered generators). Subjective freedom cannot be inferred from either supplied or deterministic choice mechanisms.
+`Choose` is **not** SF/0.1 criterion-driven `realise` with its objective ordering and residual-family semantics. Selecting a generator rule itself is meaningful in the abstract profile but is not implemented in GCD-B1 (the finite evaluator uses two fixed registered generators). A selection mechanism, whether supplied or deterministic, does not authenticate the actor or establish that an external action occurred.
 
 **Provenance limitation:** a user-supplied `actor_ref` is an *assertion*, not independently authenticated identity. A replayable hash validates recomputation, not the historical fact that a particular person selected the value.
 
