@@ -1,0 +1,32 @@
+{
+  "errors": 0,
+  "failures": 0,
+  "finite_counts": {
+    "admitted_configurations_checked": 11,
+    "all_nonempty_s1_families_signature_generation": 15,
+    "all_nonempty_s1_families_within_generation": 15,
+    "all_registered_signature_rule_candidate_cases": 90,
+    "all_registered_within_rule_candidate_cases": 60,
+    "bounded_recursive_ranks_checked": 9,
+    "exhaustive_s0_to_s1_family_refinement": 16,
+    "exhaustive_s1_to_s2_family_refinement": 64,
+    "exhaustive_selection_membership_pairs": 378,
+    "exhaustive_selection_negative": 186,
+    "exhaustive_selection_positive": 192,
+    "finite_subsets_checked_for_admission": 24,
+    "ground_embed_left_inverse_checks": 6,
+    "ordered_pair_refinement_law_checks": 88,
+    "strict_split_pair_witnesses_found": 46
+  },
+  "kernel_base": "v0.15-experimental-MSC1",
+  "model": "GCD-B1/0.2",
+  "named_tests": 35,
+  "non_claims": [
+    "full v0.15 conformance",
+    "external verification",
+    "physical free will",
+    "production authorisation"
+  ],
+  "passed": true,
+  "scope": "Exhaustive on specifically enumerated finite domains only"
+}

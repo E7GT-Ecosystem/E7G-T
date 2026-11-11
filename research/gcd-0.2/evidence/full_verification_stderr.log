@@ -1,0 +1,40 @@
+test_access_refinement_is_not_constitution (__main__.GCDTests.test_access_refinement_is_not_constitution) ... ok
+test_all_finite_family_choice_membership_pairs (__main__.GCDTests.test_all_finite_family_choice_membership_pairs) ... ok
+test_bad_generator_domain (__main__.GCDTests.test_bad_generator_domain) ... ok
+test_commit_rejects_forged_receipt (__main__.GCDTests.test_commit_rejects_forged_receipt) ... ok
+test_concrete_grounding_not_identity_and_noninvertible (__main__.GCDTests.test_concrete_grounding_not_identity_and_noninvertible) ... ok
+test_criterion_relative_novelty_fails_for_coarse_criterion (__main__.GCDTests.test_criterion_relative_novelty_fails_for_coarse_criterion) ... ok
+test_different_history_identity_same_outcome (__main__.GCDTests.test_different_history_identity_same_outcome) ... ok
+test_empty_family_distinct_from_failure (__main__.GCDTests.test_empty_family_distinct_from_failure) ... ok
+test_exact_finite_carrier_and_enumeration (__main__.GCDTests.test_exact_finite_carrier_and_enumeration) ... ok
+test_exhaustive_all_registered_generator_candidates (__main__.GCDTests.test_exhaustive_all_registered_generator_candidates) ... ok
+test_exhaustive_differentiation_family_subsets (__main__.GCDTests.test_exhaustive_differentiation_family_subsets) ... ok
+test_exhaustive_generation_classification (__main__.GCDTests.test_exhaustive_generation_classification) ... ok
+test_exhaustive_refinement_properties (__main__.GCDTests.test_exhaustive_refinement_properties) ... ok
+test_finite_recursive_rule_and_limit (__main__.GCDTests.test_finite_recursive_rule_and_limit) ... ok
+test_full_example_and_complete_replay (__main__.GCDTests.test_full_example_and_complete_replay) ... ok
+test_grounding_embedding_left_inverse_exhaustive (__main__.GCDTests.test_grounding_embedding_left_inverse_exhaustive) ... ok
+test_incompatible_ground_rejected (__main__.GCDTests.test_incompatible_ground_rejected) ... ok
+test_invalid_structure_missing_required_relation (__main__.GCDTests.test_invalid_structure_missing_required_relation) ... ok
+test_model_only_commit_requires_independent_fixture_grant (__main__.GCDTests.test_model_only_commit_requires_independent_fixture_grant) ... ok
+test_non_split_not_established (__main__.GCDTests.test_non_split_not_established) ... ok
+test_noncommutation_typed_paths (__main__.GCDTests.test_noncommutation_typed_paths) ... ok
+test_renaming_does_not_generate_novelty (__main__.GCDTests.test_renaming_does_not_generate_novelty) ... ok
+test_replay_same_and_forged_receipts (__main__.GCDTests.test_replay_same_and_forged_receipts) ... ok
+test_same_signature_generation (__main__.GCDTests.test_same_signature_generation) ... ok
+test_selection_nonmember_unavailable_and_policy (__main__.GCDTests.test_selection_nonmember_unavailable_and_policy) ... ok
+test_selection_to_family_requires_explicit_adapter (__main__.GCDTests.test_selection_to_family_requires_explicit_adapter) ... ok
+test_selective_choice_and_preserved_families (__main__.GCDTests.test_selective_choice_and_preserved_families) ... ok
+test_shared_dependency_is_not_independent_choice (__main__.GCDTests.test_shared_dependency_is_not_independent_choice) ... ok
+test_signature_generation_negative_cases (__main__.GCDTests.test_signature_generation_negative_cases) ... ok
+test_signature_generation_new_kind_and_relation (__main__.GCDTests.test_signature_generation_new_kind_and_relation) ... ok
+test_stale_family_cannot_commit (__main__.GCDTests.test_stale_family_cannot_commit) ... ok
+test_strict_constitutive_refinement (__main__.GCDTests.test_strict_constitutive_refinement) ... ok
+test_typed_receipt_from_operations (__main__.GCDTests.test_typed_receipt_from_operations) ... ok
+test_unregistered_structural_kind_rejected (__main__.GCDTests.test_unregistered_structural_kind_rejected) ... ok
+test_unsupported_or_bad_dispatch_is_distinct (__main__.GCDTests.test_unsupported_or_bad_dispatch_is_distinct) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 0.043s
+
+OK

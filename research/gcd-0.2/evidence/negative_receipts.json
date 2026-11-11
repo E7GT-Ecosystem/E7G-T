@@ -1,0 +1,1386 @@
+{
+  "model": "GCD-B1/0.2",
+  "negative_cases": [
+    {
+      "case": "unchanged_semantics_access_only",
+      "expected_status": "access_refinement_only",
+      "receipt": {
+        "digest_sha256": "16a5544a59ea1660721f8e9f8e0bb3987d6d1d5acf41f08c0d39403282984228",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "same semantic signature: new observations do not constitute structure",
+          "status": "access_refinement_only"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "op": "differentiate",
+          "source": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "target": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          }
+        }
+      }
+    },
+    {
+      "case": "no_pairwise_semantic_split",
+      "expected_status": "not_established",
+      "receipt": {
+        "digest_sha256": "0102f8b66c4736fbb95cd83fceda518ab3e5c1c304acd335013e47bb5b3bf28f",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "comparison carrier requires at least two target configurations",
+          "status": "not_established"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "op": "differentiate",
+          "source": {
+            "dependency_id": "dep-1",
+            "edition": "src",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [],
+                "signature": "gcd.workflow.s0"
+              }
+            ],
+            "signature": "gcd.workflow.s0"
+          },
+          "target": {
+            "dependency_id": "release-0",
+            "edition": "single",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          }
+        }
+      }
+    },
+    {
+      "case": "within_generation_coarse_comparison",
+      "expected_status": "non_expansive",
+      "receipt": {
+        "digest_sha256": "50b26f9de26dbbe00705b088c3b677afdc858cf54906f43d6ac79a8f28007cea",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "candidate is not new at pinned criterion",
+          "status": "non_expansive"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "R",
+                "reject"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "R"
+              ]
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "criterion": "root_only",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "generate_within"
+        }
+      }
+    },
+    {
+      "case": "within_generation_existing_alternative",
+      "expected_status": "non_expansive",
+      "receipt": {
+        "digest_sha256": "71282c3c34e91d982b2205c3cbc6b2ff199195ea71fcea63cd98b58945fb5145",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "candidate is not new at pinned criterion",
+          "status": "non_expansive"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "R",
+                "reject"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "R"
+              ]
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1-c",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ],
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "generate_within"
+        }
+      }
+    },
+    {
+      "case": "within_generation_wrong_candidate",
+      "expected_status": "domain_error",
+      "receipt": {
+        "digest_sha256": "ca4c36bbf4a60152686da960677aade039ef042be50c577dbf78f06dd6bcf8d4",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "candidate is not the rule-produced combination",
+          "status": "domain_error"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ]
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "generate_within"
+        }
+      }
+    },
+    {
+      "case": "signature_extension_unsupported",
+      "expected_status": "unsupported",
+      "receipt": {
+        "digest_sha256": "0c09c4f0826b5bc662fc2f7ff3b33a0b178aabb7109b3ae6bc1cb31e996ecf58",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "only registered s1->s2 signature extension supported",
+          "status": "unsupported"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "E",
+                "evidence_gate"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "E"
+              ],
+              [
+                "requires",
+                "A",
+                "E"
+              ]
+            ],
+            "signature": "gcd.workflow.s2"
+          },
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "src",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [],
+                "signature": "gcd.workflow.s0"
+              }
+            ],
+            "signature": "gcd.workflow.s0"
+          },
+          "op": "generate_signature"
+        }
+      }
+    },
+    {
+      "case": "signature_extension_invalid_missing_relation",
+      "expected_status": "invalid_input",
+      "receipt": {
+        "digest_sha256": "ceab11883941ee011d0b0927d1cbde9e43c60e96cfb5d92ee599507a00b71b45",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "missing or extraneous relation",
+          "status": "invalid_input"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "E",
+                "evidence_gate"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "E"
+              ]
+            ],
+            "signature": "gcd.workflow.s2"
+          },
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "generate_signature"
+        }
+      }
+    },
+    {
+      "case": "signature_extension_coarse_comparison",
+      "expected_status": "non_expansive",
+      "receipt": {
+        "digest_sha256": "da0bfef807c4175f65d99e99a2204b015c53acb9089ff89bc19131cbc1d31eb5",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "no novel target criterion class",
+          "status": "non_expansive"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "E",
+                "evidence_gate"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "E"
+              ],
+              [
+                "requires",
+                "A",
+                "E"
+              ]
+            ],
+            "signature": "gcd.workflow.s2"
+          },
+          "criterion": "root_only",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "generate_signature"
+        }
+      }
+    },
+    {
+      "case": "choice_nonmember",
+      "expected_status": "rejected_nonmember",
+      "receipt": {
+        "digest_sha256": "44e10f08711b64a1cf0611f6ff765a296a933743f51a7348f3b853b3d414fef6",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "selection is not an admitted family member",
+          "status": "rejected_nonmember"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "actor_ref": "reviewer:alice",
+          "candidate": {
+            "nodes": [
+              [
+                "A",
+                "approve"
+              ],
+              [
+                "R",
+                "reject"
+              ],
+              [
+                "W",
+                "workflow"
+              ]
+            ],
+            "relations": [
+              [
+                "contains",
+                "W",
+                "A"
+              ],
+              [
+                "contains",
+                "W",
+                "R"
+              ]
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "choice_id": "act-2",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "choose"
+        }
+      }
+    },
+    {
+      "case": "choice_not_supplied",
+      "expected_status": "unresolved",
+      "receipt": {
+        "digest_sha256": "52f48fc709af9303eff13f3505e201e02bfa9b8222c82464ede149c4050d99b8",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "no supplied alternative",
+          "status": "unresolved"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "actor_ref": "reviewer:alice",
+          "candidate": null,
+          "choice_id": "act-3",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "op": "choose"
+        }
+      }
+    },
+    {
+      "case": "choice_unknown_policy",
+      "expected_status": "unsupported",
+      "receipt": {
+        "digest_sha256": "8343270c9bb3fec0e6e699f706ce8df25651f3fe9f6c0b6103fed6d962964e73",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "policy not registered",
+          "status": "unsupported"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "actor_ref": "reviewer:alice",
+          "candidate": null,
+          "choice_id": "act-4",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "mechanism": "registered_policy",
+          "op": "choose",
+          "policy": "other/v1"
+        }
+      }
+    },
+    {
+      "case": "model_commit_without_grant",
+      "expected_status": "unauthorised",
+      "receipt": {
+        "digest_sha256": "2ac2fcc0c909a276de085f7bcc8204836449e7ee36fe770578a4084614baee3e",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "no matching MODEL FIXTURE grant",
+          "status": "unauthorised"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "actor_ref": "reviewer:alice",
+          "base_epoch": 0,
+          "choice_receipt": {
+            "digest_sha256": "9436adf06bf19a7f6ac9f3d943d57b1dc33757f2ab15127621f6cc49c7a960c8",
+            "kernel_base": "v0.15-experimental-MSC1",
+            "model": "GCD-B1/0.2",
+            "outcome": {
+              "choice_act": {
+                "actor_binding_status": "claimed_not_authenticated",
+                "actor_ref": "reviewer:alice",
+                "authority_status": "unverified_no_commit_authority",
+                "choice_id": "act-1",
+                "context": "research-fixture",
+                "dependency_id": "dep-1",
+                "effect": "description_selected_only",
+                "mechanism": "supplied_input",
+                "membership_witness": {
+                  "exact_config_digest": "d3c1529d919d0b07630e6c813a7edd9c1443b4ed4434e064330cd492086e0c2c",
+                  "member_index": 0
+                },
+                "policy_edition": null,
+                "selected_config": {
+                  "nodes": [
+                    [
+                      "A",
+                      "approve"
+                    ],
+                    [
+                      "W",
+                      "workflow"
+                    ]
+                  ],
+                  "relations": [
+                    [
+                      "contains",
+                      "W",
+                      "A"
+                    ]
+                  ],
+                  "signature": "gcd.workflow.s1"
+                },
+                "selection_history_identity": "act-1",
+                "source_family_digest": "a19df5301756d75399bc653d736741b2d04f072e8209e613bc2b48829c805e0c",
+                "source_family_edition": "v1"
+              },
+              "external_enactment": false,
+              "source_family_preserved": true,
+              "status": "selected",
+              "unchosen_member_count": 1
+            },
+            "profile": "GCD/0.2-research",
+            "request": {
+              "actor_ref": "reviewer:alice",
+              "candidate": {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              "choice_id": "act-1",
+              "family": {
+                "dependency_id": "dep-1",
+                "edition": "v1",
+                "members": [
+                  {
+                    "nodes": [
+                      [
+                        "A",
+                        "approve"
+                      ],
+                      [
+                        "W",
+                        "workflow"
+                      ]
+                    ],
+                    "relations": [
+                      [
+                        "contains",
+                        "W",
+                        "A"
+                      ]
+                    ],
+                    "signature": "gcd.workflow.s1"
+                  },
+                  {
+                    "nodes": [
+                      [
+                        "R",
+                        "reject"
+                      ],
+                      [
+                        "W",
+                        "workflow"
+                      ]
+                    ],
+                    "relations": [
+                      [
+                        "contains",
+                        "W",
+                        "R"
+                      ]
+                    ],
+                    "signature": "gcd.workflow.s1"
+                  }
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              "op": "choose"
+            }
+          },
+          "event_id": "evt-1",
+          "family": {
+            "dependency_id": "dep-1",
+            "edition": "v1",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "grant": "unapproved",
+          "op": "commit_model"
+        }
+      }
+    },
+    {
+      "case": "model_commit_stale_family",
+      "expected_status": "rejected",
+      "receipt": {
+        "digest_sha256": "15d0fd5b28ac99071a5eac56c93fed670631dae99f472fce6031febd1d612bbc",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "choice was made against another family edition",
+          "status": "rejected"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "actor_ref": "reviewer:alice",
+          "base_epoch": 0,
+          "choice_receipt": {
+            "digest_sha256": "9436adf06bf19a7f6ac9f3d943d57b1dc33757f2ab15127621f6cc49c7a960c8",
+            "kernel_base": "v0.15-experimental-MSC1",
+            "model": "GCD-B1/0.2",
+            "outcome": {
+              "choice_act": {
+                "actor_binding_status": "claimed_not_authenticated",
+                "actor_ref": "reviewer:alice",
+                "authority_status": "unverified_no_commit_authority",
+                "choice_id": "act-1",
+                "context": "research-fixture",
+                "dependency_id": "dep-1",
+                "effect": "description_selected_only",
+                "mechanism": "supplied_input",
+                "membership_witness": {
+                  "exact_config_digest": "d3c1529d919d0b07630e6c813a7edd9c1443b4ed4434e064330cd492086e0c2c",
+                  "member_index": 0
+                },
+                "policy_edition": null,
+                "selected_config": {
+                  "nodes": [
+                    [
+                      "A",
+                      "approve"
+                    ],
+                    [
+                      "W",
+                      "workflow"
+                    ]
+                  ],
+                  "relations": [
+                    [
+                      "contains",
+                      "W",
+                      "A"
+                    ]
+                  ],
+                  "signature": "gcd.workflow.s1"
+                },
+                "selection_history_identity": "act-1",
+                "source_family_digest": "a19df5301756d75399bc653d736741b2d04f072e8209e613bc2b48829c805e0c",
+                "source_family_edition": "v1"
+              },
+              "external_enactment": false,
+              "source_family_preserved": true,
+              "status": "selected",
+              "unchosen_member_count": 1
+            },
+            "profile": "GCD/0.2-research",
+            "request": {
+              "actor_ref": "reviewer:alice",
+              "candidate": {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              "choice_id": "act-1",
+              "family": {
+                "dependency_id": "dep-1",
+                "edition": "v1",
+                "members": [
+                  {
+                    "nodes": [
+                      [
+                        "A",
+                        "approve"
+                      ],
+                      [
+                        "W",
+                        "workflow"
+                      ]
+                    ],
+                    "relations": [
+                      [
+                        "contains",
+                        "W",
+                        "A"
+                      ]
+                    ],
+                    "signature": "gcd.workflow.s1"
+                  },
+                  {
+                    "nodes": [
+                      [
+                        "R",
+                        "reject"
+                      ],
+                      [
+                        "W",
+                        "workflow"
+                      ]
+                    ],
+                    "relations": [
+                      [
+                        "contains",
+                        "W",
+                        "R"
+                      ]
+                    ],
+                    "signature": "gcd.workflow.s1"
+                  }
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              "op": "choose"
+            }
+          },
+          "event_id": "evt-2",
+          "family": {
+            "dependency_id": "release-0",
+            "edition": "v2",
+            "members": [
+              {
+                "nodes": [
+                  [
+                    "A",
+                    "approve"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "A"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              },
+              {
+                "nodes": [
+                  [
+                    "R",
+                    "reject"
+                  ],
+                  [
+                    "W",
+                    "workflow"
+                  ]
+                ],
+                "relations": [
+                  [
+                    "contains",
+                    "W",
+                    "R"
+                  ]
+                ],
+                "signature": "gcd.workflow.s1"
+              }
+            ],
+            "signature": "gcd.workflow.s1"
+          },
+          "grant": "fixture-grant-alice",
+          "op": "commit_model"
+        }
+      }
+    },
+    {
+      "case": "finite_rank_exceeded",
+      "expected_status": "resource_limit",
+      "receipt": {
+        "digest_sha256": "c5c6cce7d15938303ac3b937ce2dd4c79938d2241ba4ba37c4c9abfaf6ce7de5",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "maximum_rank": 8,
+          "requested_rank": 9,
+          "status": "resource_limit"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "op": "lift",
+          "source_id": "root",
+          "steps": 9
+        }
+      }
+    },
+    {
+      "case": "unknown_operation",
+      "expected_status": "unsupported",
+      "receipt": {
+        "digest_sha256": "a6c3dd7856f0b61b741158d8eec9552fadb092d920331e6d19a61d1bb92d790a",
+        "kernel_base": "v0.15-experimental-MSC1",
+        "model": "GCD-B1/0.2",
+        "outcome": {
+          "reason": "unknown operation",
+          "status": "unsupported"
+        },
+        "profile": "GCD/0.2-research",
+        "request": {
+          "op": "imaginary"
+        }
+      }
+    }
+  ],
+  "purpose": "expected explicit non-success outcomes, not failed test run"
+}
